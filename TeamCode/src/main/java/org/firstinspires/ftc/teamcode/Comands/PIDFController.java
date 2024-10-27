@@ -2,48 +2,54 @@ package org.firstinspires.ftc.teamcode.Comands;
 
 import androidx.annotation.Nullable;
 
-public class ArmController {
-    
-    public static final class PIDCoefficients {
+public class PIDFController {
+
+        public static final class PIDCoefficients {
             public double kP, kI, kD;
+
+            public PIDCoefficients(double p, double i, double d) {
+                this.kP = p;
+                this.kI = i;
+                this.kD = d;
+            }
         }
 
         public interface FeedforwardFun {
             double compute(double position, @Nullable Double velocity);
         }
 
-        private static PIDCoefficients pid;
-        private static double kV, kA, kStatic;
-        public static FeedforwardFun kF;
+        private PIDCoefficients pid;
+        private double kV, kA, kStatic;
+        public FeedforwardFun kF;
 
-        private static double errorSum;
-        private static long lastUpdateTs;
+        private  double errorSum;
+        private long lastUpdateTs;
 
-        private static boolean inputBounded;
-        private static double minInput, maxInput;
+        private boolean inputBounded;
+        private double minInput, maxInput;
 
-        private static boolean outputBounded;
-        private static double minOutput, maxOutput;
+        private boolean outputBounded;
+        private double minOutput, maxOutput;
 
         /**
          * Target position (that is, the controller setpoint).
          */
-        public static double targetPosition;
+        public double targetPosition;
 
         /**
          * Target velocity.
          */
-        public static double targetVelocity;
+        public double targetVelocity;
 
         /**
          * Target acceleration.
          */
-        public static double targetAcceleration;
+        public double targetAcceleration;
 
         /**
          * Error computed in the last call to {@link #update(long, double, Double)}
          */
-        public static double lastError;
+        public double lastError;
 
         /**
          * Feedforward parameters {@code kV}, {@code kA}, and {@code kStatic} correspond with a basic
@@ -56,7 +62,7 @@ public class ArmController {
          * @param kStatic additive feedforward constant
          * @param kF custom feedforward that depends on position and velocity
          */
-        public ArmController(
+        public PIDFController(
                 PIDCoefficients pid,
                 double kV,
                 double kA,
@@ -70,7 +76,7 @@ public class ArmController {
             this.kF = kF;
         }
 
-        public ArmController(
+        public PIDFController(
                 PIDCoefficients pid,
                 double kV,
                 double kA,
@@ -79,20 +85,18 @@ public class ArmController {
             this(pid, kV, kA, kStatic, (x, v) -> 0);
         }
 
-        public ArmController(
+        public PIDFController(
                 PIDCoefficients pid,
                 FeedforwardFun kF
         ) {
             this(pid, 0, 0, 0, kF);
         }
 
-        public ArmController(
+        public PIDFController(
                 PIDCoefficients pid
         ) {
             this(pid, 0, 0, 0);
         }
-
-
 
         /**
          * Sets bound on the input of the controller. When computing the error, the min and max are
@@ -102,7 +106,7 @@ public class ArmController {
          * @param min minimum input
          * @param max maximum input
          */
-        public static void setInputBounds(double min, double max) {
+        public void setInputBounds(double min, double max) {
             if (min < max) {
                 inputBounded = true;
                 minInput = min;
@@ -116,7 +120,7 @@ public class ArmController {
          * @param min minimum output
          * @param max maximum output
          */
-        public static void setOutputBounds(double min, double max) {
+        public void setOutputBounds(double min, double max) {
             if (min < max) {
                 outputBounded = true;
                 minOutput = min;
@@ -124,7 +128,7 @@ public class ArmController {
             }
         }
 
-        public static double getPositionError(double measuredPosition) {
+        public double getPositionError(double measuredPosition) {
             double error = targetPosition - measuredPosition;
             if (inputBounded) {
                 final double inputRange = maxInput - minInput;
@@ -142,7 +146,7 @@ public class ArmController {
          * @param measuredPosition measured position (feedback)
          * @param measuredVelocity measured velocity
          */
-        public static double update(
+        public double update(
                 long timestamp,
                 double measuredPosition,
                 @Nullable Double measuredVelocity
@@ -185,14 +189,14 @@ public class ArmController {
             return output;
         }
 
-        public static double  update(
+        public double  update(
                 long timestamp,
                 double measuredPosition
         ) {
             return update(timestamp, measuredPosition, null);
         }
 
-        public static double update(
+        public double update(
                 double measuredPosition
         ) {
             return update(System.nanoTime(), measuredPosition, null);
@@ -201,7 +205,7 @@ public class ArmController {
         /**
          * Reset the controller's integral sum.
          */
-        public static void reset() {
+        public void reset() {
             errorSum = 0;
             lastError = 0;
             lastUpdateTs = 0;
