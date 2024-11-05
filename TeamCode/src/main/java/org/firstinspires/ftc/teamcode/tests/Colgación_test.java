@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 
@@ -10,40 +11,49 @@ public class Colgación_test extends OpMode {
 
     Etesito etesito = new Etesito();
 
+    private ElapsedTime timer = new ElapsedTime();
+    private boolean servito;
+
     @Override
     public void init() {
         etesito.init(hardwareMap);
+
+        etesito.servoC1.setPosition(0.5);
+        etesito.servoC2.setPosition(0.5);
+
+
+        timer.reset();
     }
 
     @Override
     public void loop() {
 
-        if (gamepad1.dpad_up) {
-            etesito.C1.setPower(1);
-            etesito.C2.setPower(-1);
+        etesito.C1.setPower(gamepad2.right_stick_y);
 
-        } else if (gamepad1.dpad_down) {
-            etesito.C1.setPower(-1);
-            etesito.C2.setPower(1);
+        etesito.C2.setPower(-gamepad2.left_stick_y);
 
-        } else {
-            etesito.C1.setPower(0);
-            etesito.C2.setPower(0);
+        if (gamepad2.a) {
+            etesito.servoC1.setPosition(0.7);
+            etesito.servoC2.setPosition(0.3);
+
+        } else if (gamepad2.b) {
+            etesito.servoC1.setPosition(0.5);
+            etesito.servoC2.setPosition(0.5);
+
+        } else if (gamepad2.y) {
+            etesito.servoC1.setPosition(0.3);
+            etesito.servoC2.setPosition(0.7);
+
+            //timer.reset();
+            //servito = true;
 
         }
-        if (gamepad1.a) {
-            etesito.servoC1.setPosition(0.48);
-            etesito.servoC2.setPosition(0.9);
 
-        } else if (gamepad1.b) {
-            etesito.servoC1.setPosition(1);
-            etesito.servoC2.setPosition(0);
-
-        } else if (gamepad1.y) {
+        /*if (timer.seconds() <= 1 && servito){
             etesito.servoC1.getController().pwmDisable();
             etesito.servoC2.getController().pwmDisable();
 
-        }
+        }*/
     }
 }
 

@@ -30,13 +30,22 @@ public class Etesito {
 
     public Servo wrist;
 
-    public double Pos_close = 0;
-    public double Pos_open = 1;
+    public double Pos_close = 1;
+    public double Pos_open = 0.8;
 
-    public double Down_doll = 0;
-    public double Back_doll = 1;
+    public double Down_wrist = 0.6;
+    public double Medium_wrist = 0.5;
+    public double Up_wrist = 0.35;
 
-    public boolean picked = false;
+    public double down_ArmPos = 0;
+    public double medium_Armpos = -1300;
+    public double high_Armpos = -1900;
+
+    public double rode_High = -2100;
+    public double rode_medium = -1000;
+
+    public int ratio = 8;
+
 
     public RevColorSensorV3 color;
 
@@ -49,15 +58,8 @@ public class Etesito {
 
     private Etesito instance = null;
 
-    public double Yellow_r = 0, Yellow_b = 0, Yellow_g = 0;
-
-    public double Blue_r = 0, Blue_b = 0, Blue_g = 0;
-
-    public double Red_r = 0, Rede_b = 0, Red_g = 0;
-
-
-
     public void init(HardwareMap hardwareMap) {
+
 
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -72,6 +74,8 @@ public class Etesito {
 
         imu = hardwareMap.get(IMU.class, "imu");
 
+        color = hardwareMap.get(RevColorSensorV3.class, "color");
+
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
@@ -82,10 +86,10 @@ public class Etesito {
         rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        FL = hardwareMap.get(DcMotorEx.class, "lf");
-        BL = hardwareMap.get(DcMotorEx.class, "lb");
-        BR = hardwareMap.get(DcMotorEx.class, "rb");
-        FR = hardwareMap.get(DcMotorEx.class, "rf");
+        FL = hardwareMap.get(DcMotorEx.class, "fl");
+        BL = hardwareMap.get(DcMotorEx.class, "bl");
+        BR = hardwareMap.get(DcMotorEx.class, "br");
+        FR = hardwareMap.get(DcMotorEx.class, "fr");
 
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
         FR.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -98,27 +102,32 @@ public class Etesito {
 
     public void pick(){
 
+
         claw.setPosition(Pos_close);
-        picked = true;
+
 
     }
 
     public void open(){
 
         claw.setPosition(Pos_open);
-        picked = false;
+
 
     }
 
-    public void doll_down(){
+    public void wrist_down(){
 
-        wrist.setPosition(Down_doll);
+        wrist.setPosition(Down_wrist);
 
     }
 
-    public void doll_up(){
+    public void wrist_medium(){
+        wrist.setPosition(Medium_wrist);
 
-        wrist.setPosition(Back_doll);
+    }
+
+    public void wrist_up(){
+        wrist.setPosition(Up_wrist);
 
     }
 
