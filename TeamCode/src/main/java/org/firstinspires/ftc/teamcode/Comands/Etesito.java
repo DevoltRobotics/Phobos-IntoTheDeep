@@ -20,8 +20,8 @@ public class Etesito {
 
     public DcMotorEx armMotor;
     public DcMotorEx rodeMotor;
-    public DcMotorEx C1;
-    public DcMotorEx C2;
+    public DcMotorEx cR;
+    public DcMotorEx cL;
 
     public Servo servoC1;
     public Servo servoC2;
@@ -65,9 +65,21 @@ public class Etesito {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        C1 = hardwareMap.get(DcMotorEx.class, "mc2");
-        C2 = hardwareMap.get(DcMotorEx.class, "mc1");
+        rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
 
+        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        cR = hardwareMap.get(DcMotorEx.class, "mc1");
+        cL = hardwareMap.get(DcMotorEx.class, "mc2");
+
+        cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        cL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        cL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         servoC1 = hardwareMap.get(Servo.class,"sc1");
         servoC2 = hardwareMap.get(Servo.class,"sc2");
@@ -81,10 +93,7 @@ public class Etesito {
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
         imu.initialize(parameters);
 
-        rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
 
-        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         FL = hardwareMap.get(DcMotorEx.class, "fl");
         BL = hardwareMap.get(DcMotorEx.class, "bl");
