@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
+import android.graphics.Color;
+
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -9,6 +12,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.RR.Localizer;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -30,24 +34,34 @@ public class Etesito {
 
     public Servo wrist;
 
-    public double Pos_close = 1;
-    public double Pos_open = 0.8;
+    public RevColorSensorV3 color;
+
+    public double Pos_close = 0.6;
+    public double Pos_open = 1;
 
     public double Down_wrist = 0.6;
     public double Medium_wrist = 0.5;
-    public double Up_wrist = 0.35;
+    public double Up_wrist = 0.2;
 
     public double down_ArmPos = 0;
     public double medium_Armpos = -1300;
     public double high_Armpos = -1900;
 
     public double rode_High = -2100;
-    public double rode_medium = -1000;
+    public double rode_medium = -1200;
+    public double rode_down = -900;
 
     public int ratio = 8;
 
+    public double red;
+    public double green;
+    public double blue;
+    public double alpha;
 
-    public RevColorSensorV3 color;
+    public double redTarget = 200;
+    public double greenTarget = 100;
+    public double blueTarget = 100;
+    public double TargetValue = 1000;
 
     public IMU imu;
 
@@ -70,6 +84,11 @@ public class Etesito {
         rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        claw = hardwareMap.servo.get("cw");
+        wrist = hardwareMap.servo.get("wr");
+
+        color = hardwareMap.get(RevColorSensorV3.class, "color");
+
         cR = hardwareMap.get(DcMotorEx.class, "mc1");
         cL = hardwareMap.get(DcMotorEx.class, "mc2");
 
@@ -86,14 +105,10 @@ public class Etesito {
 
         imu = hardwareMap.get(IMU.class, "imu");
 
-        color = hardwareMap.get(RevColorSensorV3.class, "color");
-
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
         imu.initialize(parameters);
-
-
 
         FL = hardwareMap.get(DcMotorEx.class, "fl");
         BL = hardwareMap.get(DcMotorEx.class, "bl");
@@ -103,11 +118,8 @@ public class Etesito {
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
         FR.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        claw = hardwareMap.servo.get("cw");
-
-        wrist = hardwareMap.servo.get("wr");
-
     }
+
 
     public void pick(){
 
@@ -139,5 +151,34 @@ public class Etesito {
         wrist.setPosition(Up_wrist);
 
     }
+
+
+    public void getColors(){
+
+        color.argb();
+
+        red = color.red();
+        green = color.green();
+        blue = color.blue();
+        alpha = color.alpha();
+
+    }
+
+    public void getRed(){
+
+        red = color.red();
+
+    }
+
+
+
+    public void colorTelemetry(Telemetry telemetry){
+        telemetry.addData("red", "%.2f", red);
+        telemetry.addData("green", "%.2f", green);
+        telemetry.addData("blue", "%.2f", blue);
+        telemetry.addData("alpha", "%.2f", alpha);
+
+    }
+
 
 }

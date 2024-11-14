@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Disabled
 @TeleOp
 public class servo_test extends OpMode {
 
@@ -27,9 +29,8 @@ public class servo_test extends OpMode {
     @Override
     public void loop() {
 
-        double delta = before + position;
 
-        servo.setPosition(delta);
+
 
         position = 0;
 
@@ -39,14 +40,17 @@ public class servo_test extends OpMode {
         } else if (gamepad2.dpad_up){
             position += 0.05;
 
-        } else {
+        } else if (gamepad2.dpad_right){
 
             position = 0;
 
         }
 
-        before = servo.getPosition();
+        double delta = before + position;
 
+        servo.setPosition(delta);
+
+        before = servo.getPosition();
 
         telemetry.addData( "pos", servo.getPosition());
 
