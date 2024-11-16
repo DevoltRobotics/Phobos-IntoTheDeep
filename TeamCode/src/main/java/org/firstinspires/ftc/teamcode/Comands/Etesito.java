@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
-import android.graphics.Color;
-
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -40,11 +37,13 @@ public class Etesito {
     public double Pos_open = 1;
 
     public double Down_wrist = 0.6;
-    public double Medium_wrist = 0.5;
+    public double Down_M_wrist = 0.5;
+    public double Medium_wrist = 0.3;
     public double Up_wrist = 0.2;
+    public double Clim_Wrist = 0;
 
     public double down_ArmPos = 0;
-    public double medium_Armpos = -1300;
+    public double medium_Armpos = -900;
     public double high_Armpos = -1900;
 
     public double rode_High = -2100;
@@ -70,10 +69,7 @@ public class Etesito {
     private AprilTagProcessor aprilTag;
     public Localizer localizer;
 
-    private Etesito instance = null;
-
     public void init(HardwareMap hardwareMap) {
-
 
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -122,39 +118,45 @@ public class Etesito {
 
 
     public void pick(){
-
-
         claw.setPosition(Pos_close);
 
 
     }
 
     public void open(){
-
         claw.setPosition(Pos_open);
 
 
     }
 
     public void wrist_down(){
-
         wrist.setPosition(Down_wrist);
 
     }
 
-    public void wrist_medium(){
+    public void wrist_Down_M(){
+        wrist.setPosition(Down_M_wrist);
+
+    }
+
+    public void wrist_Medium(){
         wrist.setPosition(Medium_wrist);
 
     }
+
 
     public void wrist_up(){
         wrist.setPosition(Up_wrist);
 
     }
 
+    public void wrist_Climb(){
+        wrist.setPosition(Clim_Wrist);
+
+    }
+
 
     public void getColors(){
-
         color.argb();
 
         red = color.red();
@@ -165,7 +167,6 @@ public class Etesito {
     }
 
     public void getRed(){
-
         red = color.red();
 
     }
