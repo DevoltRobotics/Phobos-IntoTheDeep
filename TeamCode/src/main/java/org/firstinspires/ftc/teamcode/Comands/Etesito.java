@@ -43,9 +43,8 @@ public class Etesito {
     public double Clim_Wrist = 0;
 
     public double down_ArmPos = 0;
-    public double medium_Armpos = -900;
+    public double medium_Armpos = -800;
     public double high_Armpos = -1900;
-
     public double rode_High = -2100;
     public double rode_medium = -1200;
     public double rode_down = -900;
