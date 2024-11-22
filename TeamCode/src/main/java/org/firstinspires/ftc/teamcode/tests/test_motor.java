@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Comands;
+package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,6 +21,15 @@ public class test_motor extends OpMode {
         servo = hardwareMap.get(Servo.class, "wr");
 
     }
+
+    /*
+    asd
+
+    wr
+    cw
+
+    */
+
 
     @Override
     public void loop() {

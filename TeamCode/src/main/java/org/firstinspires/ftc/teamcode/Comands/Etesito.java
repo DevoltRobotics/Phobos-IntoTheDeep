@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
+import android.graphics.Color;
+
+import androidx.core.graphics.ColorUtils;
+
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -43,7 +47,8 @@ public class Etesito {
     public double Clim_Wrist = 0;
 
     public double down_ArmPos = 0;
-    public double medium_Armpos = -800;
+    public double mediumLow_Armpos = -800;
+    public double mediumHigh_Armpos = -1000;
     public double high_Armpos = -1900;
     public double rode_High = -2100;
     public double rode_medium = -1200;
@@ -55,6 +60,8 @@ public class Etesito {
     public double green;
     public double blue;
     public double alpha;
+
+    public double scaleFactor = 10;
 
     public double redTarget = 200;
     public double greenTarget = 100;
@@ -156,19 +163,14 @@ public class Etesito {
 
 
     public void getColors(){
-        color.argb();
+        int argb = color.argb();
 
-        red = color.red();
-        green = color.green();
-        blue = color.blue();
-        alpha = color.alpha();
-
+        red = Color.red(argb);
+        green = Color.green(argb);
+        blue = Color.blue(argb);
     }
 
-    public void getRed(){
-        red = color.red();
 
-    }
 
 
 
@@ -179,6 +181,8 @@ public class Etesito {
         telemetry.addData("alpha", "%.2f", alpha);
 
     }
+
+
 
 
 }
