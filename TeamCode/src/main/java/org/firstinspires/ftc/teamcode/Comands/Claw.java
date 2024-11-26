@@ -28,7 +28,7 @@ public class Claw {
         }
     }
 
-    public Action Drop(){
+    public Action pick(){
         return new Pick();
 
     }
@@ -38,7 +38,7 @@ public class Claw {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
-            claw.setPosition(etesito.Pos_close);
+            claw.setPosition(etesito.Pos_open);
             return false;
         }
     }
@@ -47,4 +47,6 @@ public class Claw {
         return new Drop();
 
     }
+
+
 }

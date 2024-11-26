@@ -48,7 +48,7 @@ public class Etesito {
 
     public double down_ArmPos = 0;
     public double mediumLow_Armpos = -800;
-    public double mediumHigh_Armpos = -1000;
+    public double mediumHigh_Armpos = -1200;
     public double high_Armpos = -1900;
     public double rode_High = -2100;
     public double rode_medium = -1200;
@@ -80,6 +80,7 @@ public class Etesito {
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
 
@@ -93,6 +94,8 @@ public class Etesito {
 
         cR = hardwareMap.get(DcMotorEx.class, "mc1");
         cL = hardwareMap.get(DcMotorEx.class, "mc2");
+        cR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        cL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -116,6 +119,11 @@ public class Etesito {
         BL = hardwareMap.get(DcMotorEx.class, "bl");
         BR = hardwareMap.get(DcMotorEx.class, "br");
         FR = hardwareMap.get(DcMotorEx.class, "fr");
+
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
         FR.setDirection(DcMotorSimple.Direction.REVERSE);

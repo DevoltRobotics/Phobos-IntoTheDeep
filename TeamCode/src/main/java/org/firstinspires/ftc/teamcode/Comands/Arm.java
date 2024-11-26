@@ -21,56 +21,62 @@ public class Arm {
 
     private int beforeArmPos = 0;
 
+    private double  powerArm;
+
     public static PIDFController.PIDCoefficients armCoefficients = new PIDFController.PIDCoefficients(0.0015, 0, 0.0017);
-    PIDFController armcontroller = new PIDFController(armCoefficients);
+    static PIDFController armcontroller = new PIDFController(armCoefficients);
 
     public static PIDFController.PIDCoefficients rodeCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.007);
-    PIDFController rodecontroller = new PIDFController(rodeCoefficients);
+    static PIDFController rodecontroller = new PIDFController(rodeCoefficients);
 
     public Arm(HardwareMap hardwareMap) {
-        arm = hardwareMap.get(DcMotorEx.class, "liftMotor");
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        arm.setDirection(DcMotorEx.Direction.FORWARD);
+        arm = hardwareMap.get(DcMotorEx.class, "arm");
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        rode = hardwareMap.get(DcMotorEx.class, "liftMotor");
-        rode.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rode.setDirection(DcMotorEx.Direction.FORWARD);
+        rode = hardwareMap.get(DcMotorEx.class, "rd");
+        rode.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rode.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         armcontroller.reset();
         rodecontroller.reset();
 
     }
 
-
     public class Arm_up implements Action {
 
-        private double powerArm;
+        private boolean initialized = false;
         // checks if the lift motor has been powered on
 
         // actions are formatted via telemetry packets as below
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            int armPos = arm.getCurrentPosition();
+            if (!initialized){
+                powerArm = 0.4;
+                armcontroller.targetPosition = etesito.high_Armpos;
+                initialized = true;
 
-            arm.setPower(-armcontroller.update(arm.getCurrentPosition()) * powerArm);
-            rode.setPower(rodecontroller.update(rode.getCurrentPosition()) * 0.09);
+            }
 
-            powerArm = 0.4;
-            armcontroller.targetPosition = etesito.high_Armpos;
+            arm.setPower(-arm.getCurrentPosition() * powerArm);
 
-            // checks lift's current position
+            double armPos = arm.getCurrentPosition();
 
-            double deltaArmPos = arm.getCurrentPosition() - beforeArmPos;
+            if (armPos > etesito.high_Armpos){
+                return true;
 
-            rodecontroller.targetPosition += (deltaArmPos / ratio);
+            } else {
+                return true;
 
-            beforeArmPos = arm.getCurrentPosition();
-
-            packet.put("armPos", armPos);
-            return false;
+            }
+                // checks lift's current position
 
         }
+    }
+
+    public Action armUp() {
+        return new Arm_up();
     }
 
     public class Arm_mediumHigh implements Action {
@@ -104,6 +110,10 @@ public class Arm {
         }
     }
 
+    public Action armMediumHigh() {
+        return new Arm_mediumHigh();
+    }
+
     public class Arm_mediumLow implements Action {
 
         private double powerArm;
@@ -133,6 +143,10 @@ public class Arm {
             return false;
 
         }
+    }
+
+    public Action armMediumLow() {
+        return new Arm_mediumLow();
     }
 
     public class Arm_down implements Action {
@@ -197,6 +211,10 @@ public class Arm {
         }
 
 
+    }
+
+    public Action armDown() {
+        return new Arm_down();
     }
 
     public class Rode_up implements Action {
