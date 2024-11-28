@@ -94,7 +94,7 @@ public class Arm {
             rode.setPower(rodecontroller.update(rode.getCurrentPosition()) * 0.09);
 
             powerArm = 0.4;
-            armcontroller.targetPosition = etesito.mediumHigh_Armpos;
+            armcontroller.targetPosition = etesito.lowBasket_Armpos;
 
             // checks lift's current position
 
@@ -129,7 +129,7 @@ public class Arm {
             rode.setPower(rodecontroller.update(rode.getCurrentPosition()) * 0.09);
 
             powerArm = 0.4;
-            armcontroller.targetPosition = etesito.mediumLow_Armpos;
+            armcontroller.targetPosition = etesito.rode_medium;
 
             // checks lift's current position
 
@@ -194,7 +194,7 @@ public class Arm {
                 rode.setPower(rodecontroller.update(rode.getCurrentPosition()) * 0.09);
 
                 powerArm = 0.4;
-                armcontroller.targetPosition = etesito.mediumHigh_Armpos;
+                armcontroller.targetPosition = etesito.lowBasket_Armpos;
 
                 // checks lift's current position
 

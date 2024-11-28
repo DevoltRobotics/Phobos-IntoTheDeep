@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+@Disabled
 @Autonomous
 public class a extends LinearOpMode {
 
@@ -27,7 +29,7 @@ public class a extends LinearOpMode {
         sleep(800);
         arador.setPower(0);
         sleep(50);
-        girar(1400);
+        girar(1900);
         enfrentesemillas(2000);
 
 
@@ -36,8 +38,8 @@ public class a extends LinearOpMode {
     }
 
     public void enfrente(int time){
-        L.setPower(-0.3);
-        R.setPower(0.3);
+        L.setPower(0.3);
+        R.setPower(-0.3);
         sleep(time);
 
         L.setPower(0);
@@ -47,8 +49,8 @@ public class a extends LinearOpMode {
     }
 
     public void enfrentesemillas(int time){
-        L.setPower(-0.3);
-        R.setPower(0.3);
+        L.setPower(0.3);
+        R.setPower(-0.3);
         semillero.setPower(0.3);
         sleep(time);
 

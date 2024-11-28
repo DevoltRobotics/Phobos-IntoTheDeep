@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.Comands;
 
 import android.graphics.Color;
 
-import androidx.core.graphics.ColorUtils;
-
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -47,8 +45,8 @@ public class Etesito {
     public double Clim_Wrist = 0;
 
     public double down_ArmPos = 0;
-    public double mediumLow_Armpos = -800;
-    public double mediumHigh_Armpos = -1200;
+    public double lowBasket_Armpos = -1200;
+    public double specimen_ArmPos = -1700;
     public double high_Armpos = -1900;
     public double rode_High = -2100;
     public double rode_medium = -1200;

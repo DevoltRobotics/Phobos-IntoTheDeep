@@ -22,8 +22,6 @@ public class Autonomo_prueba extends LinearOpMode {
 
         waitForStart();
 
-
-
         Actions.runBlocking(new SequentialAction(
                 arm.armUp()
         ));
