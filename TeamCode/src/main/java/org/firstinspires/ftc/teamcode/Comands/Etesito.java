@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.RR.Localizer;
@@ -49,15 +50,16 @@ public class Etesito {
     public double specimen_ArmPos = -1700;
     public double high_Armpos = -1900;
     public double rode_High = -2100;
-    public double rode_medium = -1200;
-    public double rode_down = -900;
+    public double rode_specimen = -1800;
+    public double rode_medium = -1400;
+    public double rode_down = -1200;
+
+    float hsv[] = {0.0f, 0.0f, 0.0f};
+    float SCALE_FACTOR = 255;
 
     public int ratio = 8;
 
-    public double red;
-    public double green;
-    public double blue;
-    public double alpha;
+    public float red, green, blue;
 
     public double scaleFactor = 10;
 
@@ -167,24 +169,54 @@ public class Etesito {
 
     }
 
+    public void servosOff(){
 
-    public void getColors(){
-        int argb = color.argb();
-
-        red = Color.red(argb);
-        green = Color.green(argb);
-        blue = Color.blue(argb);
+        servoC1.getController().pwmDisable();
+        servoC2.getController().pwmDisable();
     }
 
+    public void servos_Uping(){
 
+        servoC1.setPosition(0.7);
+        servoC2.setPosition(0.3);
+    }
 
+    public void servos_Climbing(){
 
+        servoC1.setPosition(0.6);
+        servoC2.setPosition(0.4);
+    }
+
+    public void servos_down(){
+
+        ElapsedTime timer = new ElapsedTime();
+
+        servoC1.setPosition(0);
+        servoC2.setPosition(1);
+
+        timer.reset();
+
+        if (timer.seconds() > 0.2){
+            servosOff();
+
+        }
+    }
+
+    public void getColors(){
+
+        red = color.red();
+        green = color.green();
+        blue = color.blue();
+
+        Color.RGBToHSV((int) (red * SCALE_FACTOR), (int) (green * SCALE_FACTOR), (int) (blue * SCALE_FACTOR), hsv);
+
+    }
 
     public void colorTelemetry(Telemetry telemetry){
-        telemetry.addData("red", "%.2f", red);
-        telemetry.addData("green", "%.2f", green);
-        telemetry.addData("blue", "%.2f", blue);
-        telemetry.addData("alpha", "%.2f", alpha);
+        telemetry.addData("red", red);
+        telemetry.addData("green", green);
+        telemetry.addData("blue", blue);
+        telemetry.addData("Hue", hsv[0]);
 
     }
 

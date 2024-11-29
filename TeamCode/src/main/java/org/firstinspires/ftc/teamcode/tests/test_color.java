@@ -33,9 +33,10 @@ public class test_color extends OpMode {
 
         if(timer.seconds() > 0.2) {
             etesito.getColors();
-            etesito.colorTelemetry(telemetry);
             timer.reset();
         }
+
+        etesito.colorTelemetry(telemetry);
 
         if (gamepad2.right_trigger > 0.5){
             etesito.pick();

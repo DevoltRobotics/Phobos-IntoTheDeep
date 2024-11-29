@@ -9,50 +9,46 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class Base_autonomo_3 {
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(700);
+        MeepMeep meepMeep = new MeepMeep(600);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(25, -58, Math.PI / 2))
-                //brazo_specimen
-                .splineToConstantHeading(new Vector2d(0, -41), Math.PI / 2)
-                .lineToY(-35)
-                //wrist_down && open_claw && contract_arm
-                .lineToY(-47)
-                //arm_down
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(27, -60, Math.toRadians(270)))
+                //arm && wrist _specimen
+                .setTangent(0)
+                .strafeToLinearHeading(new Vector2d(10, -33), Math.toRadians(270))
+                //extend rode
+                .strafeToLinearHeading(new Vector2d(10, -35), Math.toRadians(270))
+                //open_claw || timer || wrist_down &&  && contract_rode && down_arm
+
+                //arm_down && wrist_medium
 
                 //FIRST_SPECIMEN
 
-                .splineToLinearHeading(new Pose2d(36, -40, Math.PI * 1.5), Math.PI / 2)
-                .lineToY(-55)
-                //close_claw && arm_medium
-                .lineToY(-47)
-                .strafeToLinearHeading(new Vector2d(3, -41), Math.PI / 2)
-                .setTangent(Math.PI / 2)
-                .lineToY(-35)
-                //wrist_down && open_claw && contract_arm
-                .lineToY(-47)
-                //arm_down
+                .strafeToLinearHeading(new Vector2d(32, -52), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(32, -60), Math.toRadians(270))
+                //close_claw
+                .strafeToLinearHeading(new Vector2d(5, -33), Math.toRadians(270))
+                //arm && wrist_specimen
+                .strafeToLinearHeading(new Vector2d(5, -35), Math.toRadians(270))
+                //open_claw || timer || wrist_down &&  && contract_rode && down_arm
 
                 //SECOND_SPECIMEN
 
-                .splineToLinearHeading(new Pose2d(36, -40, Math.PI * 1.5), Math.PI / 2)
-                .lineToY(-55)
-                //close_claw && arm_medium
-                .lineToY(-47)
-                .strafeToLinearHeading(new Vector2d(6, -41), Math.PI / 2)
-                .setTangent(Math.PI / 2)
-                .lineToY(-35)
-                //wrist_down && open_claw && contract_arm
-                .lineToY(-47)
-                //arm_down
-                .splineToConstantHeading(new Vector2d(40, -54), 0)
+                .strafeToLinearHeading(new Vector2d(32, -52), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(32, -60), Math.toRadians(270))
+                //close_claw
+                .strafeToLinearHeading(new Vector2d(0, -33), Math.toRadians(270))
+                //arm && wrist_specimen
+                .strafeToLinearHeading(new Vector2d(0, -35), Math.toRadians(270))
+                //open_claw || timer || wrist_down &&  && contract_rode && down_arm
 
                 //THIRD_SPECIMEN
 
+                .strafeToLinearHeading(new Vector2d(40, -58), Math.toRadians(90))
 
                 .build());
 

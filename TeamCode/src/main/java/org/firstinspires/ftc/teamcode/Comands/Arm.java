@@ -67,10 +67,9 @@ public class Arm {
                 return true;
 
             } else {
-                return true;
+                return false;
 
             }
-                // checks lift's current position
 
         }
     }
