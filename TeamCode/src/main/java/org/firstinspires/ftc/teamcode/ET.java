@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -156,7 +154,7 @@ public class ET extends OpMode {
 
         escalando = false;
 
-        rdT = etesito.rode_down;
+        rdT = etesito.downRodePos;
         armT = 0;
 
         prerestartVoltage = false;
@@ -229,8 +227,8 @@ public class ET extends OpMode {
                     escalandoAutomatizado = true;
 
                 } else {
-                    climbControllerRight.targetPosition = -4300;
-                    climbControllerLeft.targetPosition = -4300;
+                    climbControllerRight.targetPosition = -3900;
+                    climbControllerLeft.targetPosition = -3900;
                     colgandoAutomatizado = true;
                     colgandoAutomatizadoTimer.reset();
                 }
@@ -351,11 +349,11 @@ public class ET extends OpMode {
 
             }
 
-            if (gamepad1.dpad_left) {
+            if (gamepad1.dpad_left || gamepad2.dpad_left) {
                 rodecontroller.targetPosition = 0;
 
-            } else if (gamepad1.dpad_right) {
-                rodecontroller.targetPosition = etesito.rode_down;
+            } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
+                rodecontroller.targetPosition = etesito.climbingRodePos;
 
             }
 
@@ -388,7 +386,7 @@ public class ET extends OpMode {
 
             if (gamepad2.y && !extended) {
                 powerArm = 0.4;
-                armT = etesito.high_Armpos;
+                armT = etesito.highArmpos;
                 rodecontroller.reset();
                 etesito.wrist_up();
 
@@ -405,7 +403,7 @@ public class ET extends OpMode {
 
             } else if (gamepad2.b && !extended) {
                 powerArm = 0.4;
-                armT = etesito.lowBasket_Armpos;
+                armT = etesito.lowBasketArmpos;
                 rodecontroller.reset();
 
                 etesito.wrist_Medium();
@@ -422,10 +420,10 @@ public class ET extends OpMode {
 
             } else if (gamepad2.x && !extended) {
                 powerArm = 0.4;
-                armT = etesito.specimen_ArmPos;
+                armT = etesito.specimenArmPos;
                 rodecontroller.reset();
 
-                etesito.wrist_Climb();
+                etesito.wrist_Specimen();
 
                 arm_UpBasket = false;
                 arm_Medium = false;
@@ -453,25 +451,25 @@ public class ET extends OpMode {
             }
 
             if (arm_UpBasket) {
-                rdT = etesito.rode_High;
+                rdT = etesito.highRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.rode_High - 150;
+                rodeMin = etesito.highRodePos - 150;
 
             } else if (arm_Medium) {
-                rdT = etesito.rode_medium;
+                rdT = etesito.lowBasketRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.rode_medium - 200;
+                rodeMin = etesito.lowBasketRodePos - 200;
 
             }
             else if (arm_Dowm){
-                rdT = etesito.rode_down;
+                rdT = etesito.downRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.rode_down - 500;
+                rodeMin = etesito.downRodePos - 500;
 
             } else if (arm_UpSpecimen) {
-                rdT = etesito.rode_specimen;
+                rdT = etesito.specimenRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.rode_down - 100;
+                rodeMin = etesito.downRodePos - 100;
 
             }
 
@@ -635,7 +633,7 @@ public class ET extends OpMode {
         }
 
         armMax = 50;
-        armMin = etesito.high_Armpos - 50;
+        armMin = etesito.highArmpos - 50;
 
         armcontroller.targetPosition = Range.clip(armT, armMin, armMax);
 

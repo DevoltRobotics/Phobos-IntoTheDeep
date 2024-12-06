@@ -44,16 +44,20 @@ public class Etesito {
     public double Down_M_wrist = 0.5;
     public double Medium_wrist = 0.3;
     public double Up_wrist = 0.2;
+    public double Specimen_wrist = 0.05;
     public double Climb_Wrist = 0;
 
     public double down_ArmPos = 0;
-    public double lowBasket_Armpos = -1200;
-    public double specimen_ArmPos = -1700;
-    public double high_Armpos = -1900;
-    public double rode_High = -2100;
-    public double rode_specimen = -1500;
-    public double rode_medium = -1400;
-    public double rode_down = -1200;
+    public double initArmpos = -950;
+    public double lowBasketArmpos = -1200;
+    public double specimenArmPos = -1700;
+    public double highArmpos = -1900;
+    public double highRodePos = -2100;
+    public double specimenRodePos = -1500;
+    public double lowBasketRodePos = -1400;
+    public double downRodePos = -1200;
+    public double climbingRodePos = -800;
+
 
     float hsv[] = {0.0f, 0.0f, 0.0f};
     float SCALE_FACTOR = 255;
@@ -162,6 +166,11 @@ public class Etesito {
 
     public void wrist_up(){
         wrist.setPosition(Up_wrist);
+
+    }
+
+    public void wrist_Specimen(){
+        wrist.setPosition(Specimen_wrist);
 
     }
 

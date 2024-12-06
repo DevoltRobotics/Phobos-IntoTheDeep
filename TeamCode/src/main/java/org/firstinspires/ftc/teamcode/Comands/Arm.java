@@ -15,20 +15,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class Arm {
 
     private DcMotorEx armMotor;
-    private DcMotorEx rode;
+    private DcMotorEx rodeMotor;
 
     private int ratio = 8;
 
     Etesito etesito = new Etesito();
 
-    private double  powerArm;
-    private double  powerRode;
-
     public static PIDFController.PIDCoefficients armCoefficients = new PIDFController.PIDCoefficients(0.0015, 0, 0.0017);
-    PIDFController armcontroller = new PIDFController(armCoefficients);
+    PIDFController armController = new PIDFController(armCoefficients);
 
     public static PIDFController.PIDCoefficients rodeCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.007);
-    PIDFController rodecontroller = new PIDFController(rodeCoefficients);
+    PIDFController rodeController = new PIDFController(rodeCoefficients);
 
     ElapsedTime timer = new ElapsedTime();
 
@@ -38,48 +35,49 @@ public class Arm {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        rode = hardwareMap.get(DcMotorEx.class, "rd");
-        rode.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rode.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        armcontroller.reset();
-        rodecontroller.reset();
+        armController.reset();
+        rodeController.reset();
     }
 
-    public void updating() {
-        armMotor.setPower(-armcontroller.update(armMotor.getCurrentPosition()) * powerArm);
-        rode.setPower(rodecontroller.update(rode.getCurrentPosition() * powerRode));
+    public void updateArm() {
+        armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
 
     }
 
-    public class ArmSpecimen implements Action {
+    public void updateRode() {
+        rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+    }
+
+    public class ArmUp implements Action {
         // checks if the lift motor has been powered on
-
-        boolean initialized = false;
 
         // actions are formatted via telemetry packets as below
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            if (!initialized) {
-                armcontroller.targetPosition = etesito.specimen_ArmPos + 150;
-                powerArm = 0.4;
-                initialized = true;
+            armController.targetPosition = etesito.highArmpos;
+            return false;
+        }
+    }
 
-            }
+    public Action armUp() {
+        return new ArmUp();
+    }
 
-            double armPos = armMotor.getCurrentPosition();
+    public class ArmSpecimen implements Action {
+        // checks if the lift motor has been powered on
 
-            armMotor.setPower(-armcontroller.update(armMotor.getCurrentPosition()) * powerArm);
+        // actions are formatted via telemetry packets as below
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
 
-
-            if (armPos > etesito.specimen_ArmPos) {
-                return true;
-            } else {
-                armcontroller.targetPosition = etesito.specimen_ArmPos;
-                powerArm = 0.4;
-                return false;
-            }
+            armController.targetPosition = etesito.specimenArmPos;
+            return false;
         }
     }
 
@@ -96,29 +94,9 @@ public class Arm {
         // actions are formatted via telemetry packets as below
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                armcontroller.targetPosition = -1200;
-                powerArm = 0.4;
-                initialized = true;
 
-            }
-
-            armMotor.setPower(-armcontroller.update(armMotor.getCurrentPosition()) * powerArm);
-
-            double armPos = armMotor.getCurrentPosition();
-
-            packet.put("armPos",armPos);
-            packet.put("armPower", armMotor.getPower());
-
-            if (armPos > -900){
-                return true;
-
-            } else {
-                armcontroller.targetPosition = -900;
-                powerArm = 0.4;
-                return false;
-
-            }
+            armController.targetPosition = etesito.initArmpos;
+            return false;
 
         }
     }
@@ -134,19 +112,15 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            powerArm = 0.1;
-            armcontroller.targetPosition = 0;
+            armController.targetPosition = 100;
+            armMotor.setPower(armController.update(armMotor.getCurrentPosition()) * 0.05);
 
-            int armPos = armMotor.getCurrentPosition();
-
-            // checks lift's current position
-
-            if (armPos < -150) {
+            if (armMotor.getCurrentPosition() > -100){
                 return true;
             } else {
-                armcontroller.targetPosition = 0;
-                powerArm = 0.1;
+                armController.targetPosition = 0;
                 return false;
+
             }
 
         }
@@ -157,24 +131,46 @@ public class Arm {
         return new ArmDown();
     }
 
+    public class RodeUp implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            rodeController.targetPosition = etesito.highRodePos - 50;
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+
+            if (rodeController.getPositionError(rodeMotor.getCurrentPosition()) > -100){
+                return true;
+            } else {
+                rodeController.targetPosition = etesito.highRodePos;
+                return false;
+
+            }
+
+        }
+    }
+
+    public Action rodeUp() {
+        return new RodeUp();
+
+    }
+
     public class RodeSpecimen implements Action {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            powerRode = 0.09;
-            rodecontroller.targetPosition = etesito.rode_specimen;
+            rodeController.targetPosition = etesito.specimenRodePos - 50;
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
 
-            double rodePos = rode.getCurrentPosition();
-
-            if (rodePos > etesito.rode_specimen + 150) {
+            if (rodeController.getPositionError(rodeMotor.getCurrentPosition()) > -100){
                 return true;
-
             } else {
-                rodecontroller.targetPosition = etesito.rode_specimen + 150;
-                powerRode = 0.09;
+                rodeController.targetPosition = etesito.specimenRodePos;
                 return false;
+
             }
+
         }
     }
 
@@ -188,62 +184,53 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            powerRode = 0.09;
-            rodecontroller.targetPosition = 50;
+            rodeController.targetPosition = 100;
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
 
-            double rodePos = rode.getCurrentPosition();
-
-            if (rodePos < 0) {
+            if (rodeMotor.getCurrentPosition() > -100){
                 return true;
-
             } else {
-                powerRode = 0.09;
-                rodecontroller.targetPosition = 0;
-
+                rodeController.targetPosition = 0;
                 return false;
+
+            }
+
 
             }
 
         }
 
-    }
+        public Action rodeDown() {
+            return new RodeDown();
 
-    public Action rodeDown() {
-        return new RodeDown();
-
-    }
+        }
 
     public class ArmInPos implements Action {
 
-        // checks if the lift motor has been powered on}
-        boolean initialized = false;
-
-        // actions are formatted via telemetry packets as below
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            armMotor.setPower(-armcontroller.update(armMotor.getCurrentPosition()) * powerArm);
-            rode.setPower(rodecontroller.update(rode.getCurrentPosition() * powerRode));
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+            armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
 
-            double armPos = armMotor.getCurrentPosition();
+            return true;
 
-            if (armPos < 500){
-                return true;
-
-            } else {
-                return false;
-
-            }
 
         }
+
     }
 
     public Action armInPos() {
         return new ArmInPos();
+
     }
 
 
-}
+
+
+    }
+
+
 
 
 
