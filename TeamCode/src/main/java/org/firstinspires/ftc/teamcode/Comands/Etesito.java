@@ -44,7 +44,7 @@ public class Etesito {
     public double Down_M_wrist = 0.5;
     public double Medium_wrist = 0.3;
     public double Up_wrist = 0.2;
-    public double Specimen_wrist = 0.05;
+    public double Specimen_wrist = 0.03;
     public double Climb_Wrist = 0;
 
     public double down_ArmPos = 0;

@@ -16,7 +16,8 @@ public class Auto1 {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(10, -32, Math.toRadians(270)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(10, -60, 0))
+
                 .setTangent(0)
                 .splineToLinearHeading(new Pose2d(35, -38, Math.toRadians(270)), 0)
                 .setTangent(Math.toRadians(120))

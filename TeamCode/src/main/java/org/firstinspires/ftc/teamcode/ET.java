@@ -56,7 +56,7 @@ public class ET extends OpMode {
 
     private boolean colgando;
 
-    private boolean escalando;
+    private boolean escalando = false;
 
     private boolean alternar_Garra1;
 
@@ -171,7 +171,7 @@ public class ET extends OpMode {
     public void loop() {
 
 
-        colgando = gamepad1.left_trigger > 0.5;
+        colgando = gamepad1.left_trigger > 0.3;
 
         /*if (gamepad1.left_trigger > 0.5 && timerEstablecercolgar.seconds() > 0.2) {
             colgando = !colgando;
@@ -197,7 +197,6 @@ public class ET extends OpMode {
 
             etesito.wrist_Climb();
             telemetry.addLine("colgando_activado");
-            escalando = gamepad1.y;
 
             if (gamepad2.right_stick_button){
                 climbControllerRight.reset();
@@ -209,46 +208,29 @@ public class ET extends OpMode {
 
             }
 
-            if (escalando){
-                telemetry.addLine("escalando");
+            if (gamepad2.dpad_up) {
 
-            }else{
-                telemetry.addLine("subiendo");
-
-            }
-
-            if (gamepad1.dpad_up || gamepad2.dpad_up) {
-
-                if (escalando) {
-
-                    climbControllerRight.targetPosition = -5400;
-                    climbControllerLeft.targetPosition = -5400;
-                    escalandoAutomatizadoTimer.reset();
-                    escalandoAutomatizado = true;
-
-                } else {
                     climbControllerRight.targetPosition = -3900;
                     climbControllerLeft.targetPosition = -3900;
                     colgandoAutomatizado = true;
                     colgandoAutomatizadoTimer.reset();
-                }
+
 
                 voltageIndicatorBoolean = false;
 
                 noForzarServos = false;
 
 
-            } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+            } else if (gamepad2.dpad_down) {
 
-                climbControllerRight.targetPosition = 0;
-                climbControllerLeft.targetPosition = 0;
+                climbControllerRight.targetPosition = -200;
+                climbControllerLeft.targetPosition = -200;
 
                 etesito.servoC1.setPosition(0);
                 etesito.servoC2.setPosition(1);
 
                 noForzarServos = true;
                 noForzarServosTimer.reset();
-
 
                 colgandoAutomatizado = false;
 
@@ -271,7 +253,6 @@ public class ET extends OpMode {
             }
 
             if (colgandoAutomatizado && colgandoAutomatizadoTimer.seconds() > 1.8) {
-
                 etesito.servos_Uping();
 
                 colgandoAutomatizado = false;
@@ -283,7 +264,7 @@ public class ET extends OpMode {
 
 
             if (manualRight) {
-                etesito.cR.setPower(Range.clip(gamepad2.right_stick_y, -0.95, 0.95));
+                etesito.cR.setPower(Range.clip(gamepad2.right_stick_y, -0.98, 0.98));
                 climbControllerRight.targetPosition = etesito.cR.getCurrentPosition();
                 telemetry.addLine("ManualRight");
 
@@ -293,7 +274,7 @@ public class ET extends OpMode {
             }
 
             if (manualLeft) {
-                etesito.cL.setPower(Range.clip(gamepad2.left_stick_y, -0.95, 0.95));
+                etesito.cL.setPower(Range.clip(gamepad2.left_stick_y, -0.98, 0.98));
                 climbControllerLeft.targetPosition = etesito.cL.getCurrentPosition();
                 telemetry.addLine("ManualLeft");
 
