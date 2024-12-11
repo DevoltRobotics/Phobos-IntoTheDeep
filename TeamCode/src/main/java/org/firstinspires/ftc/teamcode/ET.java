@@ -343,7 +343,6 @@ public class ET extends OpMode {
 
             telemetry.addLine("colgando_desactivado");
 
-
             if(timerColor.seconds() > 0.2) {
                 etesito.getColors();
 
@@ -380,7 +379,6 @@ public class ET extends OpMode {
                 arm_Dowm = false;
 
                 telemetry.addLine("Arm_up");
-
 
             } else if (gamepad2.b && !extended) {
                 powerArm = 0.4;
@@ -441,8 +439,7 @@ public class ET extends OpMode {
                 rodeMax = 50;
                 rodeMin = etesito.lowBasketRodePos - 200;
 
-            }
-            else if (arm_Dowm){
+            } else if (arm_Dowm){
                 rdT = etesito.downRodePos;
                 rodeMax = 50;
                 rodeMin = etesito.downRodePos - 500;
@@ -450,7 +447,7 @@ public class ET extends OpMode {
             } else if (arm_UpSpecimen) {
                 rdT = etesito.specimenRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.downRodePos - 100;
+                rodeMin = etesito.specimenRodePos - 100;
 
             }
 
@@ -458,7 +455,6 @@ public class ET extends OpMode {
                 rodecontroller.targetPosition = rdT;
                 movimientoBrazoExtenderCanasta = false;
             }
-
 
             ///////////////////////////////////////////////////////////////////////////
 
@@ -624,6 +620,13 @@ public class ET extends OpMode {
 
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 
+        telemetry.addData("voltage", etesito.cL.getCurrent(CurrentUnit.AMPS));
+
+        telemetry.addData("armpower", etesito.armMotor.getPower());
+        telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
+        telemetry.addData("armTargetPos", armcontroller.targetPosition);
+
+
         /*telemetry.addData("climbPower1", etesito.cR.getPower());
         telemetry.addData("climbPos1", etesito.cR.getCurrentPosition());
         telemetry.addData("climbTargetPos1", climbControllerRight.targetPosition);
@@ -647,7 +650,6 @@ public class ET extends OpMode {
 
         telemetry.addLine("-----------");
 
-        telemetry.addData("voltage", etesito.cL.getCurrent(CurrentUnit.AMPS));
 
         telemetry.addData("ratio", ratio);
 
@@ -674,7 +676,7 @@ public class ET extends OpMode {
 
         double y = gamepad1.left_stick_y;
         double x = -gamepad1.left_stick_x;
-        double rx = -gamepad1.right_stick_x;
+        double rx = gamepad1.right_stick_x;
 
         double botHeading = etesito.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -706,7 +708,7 @@ public class ET extends OpMode {
 
         }
 
-        telemetry.addData("angulo", Math.toDegrees( botHeading));
+        telemetry.addData("angulo", Math.toDegrees(botHeading));
     }
 
 }

@@ -36,65 +36,60 @@ public class AutonomoSpecimenChido extends LinearOpMode {
         ClimbServos climbServos = new ClimbServos(hardwareMap);
 
         TrajectoryActionBuilder firstSpecimenPut = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(15, -26.5), Math.toRadians(273))
+                .strafeToLinearHeading(new Vector2d(15, -25), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder firstSpecimenAccommodate = firstSpecimenPut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(15, -27), Math.toRadians(273))
+                .strafeToLinearHeading(new Vector2d(15, -30), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenMove = firstSpecimenAccommodate.endTrajectory().fresh()
-                .setTangent(Math.toRadians(50))
-                .splineToLinearHeading(new Pose2d(37.5, -38, 0), Math.toRadians(90))
-                .setTangent(Math.toRadians(80))
-                .splineToLinearHeading(new Pose2d(42, 19, 0), Math.toRadians(70))
-                .setTangent(Math.toRadians(290))
-                .splineToLinearHeading(new Pose2d(56, -36, 0), Math.toRadians(270))
+                .setTangent(Math.toRadians(60))
+                .strafeToLinearHeading(new Vector2d(45, -38), 0)
+                .strafeToLinearHeading(new Vector2d(45, 26), 0)
+                .setTangent(Math.toRadians(320))
+                .splineToLinearHeading(new Pose2d(47, -32, 0), Math.toRadians(270))
 
                 ;
 
-        TrajectoryActionBuilder ThirdSpecimenMove = secondSpecimenMove.endTrajectory().fresh()
-                .setTangent(Math.toRadians(110))
-                .strafeToLinearHeading(new Vector2d(46, 22), 0)
-                .setTangent(Math.toRadians(290))
-                .splineToLinearHeading(new Pose2d(61, -36, 0), Math.toRadians(270))
-                ;
-
-        TrajectoryActionBuilder secondSpecimenPick1 = ThirdSpecimenMove.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(34, -27), Math.toRadians(270))
+        TrajectoryActionBuilder secondSpecimenPick1 = secondSpecimenMove.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(35, -21), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenPick2 = secondSpecimenPick1.endTrajectory().fresh()
                 .waitSeconds(0.2)
-                .strafeToLinearHeading(new Vector2d(35, -42), Math.toRadians(275))
+                .strafeToLinearHeading(new Vector2d(35, -32), Math.toRadians(270))
                 ;
 
-        TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(0, -28), Math.toRadians(275))
+        TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick2.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-20, -7), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenAccomodate = secondSpecimenPut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(0, -27), Math.toRadians(275))
+                .strafeToLinearHeading(new Vector2d(-20, -9), Math.toRadians(270))
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenPick = secondSpecimenAccomodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(56, -35), Math.toRadians(275))
+        TrajectoryActionBuilder thirdSpecimenPick1 = secondSpecimenAccomodate.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(24, -21), Math.toRadians(270))
+                ;
+
+        TrajectoryActionBuilder thirdSpecimenPick2 = thirdSpecimenPick1.endTrajectory().fresh()
                 .waitSeconds(0.2)
-                .strafeToLinearHeading(new Vector2d(56, -43), Math.toRadians(275))
+                .strafeToLinearHeading(new Vector2d(24, -32), Math.toRadians(270))
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick.endTrajectory().fresh()
+        TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick2.endTrajectory().fresh()
 
-                .strafeToLinearHeading(new Vector2d(-12, -26.5), Math.toRadians(275))
+                .strafeToLinearHeading(new Vector2d(-55, -6), Math.toRadians(270))
 
                 ;
 
         TrajectoryActionBuilder thirdSpecimenAccommodate = thirdSpecimenPut .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-12, -28), Math.toRadians(275))
+                .strafeToLinearHeading(new Vector2d(-55, -8), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder park = thirdSpecimenAccommodate .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(32, -52), 0)
+                .strafeToLinearHeading(new Vector2d(10, -30), 0)
                 ;
 
 
@@ -102,7 +97,7 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 claw.pick(),
                 new SleepAction(0.8),
                 arm.armInit(),
-                new SleepAction(1.2),
+                new SleepAction(0.1),
                 climbServos.servosInit(),
                 wrist.wristInit()
                 ));
@@ -122,11 +117,13 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                         wrist.wristSpecimen()
 
                                         ),
-                new SleepAction(0.3),
+                new SleepAction(0.2),
                 arm.rodeSpecimen(),
                 new SleepAction(0.6),
-                firstSpecimenAccommodate.build(),
-                claw.drop(),
+                                firstSpecimenAccommodate.build(),
+                                wrist.wristInit(),
+                                new SleepAction(0.1),
+                                claw.drop(),
                 new SleepAction(0.2),
                 wrist.wristInit(),
                 new SleepAction(0.3),
@@ -136,51 +133,49 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                 //FIRST_PUT
 
                                 secondSpecimenMove.build(),
-                                ThirdSpecimenMove.build(),
                                 new ParallelAction(
                                         secondSpecimenPick1.build(),
                                         wrist.wristMedium()
                                         ),
                                 arm.armDown(),
-                                secondSpecimenPick2.build()
-
-                                //MOVE_TO_HUMAN 
-
-                                /*
+                                new SleepAction(0.5),
+                                secondSpecimenPick2.build(),
                                 claw.pick(),
                                 new SleepAction(0.2),
+                                wrist.wristSpecimen(),
                                 arm.armSpecimen(),
                                 new ParallelAction(
-                                        secondSpecimenPut.build(),
-                                        wrist.wristSpecimen()
+                                        secondSpecimenPut.build()
                                         ),
-                                new SleepAction(0.3),
+                                new SleepAction(0.2),
                                 arm.rodeSpecimen(),
                                 new SleepAction(0.6),
                                 secondSpecimenAccomodate.build(),
                                 claw.drop(),
                                 new SleepAction(0.2),
-                                wrist.wristDownM(),
-                                new SleepAction(0.3),
+                                wrist.wristMedium(),
+                                new SleepAction(0.1),
                                 arm.rodeDown(),
-                                new SleepAction(0.8),
-                                arm.armDown(),
+                                new SleepAction(0.4),
 
-                //SECOND_PUT
-
+                                //SECOND_PUT
 
                                 new ParallelAction(
-                                        wrist.wristMedium(),
-                                        thirdSpecimenPick.build()
+                                        arm.armDown(),
+                                        thirdSpecimenPick1.build()
 
                                         ),
+                                thirdSpecimenPick2.build(),
                                 new SleepAction(0.1),
                                 claw.pick(),
                                 new SleepAction(0.2),
                                 wrist.wristSpecimen(),
-                                new SleepAction(0.4),
                                 arm.armSpecimen(),
-                                thirdSpecimenPut.build(),
+
+                                new ParallelAction(
+                                        thirdSpecimenPut.build()
+
+                                        ),
                                 new SleepAction(0.3),
                                 arm.rodeSpecimen(),
                                 new SleepAction(0.6),

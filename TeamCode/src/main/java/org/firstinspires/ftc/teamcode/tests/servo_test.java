@@ -30,14 +30,12 @@ public class servo_test extends OpMode {
     @Override
     public void init() {
 
-        claw = hardwareMap.servo.get("cw");
-        wrist = hardwareMap.servo.get("wr");
-        sc1 = hardwareMap.servo.get("sc1");
-        sc2 = hardwareMap.servo.get("sc2");
+        claw = hardwareMap.servo.get("cw"); // sc1
+        wrist = hardwareMap.servo.get("wr"); //cw
+        sc1 = hardwareMap.servo.get("sc1"); //wrist
+        sc2 = hardwareMap.servo.get("sc2"); //sc2
 
         position = 0;
-
-
 
     }
 

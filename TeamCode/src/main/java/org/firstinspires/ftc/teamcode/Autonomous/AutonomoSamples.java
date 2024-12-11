@@ -25,7 +25,7 @@ public class AutonomoSamples extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
 
-        Pose2d initialPose = new Pose2d(-15, -60, 0);
+        Pose2d initialPose = new Pose2d(-40, -60, Math.toRadians(90));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -34,49 +34,42 @@ public class AutonomoSamples extends LinearOpMode {
         Wrist wrist = new Wrist(hardwareMap);
         ClimbServos climbServos = new ClimbServos(hardwareMap);
 
-        TrajectoryActionBuilder firstSpecimenPut = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(-3, -24.5), Math.toRadians(270))
+        TrajectoryActionBuilder firstSamplePut = drive.actionBuilder(initialPose)
+                .strafeToLinearHeading(new Vector2d(-64, -50), Math.toRadians(40))
                 ;
 
-        TrajectoryActionBuilder firstSpecimenAccommodate = firstSpecimenPut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-5, -26), Math.toRadians(270))
+        TrajectoryActionBuilder firstSampleAccommodate = firstSamplePut.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-66, -52), Math.toRadians(40))
                 ;
 
-        TrajectoryActionBuilder secondSamplePick = firstSpecimenAccommodate.endTrajectory().fresh()
+        TrajectoryActionBuilder secondSamplePick = firstSampleAccommodate.endTrajectory().fresh()
 
-                .splineToLinearHeading(new Pose2d(-25, -40, Math.toRadians(180)), Math.toRadians(180))
-                .strafeToLinearHeading(new Vector2d(-46, -31.5), Math.toRadians(110))
+                .strafeToLinearHeading(new Vector2d(-71, -27.5), Math.toRadians(95))
                 ;
 
         TrajectoryActionBuilder secondSamplePut = secondSamplePick.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-53, -53), Math.toRadians(65))
-
+                .strafeToLinearHeading(new Vector2d(-67.5, -52), Math.toRadians(45))
                 ;
 
         TrajectoryActionBuilder secondSampleAccommodate = secondSamplePut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-53.5, -53.5), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(-70, -54), Math.toRadians(45))
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenPick = secondSampleAccommodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(53, -38), Math.toRadians(270))
-                .waitSeconds(0.2)
-                .strafeToLinearHeading(new Vector2d(53, -45), Math.toRadians(270))
+        TrajectoryActionBuilder thirdSamplePick = secondSampleAccommodate.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-91, -30.5), Math.toRadians(95))
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick.endTrajectory().fresh()
-                .setReversed(true)
-                .setTangent(Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(-12, -47), Math.toRadians(270))
-                .strafeToLinearHeading(new Vector2d(-12, -26.5), Math.toRadians(270))
+        TrajectoryActionBuilder thirdSamplePut = thirdSamplePick.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-69, -58), Math.toRadians(50))
 
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenAccommodate = thirdSpecimenPut .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-12, -28), Math.toRadians(270))
+        TrajectoryActionBuilder thirdSampleAccommodate = thirdSamplePut .endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-71, -60), Math.toRadians(50))
                 ;
 
-        TrajectoryActionBuilder park = thirdSpecimenAccommodate .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(25, -55), 0)
+        TrajectoryActionBuilder park = thirdSampleAccommodate .endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-75, 10), Math.toRadians(15))
                 ;
 
 
@@ -84,7 +77,7 @@ public class AutonomoSamples extends LinearOpMode {
                 claw.pick(),
                 new SleepAction(0.8),
                 arm.armInit(),
-                new SleepAction(1.2),
+                new SleepAction(0.8),
                 climbServos.servosInit(),
                 wrist.wristInit()
                 ));
@@ -98,74 +91,90 @@ public class AutonomoSamples extends LinearOpMode {
         Actions.runBlocking(new ParallelAction(arm.armInPos(),
                         new SequentialAction(
                                 arm.armUp(),
+                                new SleepAction(0.1),
                                 new ParallelAction(
-                                firstSpecimenPut.build(),
+                                firstSamplePut.build(),
                                         climbServos.servosUp(),
-                                        wrist.wristSpecimen()
+                                        wrist.wristUp(),
+                                        arm.rodeUp()
 
                                         ),
-                new SleepAction(0.3),
-                arm.rodeSpecimen(),
-                new SleepAction(0.6),
-                firstSpecimenAccommodate.build(),
+                firstSampleAccommodate.build(),
+                new SleepAction(0.1),
                 claw.drop(),
-                new SleepAction(0.2),
-                wrist.wristMedium(),
+                new SleepAction(0.6),
+                wrist.wristDownM(),
                 new SleepAction(0.3),
                 arm.rodeDown(),
-                new SleepAction(0.8),
-                arm.armDown(),
+                new SleepAction(0.6),
+                new ParallelAction(
+                        arm.armDown(),
+                        secondSamplePick.build()
+                        ),
                 //FIRST_PUT
 
-                secondSamplePick.build(),
-                                new SleepAction(0.3),
+                                new SleepAction(0.1),
                 wrist.wristDown(),
                                 new SleepAction(0.3),
 
                                 claw.pick(),
                                 new SleepAction(0.3),
+                                new ParallelAction(
                                 wrist.wristUp(),
-                                arm.armUp(),
+                                arm.armUp()
+                                ),
                                 new SleepAction(0.3),
+
                                 new ParallelAction(
                                 secondSamplePut.build(),
-                arm.rodeUp()),
-                new SleepAction(0.6),
+                                arm.rodeUp()),
+
+                new SleepAction(0.1),
                 secondSampleAccommodate.build(),
-                claw.drop(),
-                new SleepAction(0.2),
-                wrist.wristMedium(),
+                                new SleepAction(0.1),
+                                claw.drop(),
+                new SleepAction(0.6),
+                wrist.wristDownM(),
                 new SleepAction(0.3),
                 arm.rodeDown(),
                 new SleepAction(0.8),
-                arm.armDown()
-                                /*
+                arm.armDown(),
+
 
                                 /////SECOND_PUT
+                                thirdSamplePick.build(),
 
-                                thirdSpecimenPick.build(),
-                                new SleepAction(0.3),
-                                claw.pick(),
-                                new SleepAction(0.3),
-                                wrist.wristSpecimen(),
+                new SleepAction(0.1),
+                wrist.wristDown(),
+                new SleepAction(0.3),
+
+                claw.pick(),
+                new SleepAction(0.3),
+                new ParallelAction(
+                        wrist.wristUp(),
+                        arm.armUp()
+                ),
+                new SleepAction(0.3),
+
+                new ParallelAction(
+                        thirdSamplePut.build(),
+                        arm.rodeUp()),
+
+                new SleepAction(0.3),
+                thirdSampleAccommodate.build(),
+                new SleepAction(0.1),
+                claw.drop(),
+                new SleepAction(0.6),
+                wrist.wristDown(),
+                new SleepAction(0.3),
+                arm.rodeDown(),
+                new SleepAction(0.6),
+                wrist.wristDisabled(),
+                arm.armDown(),
                                 new SleepAction(0.4),
-                                arm.armSpecimen(),
-                                thirdSpecimenPut.build(),
-                                new SleepAction(0.3),
-                                arm.rodeSpecimen(),
-                                new SleepAction(0.6),
-                                thirdSpecimenAccommodate.build(),
-                                claw.drop(),
-                                new SleepAction(0.2),
-                                wrist.wristMedium(),
-                                new SleepAction(0.3),
-                                arm.rodeDown(),
-                                new SleepAction(0.8),
-                                arm.armDown(),
-                                park.build(),
-                arm.rodeSpecimen()
+                                park.build()
 
-                                */
+
 
 
                         )));

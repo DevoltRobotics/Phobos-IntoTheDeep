@@ -35,7 +35,7 @@ public class Wrist {
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            wrist.setPosition(etesito.Specimen_wrist);
+            wrist.setPosition(etesito.Specimen_wristAutonomous);
             return false;
         }
     }
@@ -101,6 +101,22 @@ public class Wrist {
 
     public Action wristInit(){
         return new WristInit();
+
+    }
+
+    public class WristDisabled implements Action  {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+            wrist.getController().pwmDisable();
+            return false;
+        }
+    }
+
+    public Action wristDisabled(){
+        return new WristDisabled();
+
 
     }
 

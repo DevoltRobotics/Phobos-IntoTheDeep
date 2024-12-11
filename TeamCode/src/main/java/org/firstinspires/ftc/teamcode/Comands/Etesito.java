@@ -41,10 +41,11 @@ public class Etesito {
 
     public double Init_wrist = 0.8;
     public double Down_wrist = 0.6;
-    public double Down_M_wrist = 0.5;
+    public double Down_M_wrist = 0.45;
     public double Medium_wrist = 0.3;
     public double Up_wrist = 0.2;
-    public double Specimen_wrist = 0.03;
+    public double Specimen_wristTeleop = 0.05;
+    public double Specimen_wristAutonomous = 0.02;
     public double Climb_Wrist = 0;
 
     public double down_ArmPos = 0;
@@ -117,7 +118,7 @@ public class Etesito {
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
         imu.initialize(parameters);
 
         FL = hardwareMap.get(DcMotorEx.class, "fl");
@@ -130,8 +131,8 @@ public class Etesito {
         BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        BR.setDirection(DcMotorSimple.Direction.REVERSE);
-        FR.setDirection(DcMotorSimple.Direction.REVERSE);
+        BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
 
@@ -170,7 +171,7 @@ public class Etesito {
     }
 
     public void wrist_Specimen(){
-        wrist.setPosition(Specimen_wrist);
+        wrist.setPosition(Specimen_wristTeleop);
 
     }
 

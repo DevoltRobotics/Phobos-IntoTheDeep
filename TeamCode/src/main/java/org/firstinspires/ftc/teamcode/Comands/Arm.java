@@ -49,10 +49,6 @@ public class Arm {
 
     }
 
-    public void updateRode() {
-        rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
-    }
-
     public class ArmUp implements Action {
         // checks if the lift motor has been powered on
 
@@ -60,7 +56,7 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            armController.targetPosition = etesito.highArmpos;
+            armController.targetPosition = etesito.highArmpos - 50;
             return false;
         }
     }
@@ -176,6 +172,30 @@ public class Arm {
 
     public Action rodeSpecimen() {
         return new RodeSpecimen();
+
+    }
+
+    public class RodeLow implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            rodeController.targetPosition = -500;
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+
+            if (rodeController.getPositionError(rodeMotor.getCurrentPosition()) > -100){
+                return true;
+            } else {
+                rodeController.targetPosition = -450;
+                return false;
+
+            }
+
+        }
+    }
+
+    public Action rodeLow() {
+        return new RodeLow();
 
     }
 
