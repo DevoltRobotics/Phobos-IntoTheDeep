@@ -117,7 +117,7 @@ public class ET extends OpMode {
 
     @Override
     public void init() {
-        etesito.init(hardwareMap);
+        etesito.initSpecimen(hardwareMap);
 
         etesito.imu.resetYaw();
 
@@ -131,9 +131,6 @@ public class ET extends OpMode {
                 FtcDashboard.getInstance().getTelemetry()
         );
 
-
-
-
         telemetry.addLine("Robot Initialized.");
         telemetry.update();
 
@@ -145,9 +142,6 @@ public class ET extends OpMode {
         alternar_Garra1 = true;
 
         voltageIndicatorBoolean = false;
-
-        etesito.servoC1.setPosition(0.7);
-        etesito.servoC2.setPosition(0.3);
 
         escalandoAutomatizado = false;
         colgandoAutomatizado = false;
@@ -161,7 +155,6 @@ public class ET extends OpMode {
         restartVoltage = false;
 
         noForzarServos = false;
-
 
     }
 
@@ -343,13 +336,10 @@ public class ET extends OpMode {
 
             telemetry.addLine("colgando_desactivado");
 
-            if(timerColor.seconds() > 0.2) {
-                etesito.getColors();
+            if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper){
+                etesito.servos_Uping();
 
-                timerColor.reset();
             }
-
-            etesito.colorTelemetry(telemetry);
 
             rodecontroller.targetPosition += (gamepad2.right_stick_y * 28);
             armcontroller.targetPosition += (gamepad2.left_stick_y * 30);
@@ -704,7 +694,6 @@ public class ET extends OpMode {
             etesito.BL.setPower(backLeftPower);
             etesito.FR.setPower(frontRightPower);
             etesito.BR.setPower(backRightPower);
-
 
         }
 

@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Comands.Claw;
 import org.firstinspires.ftc.teamcode.Comands.ClimbServos;
 import org.firstinspires.ftc.teamcode.Comands.Wrist;
 import org.firstinspires.ftc.teamcode.RR.MecanumDrive;
+import org.opencv.core.Mat;
 
 
 @Autonomous
@@ -25,7 +26,7 @@ public class AutonomoSamples extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
 
-        Pose2d initialPose = new Pose2d(-40, -60, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(-38, -60, Math.toRadians(90));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -34,29 +35,33 @@ public class AutonomoSamples extends LinearOpMode {
         Wrist wrist = new Wrist(hardwareMap);
         ClimbServos climbServos = new ClimbServos(hardwareMap);
 
-        TrajectoryActionBuilder firstSamplePut = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(-64, -50), Math.toRadians(40))
+        TrajectoryActionBuilder firstSamplePut1 = drive.actionBuilder(initialPose)
+                .strafeToLinearHeading(new Vector2d(-38, -48), Math.toRadians(90))
                 ;
 
-        TrajectoryActionBuilder firstSampleAccommodate = firstSamplePut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-66, -52), Math.toRadians(40))
+        TrajectoryActionBuilder firstSamplePut2 = firstSamplePut1.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-64, -48), Math.toRadians(40))
+                ;
+
+        TrajectoryActionBuilder firstSampleAccommodate = firstSamplePut2.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-66, -50), Math.toRadians(40))
                 ;
 
         TrajectoryActionBuilder secondSamplePick = firstSampleAccommodate.endTrajectory().fresh()
 
-                .strafeToLinearHeading(new Vector2d(-71, -27.5), Math.toRadians(95))
+                .strafeToLinearHeading(new Vector2d(-70, -27), Math.toRadians(95))
                 ;
 
         TrajectoryActionBuilder secondSamplePut = secondSamplePick.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-67.5, -52), Math.toRadians(45))
+                .strafeToLinearHeading(new Vector2d(-67.5, -52), Math.toRadians(50))
                 ;
 
         TrajectoryActionBuilder secondSampleAccommodate = secondSamplePut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-70, -54), Math.toRadians(45))
+                .strafeToLinearHeading(new Vector2d(-70, -54), Math.toRadians(50))
                 ;
 
         TrajectoryActionBuilder thirdSamplePick = secondSampleAccommodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-91, -30.5), Math.toRadians(95))
+                .strafeToLinearHeading(new Vector2d(-93, -30.5), Math.toRadians(95))
                 ;
 
         TrajectoryActionBuilder thirdSamplePut = thirdSamplePick.endTrajectory().fresh()
@@ -68,14 +73,15 @@ public class AutonomoSamples extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-71, -60), Math.toRadians(50))
                 ;
 
-        TrajectoryActionBuilder park = thirdSampleAccommodate .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-75, 10), Math.toRadians(15))
+        TrajectoryActionBuilder park = thirdSampleAccommodate.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(-67, -10), Math.toRadians(295))
                 ;
 
 
         Actions.runBlocking(new SequentialAction(
                 claw.pick(),
-                new SleepAction(0.8),
+                new SleepAction(0.5),
+                wrist.wristMedium(),
                 arm.armInit(),
                 new SleepAction(0.8),
                 climbServos.servosInit(),
@@ -90,10 +96,11 @@ public class AutonomoSamples extends LinearOpMode {
 
         Actions.runBlocking(new ParallelAction(arm.armInPos(),
                         new SequentialAction(
+                                firstSamplePut1.build(),
                                 arm.armUp(),
                                 new SleepAction(0.1),
                                 new ParallelAction(
-                                firstSamplePut.build(),
+                                firstSamplePut2.build(),
                                         climbServos.servosUp(),
                                         wrist.wristUp(),
                                         arm.rodeUp()

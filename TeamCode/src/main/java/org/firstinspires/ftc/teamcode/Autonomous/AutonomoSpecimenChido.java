@@ -26,7 +26,9 @@ public class AutonomoSpecimenChido extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
 
-        Pose2d initialPose = new Pose2d(10, -60, 0);
+        //Pose2d initialPose = new Pose2d(10, -60, 0);
+
+        Pose2d initialPose = new Pose2d(15, -60, 0);
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
 
@@ -36,11 +38,11 @@ public class AutonomoSpecimenChido extends LinearOpMode {
         ClimbServos climbServos = new ClimbServos(hardwareMap);
 
         TrajectoryActionBuilder firstSpecimenPut = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(15, -25), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(15, -24.5), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder firstSpecimenAccommodate = firstSpecimenPut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(15, -30), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(15, -28), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenMove = firstSpecimenAccommodate.endTrajectory().fresh()
@@ -49,16 +51,15 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(45, 26), 0)
                 .setTangent(Math.toRadians(320))
                 .splineToLinearHeading(new Pose2d(47, -32, 0), Math.toRadians(270))
-
                 ;
 
         TrajectoryActionBuilder secondSpecimenPick1 = secondSpecimenMove.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(35, -21), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(37, -21), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenPick2 = secondSpecimenPick1.endTrajectory().fresh()
                 .waitSeconds(0.2)
-                .strafeToLinearHeading(new Vector2d(35, -32), Math.toRadians(270))
+                .strafeToLinearHeading(new Vector2d(37, -33), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick2.endTrajectory().fresh()
@@ -88,10 +89,6 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-55, -8), Math.toRadians(270))
                 ;
 
-        TrajectoryActionBuilder park = thirdSpecimenAccommodate .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(10, -30), 0)
-                ;
-
 
         Actions.runBlocking(new SequentialAction(
                 claw.pick(),
@@ -113,6 +110,7 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                 arm.armSpecimen(),
                                 new ParallelAction(
                                 firstSpecimenPut.build(),
+                                        arm.rodeCompens(),
                                         climbServos.servosUp(),
                                         wrist.wristSpecimen()
 
@@ -145,7 +143,8 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                 wrist.wristSpecimen(),
                                 arm.armSpecimen(),
                                 new ParallelAction(
-                                        secondSpecimenPut.build()
+                                        secondSpecimenPut.build(),
+                                        arm.rodeCompens()
                                         ),
                                 new SleepAction(0.2),
                                 arm.rodeSpecimen(),
@@ -173,7 +172,9 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                 arm.armSpecimen(),
 
                                 new ParallelAction(
-                                        thirdSpecimenPut.build()
+                                        thirdSpecimenPut.build(),
+                                        arm.rodeCompens()
+
 
                                         ),
                                 new SleepAction(0.3),

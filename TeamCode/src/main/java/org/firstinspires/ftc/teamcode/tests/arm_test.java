@@ -37,7 +37,7 @@ public class arm_test extends OpMode {
     @Override
     public void init() {
 
-        etesito.init(hardwareMap);
+        etesito.initSpecimen(hardwareMap);
 
         armcontroller.reset();
         rodecontroller.reset();

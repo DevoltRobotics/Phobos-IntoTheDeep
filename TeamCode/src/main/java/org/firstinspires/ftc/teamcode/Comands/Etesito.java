@@ -45,7 +45,7 @@ public class Etesito {
     public double Medium_wrist = 0.3;
     public double Up_wrist = 0.2;
     public double Specimen_wristTeleop = 0.05;
-    public double Specimen_wristAutonomous = 0.02;
+    public double Specimen_wristAutonomous = 0.05;
     public double Climb_Wrist = 0;
 
     public double down_ArmPos = 0;
@@ -81,7 +81,7 @@ public class Etesito {
     private AprilTagProcessor aprilTag;
     public Localizer localizer;
 
-    public void init(HardwareMap hardwareMap) {
+    public void initSpecimen(HardwareMap hardwareMap) {
 
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -132,6 +132,61 @@ public class Etesito {
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
+
+    }
+
+    public void initSample(HardwareMap hardwareMap) {
+
+        armMotor = hardwareMap.get(DcMotorEx.class, "arm");
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
+
+        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        claw = hardwareMap.servo.get("cw");
+        wrist = hardwareMap.servo.get("wr");
+
+        color = hardwareMap.get(RevColorSensorV3.class, "color");
+
+        cR = hardwareMap.get(DcMotorEx.class, "mc1");
+        cL = hardwareMap.get(DcMotorEx.class, "mc2");
+        cR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        cL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        cL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        cL.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        servoC1 = hardwareMap.get(Servo.class,"sc1");
+        servoC2 = hardwareMap.get(Servo.class,"sc2");
+
+        imu = hardwareMap.get(IMU.class, "imu");
+
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
+        imu.initialize(parameters);
+
+        FL = hardwareMap.get(DcMotorEx.class, "fl");
+        BL = hardwareMap.get(DcMotorEx.class, "bl");
+        BR = hardwareMap.get(DcMotorEx.class, "br");
+        FR = hardwareMap.get(DcMotorEx.class, "fr");
+
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        BR.setDirection(DcMotorSimple.Direction.REVERSE);
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
@@ -220,7 +275,6 @@ public class Etesito {
         blue = color.blue();
 
         Color.RGBToHSV((int) (red * SCALE_FACTOR), (int) (green * SCALE_FACTOR), (int) (blue * SCALE_FACTOR), hsv);
-
     }
 
     public void colorTelemetry(Telemetry telemetry){
@@ -230,8 +284,5 @@ public class Etesito {
         telemetry.addData("Hue", hsv[0]);
 
     }
-
-
-
 
 }
