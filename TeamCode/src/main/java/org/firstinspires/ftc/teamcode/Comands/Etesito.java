@@ -36,6 +36,8 @@ public class Etesito {
 
     public RevColorSensorV3 color;
 
+    public boolean wristIsMedium;
+
     public double Pos_close = 0.6;
     public double Pos_open = 1;
 
@@ -134,88 +136,36 @@ public class Etesito {
         BL.setDirection(DcMotorSimple.Direction.REVERSE);
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
-    }
-
-    public void initSample(HardwareMap hardwareMap) {
-
-        armMotor = hardwareMap.get(DcMotorEx.class, "arm");
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
-
-        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        claw = hardwareMap.servo.get("cw");
-        wrist = hardwareMap.servo.get("wr");
-
-        color = hardwareMap.get(RevColorSensorV3.class, "color");
-
-        cR = hardwareMap.get(DcMotorEx.class, "mc1");
-        cL = hardwareMap.get(DcMotorEx.class, "mc2");
-        cR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        cL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        cL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        cL.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        servoC1 = hardwareMap.get(Servo.class,"sc1");
-        servoC2 = hardwareMap.get(Servo.class,"sc2");
-
-        imu = hardwareMap.get(IMU.class, "imu");
-
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
-        imu.initialize(parameters);
-
-        FL = hardwareMap.get(DcMotorEx.class, "fl");
-        BL = hardwareMap.get(DcMotorEx.class, "bl");
-        BR = hardwareMap.get(DcMotorEx.class, "br");
-        FR = hardwareMap.get(DcMotorEx.class, "fr");
-
-        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        BR.setDirection(DcMotorSimple.Direction.REVERSE);
-        FL.setDirection(DcMotorSimple.Direction.REVERSE);
+        wristIsMedium = true;
 
     }
-
 
     public void pick(){
         claw.setPosition(Pos_close);
-
 
     }
 
     public void open(){
         claw.setPosition(Pos_open);
 
-
     }
 
     public void wrist_down(){
         wrist.setPosition(Down_wrist);
+        wristIsMedium = false;
 
     }
 
-    public void wrist_Down_M(){
+    public void wrist_Down_M() {
         wrist.setPosition(Down_M_wrist);
+        wristIsMedium = false;
 
     }
 
     public void wrist_Medium(){
         wrist.setPosition(Medium_wrist);
+
+        wristIsMedium = true;
 
     }
 
@@ -223,15 +173,20 @@ public class Etesito {
     public void wrist_up(){
         wrist.setPosition(Up_wrist);
 
+        wristIsMedium = false;
+
     }
 
     public void wrist_Specimen(){
         wrist.setPosition(Specimen_wristTeleop);
+        wristIsMedium = false;
+
 
     }
 
     public void wrist_Climb(){
         wrist.setPosition(Climb_Wrist);
+        wristIsMedium = false;
 
     }
 

@@ -35,10 +35,7 @@ public class ET extends OpMode {
     double armMin = Double.MIN_VALUE;
     double armMax = Double.MAX_VALUE;
 
-    public double red;
-    public double green;
-    public double blue;
-    public double alpha;
+    boolean extended2 = false;
 
     private double powerArm;
 
@@ -86,9 +83,6 @@ public class ET extends OpMode {
 
     private ElapsedTime colgandoAutomatizadoTimer = new ElapsedTime();
     private boolean colgandoAutomatizado = false;
-
-    private ElapsedTime bajarBrazoEscalandoTimer = new ElapsedTime();
-    private boolean bajarBrazoEscalando = false;
 
     private ElapsedTime noForzarServosTimer = new ElapsedTime();
     private boolean noForzarServos = false;
@@ -163,8 +157,14 @@ public class ET extends OpMode {
     @Override
     public void loop() {
 
-
         colgando = gamepad1.left_trigger > 0.3;
+
+        extended2 = rodecontroller.targetPosition < etesito.lowBasketRodePos - 50;
+
+        if (extended2 && etesito.wristIsMedium){
+            etesito.wrist_Down_M();
+
+        }
 
         /*if (gamepad1.left_trigger > 0.5 && timerEstablecercolgar.seconds() > 0.2) {
             colgando = !colgando;
@@ -172,18 +172,12 @@ public class ET extends OpMode {
 
         }*/
 
+
         rodecontroller.targetPosition = Range.clip(rodecontroller.targetPosition, rodeMin, rodeMax);
         etesito.rodeMotor.setPower(rodecontroller.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
 
         etesito.armMotor.setPower(-armcontroller.update(etesito.armMotor.getCurrentPosition()) * powerArm);
 
-        if (gamepad2.right_stick_button){
-            rodecontroller.reset();
-
-        } else if (gamepad2.left_stick_button) {
-            armcontroller.reset();
-
-        }
         //etesito.getColor();
 
         if (colgando) {
@@ -341,8 +335,8 @@ public class ET extends OpMode {
 
             }
 
-            rodecontroller.targetPosition += (gamepad2.right_stick_y * 28);
             armcontroller.targetPosition += (gamepad2.left_stick_y * 30);
+            rodecontroller.targetPosition += (gamepad2.right_stick_y * 28);
 
             boolean extended = !(rodecontroller.targetPosition >= -150);
 
@@ -429,12 +423,18 @@ public class ET extends OpMode {
                 rodeMax = 50;
                 rodeMin = etesito.lowBasketRodePos - 200;
 
-            } else if (arm_Dowm){
+            } else if (arm_Dowm && etesito.wristIsMedium){
                 rdT = etesito.downRodePos;
                 rodeMax = 50;
-                rodeMin = etesito.downRodePos - 500;
+                rodeMin = etesito.downRodePos - 50;
 
-            } else if (arm_UpSpecimen) {
+            } else if (arm_Dowm && !etesito.wristIsMedium){
+                rdT = etesito.downRodePos;
+                rodeMax = 50;
+                rodeMin = etesito.downRodePos - 200;
+
+            }
+            else if (arm_UpSpecimen) {
                 rdT = etesito.specimenRodePos;
                 rodeMax = 50;
                 rodeMin = etesito.specimenRodePos - 100;
@@ -466,7 +466,7 @@ public class ET extends OpMode {
                 etesito.wrist_Down_M();
                 bajarBrazoCanasta = false;
 
-            } else if (gamepad2.dpad_left && arm_Dowm) {
+            } else if (gamepad2.dpad_left && arm_Dowm  && !extended2) {
                 etesito.wrist_Medium();
                 bajarBrazoCanasta = false;
 
@@ -599,7 +599,7 @@ public class ET extends OpMode {
 
         }
 
-        armMax = 50;
+        armMax = 4000;
         armMin = etesito.highArmpos - 50;
 
         armcontroller.targetPosition = Range.clip(armT, armMin, armMax);
@@ -610,14 +610,19 @@ public class ET extends OpMode {
 
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 
-        telemetry.addData("voltage", etesito.cL.getCurrent(CurrentUnit.AMPS));
+
+        telemetry.addData("rodePos", etesito.rodeMotor.getCurrentPosition());
+        telemetry.addData("rodeTargetPos", rodecontroller.targetPosition);
+
+        /*telemetry.addData("voltage", etesito.cL.getCurrent(CurrentUnit.AMPS));
+              telemetry.addData("rodepower", etesito.rodeMotor.getPower());
 
         telemetry.addData("armpower", etesito.armMotor.getPower());
         telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
         telemetry.addData("armTargetPos", armcontroller.targetPosition);
 
 
-        /*telemetry.addData("climbPower1", etesito.cR.getPower());
+        telemetry.addData("climbPower1", etesito.cR.getPower());
         telemetry.addData("climbPos1", etesito.cR.getCurrentPosition());
         telemetry.addData("climbTargetPos1", climbControllerRight.targetPosition);
 

@@ -15,11 +15,10 @@ import org.firstinspires.ftc.teamcode.Comands.Claw;
 import org.firstinspires.ftc.teamcode.Comands.ClimbServos;
 import org.firstinspires.ftc.teamcode.Comands.Wrist;
 import org.firstinspires.ftc.teamcode.RR.MecanumDrive;
-import org.opencv.core.Mat;
 
 
 @Autonomous
-public class AutonomoSpecimenChido extends LinearOpMode {
+public class SpecimenDEIMOS extends LinearOpMode {
 
     boolean initialized = false;
 
@@ -70,26 +69,6 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-20, -20), Math.toRadians(268))
                 ;
 
-        TrajectoryActionBuilder thirdSpecimenPick1 = secondSpecimenAccomodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(48, -36), Math.toRadians(268))
-                ;
-
-        TrajectoryActionBuilder thirdSpecimenPick2 = thirdSpecimenPick1.endTrajectory().fresh()
-                .waitSeconds(0.2)
-                .strafeToLinearHeading(new Vector2d(48, -43), Math.toRadians(268))
-                ;
-
-        TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick2.endTrajectory().fresh()
-
-                .strafeToLinearHeading(new Vector2d(-32, -24), Math.toRadians(268))
-
-                ;
-
-        TrajectoryActionBuilder thirdSpecimenAccommodate = thirdSpecimenPut .endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-32, -28), Math.toRadians(268))
-                ;
-
-
         Actions.runBlocking(new SequentialAction(
                 claw.pick(),
                 new SleepAction(0.8),
@@ -107,6 +86,7 @@ public class AutonomoSpecimenChido extends LinearOpMode {
 
         Actions.runBlocking(new ParallelAction(arm.armInPos(),
                         new SequentialAction(
+                                new SleepAction(6),
                                 arm.armSpecimen(),
                                 new ParallelAction(
                                 firstSpecimenPut.build(),
@@ -136,7 +116,7 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                         wrist.wristMedium()
                                         ),
                                 arm.armDown(),
-                                new SleepAction(0.5),
+                                new SleepAction(4),
                                 secondSpecimenPick2.build(),
                                 claw.pick(),
                                 new SleepAction(0.2),
@@ -158,36 +138,8 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                                 new SleepAction(0.4),
 
                                 //SECOND_PUT
-
-                                new ParallelAction(
                                         arm.armDown(),
-                                        thirdSpecimenPick1.build()
-
-                                        ),
-                                thirdSpecimenPick2.build(),
-                                new SleepAction(0.1),
-                                claw.pick(),
-                                new SleepAction(0.2),
-                                wrist.wristSpecimen(),
-                                arm.armSpecimen(),
-
-                                new ParallelAction(
-                                        thirdSpecimenPut.build(),
-                                        arm.rodeCompens()
-
-
-                                        ),
-                                new SleepAction(0.3),
-                                arm.rodeSpecimen(),
-                                new SleepAction(0.6),
-                                thirdSpecimenAccommodate.build(),
-                                claw.drop(),
-                                new SleepAction(0.2),
-                                wrist.wristMedium(),
-                                new SleepAction(0.3),
-                                arm.rodeDown(),
-                                new SleepAction(0.8),
-                                arm.armDown()
+                                        new SleepAction(0.5)
 
                 /*new ParallelAction(
                         firstSpecimenAccommodate.build(),

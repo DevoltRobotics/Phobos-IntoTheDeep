@@ -16,7 +16,7 @@ public class test_motor extends OpMode {
     @Override
     public void init() {
 
-        arm = hardwareMap.get(DcMotorEx.class, "mc1");
+        arm = hardwareMap.get(DcMotorEx.class, "arm");
 
         servo = hardwareMap.get(Servo.class, "wr");
 

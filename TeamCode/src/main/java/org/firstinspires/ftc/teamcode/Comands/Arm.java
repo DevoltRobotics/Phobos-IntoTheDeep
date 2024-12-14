@@ -156,13 +156,13 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            rodeController.targetPosition = etesito.specimenRodePos - 120;
+            rodeController.targetPosition = etesito.specimenRodePos - 180;
             rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
 
             if (rodeController.getPositionError(rodeMotor.getCurrentPosition()) > -100){
                 return true;
             } else {
-                rodeController.targetPosition = etesito.specimenRodePos - 50;
+                rodeController.targetPosition = etesito.specimenRodePos - 90;
                 return false;
 
             }
@@ -230,12 +230,19 @@ public class Arm {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
-            rodeController.targetPosition = 35;
-            return false;
+            rodeController.targetPosition = -200;
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+
+            if (rodeMotor.getCurrentPosition() > -130) {
+                return true;
+            } else {
+                rodeController.targetPosition = -130;
+                return false;
 
             }
 
         }
+    }
 
 
     public Action rodeCompens() {
