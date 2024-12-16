@@ -26,8 +26,6 @@ public class AutonomoSpecimenChido extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
 
-        //Pose2d initialPose = new Pose2d(10, -60, 0);
-
         Pose2d initialPose = new Pose2d(15, -60, 0);
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
@@ -63,11 +61,11 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-20, -24), Math.toRadians(268))
+                .strafeToLinearHeading(new Vector2d(-28, -27), Math.toRadians(268))
                 ;
 
         TrajectoryActionBuilder secondSpecimenAccomodate = secondSpecimenPut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-20, -20), Math.toRadians(268))
+                .strafeToLinearHeading(new Vector2d(-28, -29), Math.toRadians(268))
                 ;
 
         TrajectoryActionBuilder thirdSpecimenPick1 = secondSpecimenAccomodate.endTrajectory().fresh()
@@ -80,15 +78,12 @@ public class AutonomoSpecimenChido extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick2.endTrajectory().fresh()
-
-                .strafeToLinearHeading(new Vector2d(-32, -24), Math.toRadians(268))
-
+                .strafeToLinearHeading(new Vector2d(-37, -27), Math.toRadians(268))
                 ;
 
         TrajectoryActionBuilder thirdSpecimenAccommodate = thirdSpecimenPut .endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-32, -28), Math.toRadians(268))
                 ;
-
 
         Actions.runBlocking(new SequentialAction(
                 claw.pick(),

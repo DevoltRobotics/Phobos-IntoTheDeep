@@ -40,16 +40,16 @@ public class AutonomoSamples extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder firstSamplePut2 = firstSamplePut1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-64, -48), Math.toRadians(40))
+                .strafeToLinearHeading(new Vector2d(-64, -45), Math.toRadians(40))
                 ;
 
         TrajectoryActionBuilder firstSampleAccommodate = firstSamplePut2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-66, -50), Math.toRadians(40))
+                .strafeToLinearHeading(new Vector2d(-66, -47), Math.toRadians(40))
                 ;
 
         TrajectoryActionBuilder secondSamplePick = firstSampleAccommodate.endTrajectory().fresh()
 
-                .strafeToLinearHeading(new Vector2d(-70, -27), Math.toRadians(95))
+                .strafeToLinearHeading(new Vector2d(-71, -25.5), Math.toRadians(95))
                 ;
 
         TrajectoryActionBuilder secondSamplePut = secondSamplePick.endTrajectory().fresh()
@@ -61,7 +61,7 @@ public class AutonomoSamples extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder thirdSamplePick = secondSampleAccommodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-93, -30.5), Math.toRadians(95))
+                .strafeToLinearHeading(new Vector2d(-98, -29.5), Math.toRadians(95))
                 ;
 
         TrajectoryActionBuilder thirdSamplePut = thirdSamplePick.endTrajectory().fresh()
@@ -74,9 +74,8 @@ public class AutonomoSamples extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder park = thirdSampleAccommodate.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-67, -10), Math.toRadians(295))
+                .strafeToLinearHeading(new Vector2d(-67, -10), Math.toRadians(305))
                 ;
-
 
         Actions.runBlocking(new SequentialAction(
                 claw.pick(),
@@ -116,6 +115,7 @@ public class AutonomoSamples extends LinearOpMode {
                 new SleepAction(0.6),
                 new ParallelAction(
                         arm.armDown(),
+                        wrist.wristMedium(),
                         secondSamplePick.build()
                         ),
                 //FIRST_PUT
@@ -146,6 +146,7 @@ public class AutonomoSamples extends LinearOpMode {
                 arm.rodeDown(),
                 new SleepAction(0.8),
                 arm.armDown(),
+                                wrist.wristMedium(),
 
 
                                 /////SECOND_PUT
