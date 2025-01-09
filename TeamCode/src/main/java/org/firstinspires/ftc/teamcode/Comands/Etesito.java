@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
-import android.graphics.Color;
-
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -13,12 +14,18 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.RR.Localizer;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.openftc.easyopencv.OpenCvCamera;
 
 public class Etesito {
+
+    public PIDFController.PIDCoefficients armCoefficients = new PIDFController.PIDCoefficients(0.0015, 0, 0.0017);
+    public PIDFController.PIDCoefficients rodeCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.007);
+
+    public PIDFController.PIDCoefficients climbCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.0017);
+
+    PIDFController armController = new PIDFController(armCoefficients);
+    PIDFController rodeController = new PIDFController(rodeCoefficients);
+    PIDFController climbControllerRight = new PIDFController(climbCoefficients);
+    PIDFController climbControllerLeft = new PIDFController(climbCoefficients);
 
     public DcMotorEx FL, BL, BR, FR;
 
@@ -32,48 +39,59 @@ public class Etesito {
 
     public Servo claw;
 
+    public CRServo intake;
+
     public Servo wrist;
+
+    public Servo light;
 
     public RevColorSensorV3 color;
 
-    public double Pos_close = 0.6;
-    public double Pos_open = 1;
+    public boolean wristIsMedium;
 
-    public double Down_wrist = 0.6;
-    public double Down_M_wrist = 0.5;
-    public double Medium_wrist = 0.3;
-    public double Up_wrist = 0.2;
-    public double Clim_Wrist = 0;
-
-    public double down_ArmPos = 0;
-    public double lowBasket_Armpos = -1200;
-    public double specimen_ArmPos = -1700;
-    public double high_Armpos = -1900;
-    public double rode_High = -2100;
-    public double rode_specimen = -1800;
-    public double rode_medium = -1400;
-    public double rode_down = -1200;
-
-    float hsv[] = {0.0f, 0.0f, 0.0f};
-    float SCALE_FACTOR = 255;
+    private double ArmTarget = 0;
+    private double RodeTarget = 0;
 
     public int ratio = 8;
 
-    public float red, green, blue;
+    private double powerArm = 0;
 
-    public double scaleFactor = 10;
+    public double Pos_close = 1;
+    public double Pos_open = 0.05;
 
-    public double redTarget = 200;
-    public double greenTarget = 100;
-    public double blueTarget = 100;
-    public double TargetValue = 1000;
+    public double Init_wrist = 0.8;
+    public double Down_wrist = 0.6;
+    public double Down_M_wrist = 0.48;
+    public double Contract_wrist = 0.37;
+    public double Medium_wrist = 0.3;
+    public double Up_wrist = 0.2;
+    public double Specimen_wristTeleop = 0.3;
+    public double Climb_Wrist = 0.5;
+
+    public int downArmPos = 0;
+    public int initArmpos = -950;
+    public int lowBasketArmpos = -1200;
+    public int specimenArmPos = -1900;
+    public int highBasketfrontArmpos = -1550;
+    public int highBasketArmpos = -1900;
+
+    public int highRodePos = -2050;
+    public int specimenRodePos = -1600;
+    public int lowBasketRodePos = -1400;
+    public int downRodePos = -1200;
+    public int climbingRodePos2 = -500;
+    public int climbingRodePos1 = -200;
+    public int specimenDownRodePos = -850;
+
+    public int red, green, blue;
+
+    public int scaleFactor = 10;
+
+    public double redTarget = 400;
+    public double greenTarget = 700;
+    public double blueTarget = 400;
 
     public IMU imu;
-
-    public OpenCvCamera Camera;
-    public VisionPortal visionPortal;
-    private AprilTagProcessor aprilTag;
-    public Localizer localizer;
 
     public void init(HardwareMap hardwareMap) {
 
@@ -88,7 +106,10 @@ public class Etesito {
         rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         claw = hardwareMap.servo.get("cw");
+        intake = hardwareMap.get(CRServo.class, "in");
         wrist = hardwareMap.servo.get("wr");
+
+        light = hardwareMap.get(Servo.class, "rgb");
 
         color = hardwareMap.get(RevColorSensorV3.class, "color");
 
@@ -112,7 +133,7 @@ public class Etesito {
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
         imu.initialize(parameters);
 
         FL = hardwareMap.get(DcMotorEx.class, "fl");
@@ -125,36 +146,72 @@ public class Etesito {
         BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        BR.setDirection(DcMotorSimple.Direction.REVERSE);
-        FR.setDirection(DcMotorSimple.Direction.REVERSE);
+        BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        wristIsMedium = true;
 
     }
 
-
-    public void pick(){
+    public void pickSpecimen(){
         claw.setPosition(Pos_close);
 
+    }
+
+    public void dropSpecimen(){
+        claw.setPosition(Pos_open);
 
     }
 
-    public void open(){
-        claw.setPosition(Pos_open);
+    public void pickSample(){
+        intake.setPower(-1);
 
+    }
+
+    public void pickSampleSlow(){
+        intake.setPower(-0.1);
+
+    }
+
+    public void dropSample(){
+        intake.setPower(1);
+
+    }
+
+    public void intake0(){
+        intake.setPower(0);
 
     }
 
     public void wrist_down(){
         wrist.setPosition(Down_wrist);
+        wristIsMedium = false;
 
     }
 
-    public void wrist_Down_M(){
+    public void wrist_downM(){
         wrist.setPosition(Down_M_wrist);
+        wristIsMedium = false;
+
+    }
+
+    /*public void wrist_Down_M() {
+        wrist.setPosition(Down_M_wrist);
+        wristIsMedium = false;
+
+    }*/
+
+    public void wrist_Contract(){
+        wrist.setPosition(Contract_wrist);
+
+        wristIsMedium = true;
 
     }
 
     public void wrist_Medium(){
         wrist.setPosition(Medium_wrist);
+
+        wristIsMedium = true;
 
     }
 
@@ -162,12 +219,46 @@ public class Etesito {
     public void wrist_up(){
         wrist.setPosition(Up_wrist);
 
+        wristIsMedium = false;
+
+    }
+
+    public void wrist_Specimen(){
+        wrist.setPosition(Specimen_wristTeleop);
+        wristIsMedium = false;
+
+
+    }
+
+    public void wrist_Init(){
+        wrist.setPosition(Init_wrist);
+
+        wristIsMedium = false;
+
     }
 
     public void wrist_Climb(){
-        wrist.setPosition(Clim_Wrist);
+        wrist.setPosition(Climb_Wrist);
+        wristIsMedium = false;
 
     }
+
+    public void wrist_ManualUp(){
+        wrist.setPosition(wrist.getPosition() + 0.03);
+
+    }
+
+    public void wrist_ManualDown(){
+        wrist.setPosition(wrist.getPosition() - 0.03);
+
+    }
+
+    public void wrist_ManualMantener(){
+        wrist.setPosition(wrist.getPosition());
+
+    }
+
+
 
     public void servosOff(){
 
@@ -202,24 +293,156 @@ public class Etesito {
         }
     }
 
-    public void getColors(){
+    public void setLight(String color){
+        switch (color){
+            case "purple": light.setPosition(0.72);
+            break;
+            case "blue": light.setPosition(0.62);
+            break;
+            case "green": light.setPosition(0.5);
+            break;
+            case "yellos": light.setPosition(0.388);
+            break;
+            case "orange": light.setPosition(0.33);
+            break;
+            case "red": light.setPosition(0.28);
+            break;
 
-        red = color.red();
-        green = color.green();
-        blue = color.blue();
+        }
 
-        Color.RGBToHSV((int) (red * SCALE_FACTOR), (int) (green * SCALE_FACTOR), (int) (blue * SCALE_FACTOR), hsv);
+    }
+
+    public void orangeLight(){
+
+        light.setPosition(0.35);
+
+    }
+
+    public void greenLight(){
+
+        light.setPosition(0.5);
+
+    }
+
+    public void blueLight(){
+
+        light.setPosition(0.66);
+
+    }
+
+    public int getColorRed(){
+        red = (color.red() / scaleFactor);
+        return red;
+    }
+    public int getColorGreen(){
+        green = (color.green() / scaleFactor);
+        return green;
+    }
+    public int getColorBlue(){
+        blue = (color.blue() / scaleFactor);
+        return blue;
+    }
+    public boolean isSampleDetected(String color){
+
+        boolean isDetected = false;
+        switch (color){
+            case "any": isDetected = getColorRed() > redTarget || getColorBlue() > blueTarget || getColorGreen() > greenTarget;
+            case "red": isDetected = getColorRed() > redTarget;
+            break;
+            case "blue": isDetected = getColorBlue() > blueTarget;
+            break;
+            case "yellow": isDetected = getColorGreen() > greenTarget;
+            break;
+        }
+
+        return isDetected;
 
     }
 
     public void colorTelemetry(Telemetry telemetry){
-        telemetry.addData("red", red);
-        telemetry.addData("green", green);
-        telemetry.addData("blue", blue);
-        telemetry.addData("Hue", hsv[0]);
+        telemetry.addData("red", getColorRed());
+        telemetry.addData("green", getColorGreen());
+        telemetry.addData("blue", getColorBlue());
+        telemetry.update();
+    }
+
+
+
+    public Action pickSampleAction (){
+        return new CRservoAction(intake, -1);
 
     }
 
+    public Action pickSampleSlowAction (){
+        return new CRservoAction(intake, -0.1);
+
+    }
+
+    public Action dropSampleAction (){
+        return new CRservoAction(intake, 1);
+
+    }
+
+    public Action mantenerSampleAction (){
+        return new CRservoAction(intake, 0);
+
+    }
+
+    public Action servosInit(){
+        return new ParallelAction(
+                new ServoAction(servoC1, 0.5),
+                new ServoAction(servoC2, 0.5)
+
+                );
+    }
+
+    public Action servosClimbing(){
+        return new ParallelAction(
+                new ServoAction(servoC1, 0.7),
+                new ServoAction(servoC2, 0.3)
+
+        );
+    }
+
+    public Action pickSpecimenAction(){
+        return new ServoAction(claw, Pos_close);
+
+    }
+
+    public Action dropSpecimenAction(){
+        return new ServoAction(claw, Pos_open);
+
+    }
+
+    public Action wristInit(){
+        return new ServoAction(wrist, Init_wrist);
+
+    }
+
+    public Action wristDown(){
+        return new ServoAction(wrist, Down_wrist);
+
+    }
+
+    /*public Action wristDownM(){
+        return new ServoAction(wrist, Down_M_wrist);
+
+    }*/
+
+    public Action wristContract(){
+        return new ServoAction(wrist, Contract_wrist);
+
+    }
+
+    public Action wristUp(){
+        return new ServoAction(wrist, Up_wrist);
+
+    }
+
+    public Action wristSpecimen(){
+        return new ServoAction(wrist, Specimen_wristTeleop);
+
+    }
 
 
 

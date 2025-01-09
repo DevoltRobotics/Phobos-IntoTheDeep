@@ -136,8 +136,25 @@ public class PIDFController {
                     error -= Math.copySign(inputRange, error);
                 }
             }
+
             return error;
+
         }
+
+    public double getPositionErrorPositive(double measuredPosition) {
+        double error = targetPosition - measuredPosition;
+        if (inputBounded) {
+            final double inputRange = maxInput - minInput;
+            while (Math.abs(error) > inputRange / 2.0) {
+                error -= Math.copySign(inputRange, error);
+            }
+        }
+
+        double errorPositive = Math.abs(targetPosition) - Math.abs(measuredPosition);
+
+        return errorPositive;
+
+    }
 
         /**
          * Run a single iteration of the controller.

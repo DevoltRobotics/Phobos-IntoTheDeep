@@ -30,14 +30,12 @@ public class servo_test extends OpMode {
     @Override
     public void init() {
 
-        claw = hardwareMap.servo.get("cw");
-        wrist = hardwareMap.servo.get("wr");
-        sc1 = hardwareMap.servo.get("sc1");
-        sc2 = hardwareMap.servo.get("sc2");
+        claw = hardwareMap.servo.get("cw"); // sc1
+        wrist = hardwareMap.servo.get("wr"); //cw
+        sc1 = hardwareMap.servo.get("sc1"); //wrist
+        sc2 = hardwareMap.servo.get("sc2"); //sc2
 
         position = 0;
-
-
 
     }
 
@@ -48,9 +46,11 @@ public class servo_test extends OpMode {
 
         if (gamepad2.a && alternar_Garra && alternar_garraTimer.seconds() > 0.2){
             claw.setPosition(0.3);
+            alternar_Garra = false;
             alternar_garraTimer.reset();
         } else if (gamepad2.a && !alternar_Garra  && alternar_garraTimer.seconds() > 0.2){
             claw.setPosition(0.6);
+            alternar_Garra = true;
             alternar_garraTimer.reset();
         }
 
@@ -83,14 +83,6 @@ public class servo_test extends OpMode {
             alternar_sc2 = true;
             alternar_garraTimer.reset();
         }
-
-        //cw = sc1
-        //wr = cw
-        //sc1 = wr
-        //sc2 = sc2
-
-
-        telemetry.addData( "pos", claw.getPosition());
 
         }
 

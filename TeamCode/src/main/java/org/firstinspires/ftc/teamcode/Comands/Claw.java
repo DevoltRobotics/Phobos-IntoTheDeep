@@ -7,46 +7,45 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import kotlin.text.CharDirectionality;
+
 public class Claw {
-
-    private Servo claw;
-
+    Servo claw;
     Etesito etesito = new Etesito();
 
     public Claw(HardwareMap hardwareMap) {
-
-        claw = hardwareMap.get(Servo.class, "cw");
+        claw = hardwareMap.servo.get("cw");
     }
 
-    public class Pick implements Action {
+
+
+    public class DropSpecimen implements Action {
+        Servo claw;
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-            claw.setPosition(etesito.Pos_close);
-            return false;
-        }
-    }
-
-    public Action pick(){
-        return new Pick();
-
-    }
-
-    public class Drop implements Action {
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
             claw.setPosition(etesito.Pos_open);
             return false;
         }
     }
 
-    public Action drop(){
-        return new Drop();
+    public class PickSpecimen implements Action {
+        Servo claw;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            claw.setPosition(etesito.Pos_close);
+            return false;
+        }
+    }
+
+    public Action dropSpecimen(){
+        return new DropSpecimen();
 
     }
 
+    public Action pickSpecimen(){
+        return new PickSpecimen();
 
+    }
 }

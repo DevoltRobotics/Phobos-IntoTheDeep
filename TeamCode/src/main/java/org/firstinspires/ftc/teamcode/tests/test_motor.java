@@ -16,33 +16,16 @@ public class test_motor extends OpMode {
     @Override
     public void init() {
 
-        arm = hardwareMap.get(DcMotorEx.class, "mc1");
-
-        servo = hardwareMap.get(Servo.class, "wr");
+        arm = hardwareMap.get(DcMotorEx.class, "arm");
 
     }
-
-    /*
-    asd
-
-    wr
-    cw
-
-    */
 
 
     @Override
     public void loop() {
 
-        arm.setPower(gamepad2.right_stick_y);
+        arm.setPower(-gamepad2.right_stick_y);
 
-        if (gamepad2.a){
-
-            servo.setPosition(0.6);
-        } else if (gamepad2.b){
-
-            servo.setPosition(0.5);
-        }
 
     }
 }

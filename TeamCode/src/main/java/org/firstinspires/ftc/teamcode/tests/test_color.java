@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -20,7 +21,6 @@ public class test_color extends OpMode {
     public void init() {
 
         etesito.init(hardwareMap);
-
         telemetry = new MultipleTelemetry(
                 telemetry,
                 FtcDashboard.getInstance().getTelemetry()
@@ -31,18 +31,19 @@ public class test_color extends OpMode {
     @Override
     public void loop() {
 
+        etesito.orangeLight();
+
         if(timer.seconds() > 0.2) {
-            etesito.getColors();
             timer.reset();
         }
 
         etesito.colorTelemetry(telemetry);
 
         if (gamepad2.right_trigger > 0.5){
-            etesito.pick();
+            etesito.pickSpecimen();
 
         } else if (gamepad2.left_trigger > 0.5){
-            etesito.open();
+            etesito.dropSpecimen();
 
         }
 
