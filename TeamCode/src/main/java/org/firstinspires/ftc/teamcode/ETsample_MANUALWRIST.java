@@ -45,8 +45,8 @@ public class ETsample_MANUALWRIST extends OpMode {
     boolean escalando = false;
 
     private final ElapsedTime manualWristTimer = new ElapsedTime();
-    boolean manualWristUp = false;
-    boolean manualWristDown = false;
+
+    private final ElapsedTime automaticlWristTimer = new ElapsedTime();
 
     private final ElapsedTime extendArmHighBasketTimer = new ElapsedTime();
     private boolean extendArmHighBasket = false;
@@ -77,8 +77,6 @@ public class ETsample_MANUALWRIST extends OpMode {
     private boolean colgandoAutomatizado = false;
 
     private final ElapsedTime timerColgar = new ElapsedTime();
-
-    private final ElapsedTime wristAlternateTimer = new ElapsedTime();
 
     boolean manualRight;
     boolean manualLeft;
@@ -118,19 +116,14 @@ public class ETsample_MANUALWRIST extends OpMode {
 
         boolean colgando = gamepad1.left_trigger > 0.3;
 
-        boolean extended2 = rodecontroller.targetPosition < etesito.lowBasketRodePos - 50;
-
-        if (extended2 && etesito.wristIsMedium){
-            etesito.wrist_down();
-
-        }
-
         rodecontroller.targetPosition = Range.clip(rodecontroller.targetPosition, rodeMin, rodeMax);
         etesito.rodeMotor.setPower(rodecontroller.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
 
         etesito.armMotor.setPower(-armcontroller.update(etesito.armMotor.getCurrentPosition()) * powerArm);
 
         if (colgando) {
+
+            etesito.dropSpecimen();
 
             escalando = gamepad1.right_trigger > 0.5;
 
@@ -266,7 +259,6 @@ public class ETsample_MANUALWRIST extends OpMode {
 
             }
 
-
             telemetry.addLine("colgando_desactivado");
 
             escalando = false;
@@ -357,7 +349,7 @@ public class ETsample_MANUALWRIST extends OpMode {
                     break;
 
                 case 2:
-                    rdTarget = etesito.specimenRodePos;
+                    rdTarget = etesito.specimenRodePos - 100;
                     rodeMin = etesito.specimenRodePos - 900;
                     break;
 
@@ -463,6 +455,7 @@ public class ETsample_MANUALWRIST extends OpMode {
 
                 if (armPosition == 1) {
                     lowBasketWrist = true;
+                    lowBasketArm = true;
                     lowBasketWristTimer.reset();
 
                 } else if (armPosition == 3) {
@@ -478,6 +471,9 @@ public class ETsample_MANUALWRIST extends OpMode {
                 lowBasketWrist = false;
                 lowerWristBasket = false;
                 contractArmBasket = false;
+
+                lowBasketArm = false;
+
 
             }
             else if (pickSlow){
@@ -544,7 +540,7 @@ public class ETsample_MANUALWRIST extends OpMode {
             }
 
             if (specimenUpRode && specimenUpArmTimer.seconds() > 0.9){
-                rodecontroller.targetPosition = etesito.specimenDownRodePos - 80;
+                rodecontroller.targetPosition = etesito.specimenDownRodePos - 40;
                 specimenUpRode = false;
 
             }
@@ -582,12 +578,12 @@ public class ETsample_MANUALWRIST extends OpMode {
                 contractArmDown = false;
             }
 
-            if (lowBasketWrist && lowBasketWristTimer.seconds() >= 0.4) {
+            if (lowBasketWrist && lowBasketWristTimer.seconds() >= 0.3) {
                 etesito.wrist_up();
                 lowBasketWrist = false;
             }
 
-            if (lowBasketArm && lowBasketWristTimer.seconds() >= 1) {
+            if (lowBasketArm && lowBasketWristTimer.seconds() >= 0.5) {
                 rodecontroller.targetPosition = 0;
                 lowBasketArm = true;
             }

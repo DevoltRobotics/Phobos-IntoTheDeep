@@ -50,7 +50,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
 
         TrajectoryActionBuilder firstSampleMove1 = firstSpecimenPut.endTrajectory().fresh()
                 .setTangent(Math.toRadians(260))
-                .splineToLinearHeading(new Pose2d(33, -24.5, Math.toRadians(0)), Math.toRadians(70))
+                .splineToLinearHeading(new Pose2d(33, -23.5, Math.toRadians(0)), Math.toRadians(70))
                 ;
 
         TrajectoryActionBuilder firstSampleMove2 = firstSampleMove1.endTrajectory().fresh()
@@ -58,7 +58,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder secondSampleMove1 = firstSampleMove2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(45, -23.8), Math.toRadians(359))
+                .strafeToLinearHeading(new Vector2d(45, -23.5), Math.toRadians(359))
                 ;
 
         TrajectoryActionBuilder secondSampleMove2 = secondSampleMove1.endTrajectory().fresh()
@@ -206,7 +206,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                         etesito.pickSpecimenAction(),
                         new SleepAction(0.35),
                         new ParallelAction(
-                                arm.armSpecimen2(),
+                                arm.armSpecimenSecond(),
                                 etesito.wristSpecimen(),
                                 secondSpecimenPut.build()
                         ),
