@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.AutonomosTorreon;
+package org.firstinspires.ftc.teamcode.AutonomosNacional;
 
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.RR.PinpointDrive;
 
 @Autonomous
-public class AutonomoSpecimenRed extends LinearOpMode {
+public class AutonomoSpecimenPruebas extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d initialPose = new Pose2d(10, -60, 0);
@@ -50,7 +50,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
 
         TrajectoryActionBuilder firstSampleMove1 = firstSpecimenPut.endTrajectory().fresh()
                 .setTangent(Math.toRadians(260))
-                .splineToLinearHeading(new Pose2d(33, -23.5, Math.toRadians(0)), Math.toRadians(70))
+                .splineToLinearHeading(new Pose2d(30, -24, Math.toRadians(356)), Math.toRadians(70))
                 ;
 
         TrajectoryActionBuilder firstSampleMove2 = firstSampleMove1.endTrajectory().fresh()
@@ -58,37 +58,34 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                 ;
 
         TrajectoryActionBuilder secondSampleMove1 = firstSampleMove2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(45, -23.5), Math.toRadians(359))
+                .strafeToLinearHeading(new Vector2d(45, -25), Math.toRadians(357))
                 ;
 
         TrajectoryActionBuilder secondSampleMove2 = secondSampleMove1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(36, -40), Math.toRadians(290))
-
+                .strafeToLinearHeading(new Vector2d(52, -40), Math.toRadians(290))
                 ;
 
-        /*TrajectoryActionBuilder thirdSampleMove1 = secondSampleMove2.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(54, -25), Math.toRadians(0))
-
+        TrajectoryActionBuilder thirdSampleMove1 = secondSampleMove2.endTrajectory().fresh()
+                .strafeToLinearHeading(new Vector2d(55, -25), Math.toRadians(0))
                 ;
 
         TrajectoryActionBuilder thirdSampleMove2 = thirdSampleMove1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(40, -40), Math.toRadians(-60))
+                .strafeToLinearHeading(new Vector2d(35, -40), Math.toRadians(-60))
+                ;
 
-                ;*/
-
-        TrajectoryActionBuilder secondSpecimenPick = secondSampleMove2.endTrajectory().fresh()
+        TrajectoryActionBuilder secondSpecimenPick = thirdSampleMove2.endTrajectory().fresh()
                 .turnTo(Math.toRadians(270))
                 .strafeToLinearHeading(new Vector2d(35.5, -57), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick.endTrajectory().fresh()
-
                 .strafeToLinearHeading(new Vector2d(-5, -28), Math.toRadians(270))
                 ;
 
         TrajectoryActionBuilder thirdSpecimenPick = secondSpecimenPut.endTrajectory().fresh()
-                .setTangent(Math.toRadians(270))
-                .splineToLinearHeading(new Pose2d(33, -57.5, Math.toRadians(270)), Math.toRadians(290))
+                .strafeToLinearHeading(new Vector2d(35.5, -57), Math.toRadians(270))
+                //.setTangent(Math.toRadians(270))
+                //.splineToLinearHeading(new Pose2d(33, -57.5, Math.toRadians(270)), Math.toRadians(290))
 
                 ;
 
@@ -155,6 +152,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                                 arm.rodePickSample1(),
                                 etesito.pickSampleAction()
                         ),
+
                         new SleepAction(0.5),
                         etesito.pickSampleSlowAction(),
                         etesito.wristContract(),
@@ -196,12 +194,41 @@ public class AutonomoSpecimenRed extends LinearOpMode {
 
                         //SECOND_TOHUMAN
 
+        new ParallelAction(
+                etesito.mantenerSampleAction(),
+                etesito.wristDown(),
+                arm.rodeDown()
+        ),
+                new SleepAction(0.1),
+                thirdSampleMove1.build(),
+
+
+                new ParallelAction(
+                        arm.rodePickSample3(),
+                        etesito.pickSampleAction()
+                ),
+                new SleepAction(0.5),
+                etesito.pickSampleSlowAction(),
+                etesito.wristContract(),
+                new SleepAction(0.05),
+                new ParallelAction(
+                        thirdSampleMove2.build(),
+                        arm.rodePutSample3()
+                ),
+
+                etesito.dropSampleAction(),
+                new SleepAction(0.3),
+
+           //   THIRD_TO_HUMAN
+
                                 new ParallelAction(
                                         etesito.mantenerSampleAction(),
                                         arm.rodeDown(),
                                         etesito.wristDown(),
                                         secondSpecimenPick.build()
-                                ),
+                                )
+
+                        /*
 
                         etesito.pickSpecimenAction(),
                         new SleepAction(0.35),
@@ -216,7 +243,7 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                 new SleepAction(0.2),
                 etesito.wristDown(),
                 new SleepAction(0.2),
-                arm.rodeDown2(),
+                arm.rodeDown(),
                 new SleepAction(0.35),
 
                         //SECOND_SPECIMENPUT
@@ -241,14 +268,14 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                         new SleepAction(0.2),
                         etesito.wristDown(),
                         new SleepAction(0.2),
-                        arm.rodeDown2(),
+                        arm.rodeDown(),
                         new SleepAction(0.35),
 
                         //THIRDSPECIMENPUT
 
                         new ParallelAction(
                                 etesito.wristDown(),
-                                arm.armDown2(),
+                                arm.armDown(),
                                 fourSpecimenPick.build()
                         ),
 
@@ -266,14 +293,14 @@ public class AutonomoSpecimenRed extends LinearOpMode {
                         new SleepAction(0.2),
                         etesito.wristDown(),
                         new SleepAction(0.2),
-                        arm.rodeDown2(),
+                        arm.rodeDown(),
                         new SleepAction(0.35),
-                        arm.armDownLast()
+                        arm.armDown()
 
 
 
 
-
+*/
 
 
                         ))

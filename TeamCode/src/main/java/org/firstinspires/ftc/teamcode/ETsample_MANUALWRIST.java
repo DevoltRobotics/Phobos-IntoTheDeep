@@ -540,7 +540,7 @@ public class ETsample_MANUALWRIST extends OpMode {
             }
 
             if (specimenUpRode && specimenUpArmTimer.seconds() > 0.9){
-                rodecontroller.targetPosition = etesito.specimenDownRodePos - 40;
+                rodecontroller.targetPosition = etesito.specimenDownRodePos;
                 specimenUpRode = false;
 
             }
