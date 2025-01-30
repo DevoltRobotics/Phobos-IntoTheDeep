@@ -31,55 +31,38 @@ public class test_color extends OpMode {
     @Override
     public void loop() {
 
-        etesito.orangeLight();
-
         if(timer.seconds() > 0.2) {
+            etesito.colorTelemetry(telemetry);
             timer.reset();
         }
 
-        etesito.colorTelemetry(telemetry);
-
-        if (gamepad2.right_trigger > 0.5){
-            etesito.pickSpecimen();
-
-        } else if (gamepad2.left_trigger > 0.5){
-            etesito.dropSpecimen();
+        if (etesito.getColorRed() > etesito.redTarget){
+            etesito.wrist_Contract();
 
         }
 
-        double y = gamepad1.left_stick_y;
-        double x = -gamepad1.left_stick_x;
-        double rx = -gamepad1.right_stick_x;
 
-        double botHeading = etesito.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-        if (gamepad1.left_stick_button) {
-            etesito.imu.resetYaw();
-        }
+        if (gamepad2.left_bumper){
+            etesito.dropSample();
 
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        } else if (gamepad2.right_bumper){
+            etesito.pickSample();
 
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = (rotY + rotX + rx) / denominator;
-        double backLeftPower = (rotY - rotX + rx) / denominator;
-        double frontRightPower = (rotY - rotX - rx) / denominator;
-        double backRightPower = (rotY + rotX - rx) / denominator;
-
-        if (gamepad1.right_trigger > 0.5) {
-            etesito.FL.setPower(frontLeftPower * 0.4);
-            etesito.BL.setPower(backLeftPower * 0.4);
-            etesito.FR.setPower(frontRightPower * 0.4);
-            etesito.BR.setPower(backRightPower * 0.4);
-
-        } else {
-            etesito.FL.setPower(frontLeftPower);
-            etesito.BL.setPower(backLeftPower);
-            etesito.FR.setPower(frontRightPower);
-            etesito.BR.setPower(backRightPower);
-
+        }else{
+            etesito.intake0();
 
         }
+
+        if (gamepad2.dpad_right){
+            etesito.wrist_down();
+
+        } else if (gamepad2.dpad_left) {
+            etesito.wrist_Contract();
+
+        }
+
+
 
 
     }

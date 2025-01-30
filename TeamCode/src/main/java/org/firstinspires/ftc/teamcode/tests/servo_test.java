@@ -44,6 +44,11 @@ public class servo_test extends OpMode {
     @Override
     public void loop() {
 
+        //sc1
+        //wr
+        //sc2
+        //in
+
         if (gamepad2.a && alternar_Garra && alternar_garraTimer.seconds() > 0.2){
             claw.setPosition(0.3);
             alternar_Garra = false;
