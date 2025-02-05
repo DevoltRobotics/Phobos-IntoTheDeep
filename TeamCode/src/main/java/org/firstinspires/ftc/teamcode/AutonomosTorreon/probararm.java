@@ -117,7 +117,7 @@ public class probararm extends LinearOpMode {
         Actions.runBlocking(new ParallelAction(
                 arm.armUpdate(),
                 new SequentialAction(
-                        arm.armSpecimen1()
+                        arm.armSpecimen()
 
 
                         /*,

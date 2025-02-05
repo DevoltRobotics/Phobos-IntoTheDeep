@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.AutonomosTorreon;
+package org.firstinspires.ftc.teamcode.AutonomosNacional;
 
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -8,16 +8,14 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Comands.ArmSubsystem;
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.RR.PinpointDrive;
 
-@Disabled
 @Autonomous
-public class AutonomoSample extends LinearOpMode {
+public class AutonomoSampleNacional extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Pose2d initialPose = new Pose2d(-38, -60, Math.toRadians(90));
@@ -86,8 +84,10 @@ public class AutonomoSample extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(-58, -54), Math.toRadians(45))
                 ;
 
-        TrajectoryActionBuilder park = fourSamplePut.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-47, -22), Math.toRadians(270))
+        TrajectoryActionBuilder fiveSpecimenPick = fourSamplePut.endTrajectory().fresh()
+                .setTangent(Math.toRadians(100))
+                .splineToLinearHeading(new Pose2d(-40, -20, Math.toRadians(0)), Math.toRadians(60))
+
                 ;
 
         waitForStart();
@@ -145,7 +145,7 @@ public class AutonomoSample extends LinearOpMode {
                         etesito.wristDown(),
                         new SleepAction(0.1),
                         arm.rodeDown(),
-                        etesito.mantenerSampleAction(),
+                        etesito.pickSampleSlowAction(),
                         new SleepAction(0.5),
 
                         //SECOND_SAMPLE_PUT
@@ -212,12 +212,20 @@ public class AutonomoSample extends LinearOpMode {
                         etesito.wristDown(),
                         new SleepAction(0.1),
                         arm.rodeDown(),
-                        etesito.mantenerSampleAction(),
+                        etesito.pickSampleSlowAction(),
                         new SleepAction(0.5),
                         new ParallelAction(
-                                park.build(),
+                                fiveSpecimenPick.build(),
                                 arm.armDown()
-                        )
+                        ),
+
+                        arm.rodePickSubmersible(),
+                        new SleepAction(0.5),
+                        etesito.wristDown(),
+                        arm.samplePickRedSM(),
+                        etesito.wristContract(),
+                        new SleepAction(0.2),
+                        arm.rodeDown()
 
 
 

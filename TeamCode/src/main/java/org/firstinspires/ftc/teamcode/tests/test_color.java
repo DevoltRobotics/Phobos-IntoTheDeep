@@ -40,9 +40,6 @@ public class test_color extends OpMode {
             etesito.wrist_Contract();
 
         }
-
-
-
         if (gamepad2.left_bumper){
             etesito.dropSample();
 
