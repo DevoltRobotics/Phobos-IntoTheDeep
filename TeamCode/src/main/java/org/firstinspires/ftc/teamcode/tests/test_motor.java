@@ -24,7 +24,7 @@ public class test_motor extends OpMode {
     @Override
     public void loop() {
 
-        arm.setPower(-gamepad2.right_stick_y);
+        arm.setPower(-gamepad2.left_stick_y * 0.5);
 
 
     }
