@@ -67,13 +67,10 @@ public class ChassisSubsystem {
 
             return timer.seconds() <= timeTarget;
         }
-
     }
 
-
-
     public Action moveChassis() {
-        return new MoveChassis(0.4, 0.15);
+        return new MoveChassis(0.4, 0.2);
 
     }
 
