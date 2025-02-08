@@ -59,6 +59,7 @@ public class AutonomoSampleNM extends LinearOpMode {
         TrajectoryActionBuilder thirdSamplePick1 = secondSamplePut.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-44, -50), Math.toRadians(180))
                 ;
+        //
 
         TrajectoryActionBuilder thirdSamplePick2 = thirdSamplePick1.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-44, -23), Math.toRadians(180))
