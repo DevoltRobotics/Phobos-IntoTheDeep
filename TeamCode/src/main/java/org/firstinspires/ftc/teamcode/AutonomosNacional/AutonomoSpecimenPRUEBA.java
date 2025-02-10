@@ -72,22 +72,22 @@ public class AutonomoSpecimenPRUEBA extends LinearOpMode {
                 .strafeToLinearHeading(new Vector2d(35, -55), Math.toRadians(270));
 
         TrajectoryActionBuilder secondSpecimenPut = secondSpecimenPick1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-5, -23), Math.toRadians(270));
+                .strafeToConstantHeading(new Vector2d(-5, -28))
+                .strafeToLinearHeading(new Vector2d(-5, -23.3), Math.toRadians(270));
 
         TrajectoryActionBuilder thirdSpecimenPick1 = secondSpecimenPut.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(34, -50), Math.toRadians(270));
 
         TrajectoryActionBuilder thirdSpecimenPut = thirdSpecimenPick1.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(0, -23), Math.toRadians(270));
+                .strafeToConstantHeading(new Vector2d(2, -35))
+                .splineToSplineHeading(new Pose2d(2, -22.3, Math.toRadians(270)), Math.toRadians(180));
 
         TrajectoryActionBuilder fourSpecimenPick = thirdSpecimenPut.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(34, -50), Math.toRadians(270));
 
         TrajectoryActionBuilder fourSpecimenPut = fourSpecimenPick.endTrajectory().fresh()
-
                 .setTangent(Math.toRadians(180))
-                .splineToLinearHeading(new Pose2d(7, -25, Math.toRadians(270)), Math.toRadians(90));
-
+                .splineToLinearHeading(new Pose2d(8, -25, Math.toRadians(270)), Math.toRadians(90));
 
 
         TrajectoryActionBuilder park = fourSpecimenPut.endTrajectory().fresh()
@@ -192,7 +192,7 @@ public class AutonomoSpecimenPRUEBA extends LinearOpMode {
                         ),
                         chassis.moveChassis(),
                         etesito.pickSpecimenAction(),
-                        new SleepAction(0.45),
+                        new SleepAction(0.45), // TODO wait time to grab the specimen
                         new ParallelAction(
                                 arm.armSpecimenPrueba2(),
                                 etesito.wristDownM(),
@@ -216,9 +216,10 @@ public class AutonomoSpecimenPRUEBA extends LinearOpMode {
                                 thirdSpecimenPick1.build()
                         ),
                         chassis.moveChassis(),
+                        new SleepAction(0.15), // TODO wait time to grab the specimen
 
                         etesito.pickSpecimenAction(),
-                        new SleepAction(0.45),
+                        new SleepAction(0.45), // TODO wait time to grab the specimen
                         new ParallelAction(
                                 arm.armSpecimenPrueba2(),
                                 etesito.wristDownM(),
@@ -243,8 +244,11 @@ public class AutonomoSpecimenPRUEBA extends LinearOpMode {
                                 fourSpecimenPick.build()
                         ),
                         chassis.moveChassis(),
+
+                        new SleepAction(0.10), // TODO wait time to grab the specimen
+
                         etesito.pickSpecimenAction(),
-                        new SleepAction(0.45),
+                        new SleepAction(0.45), // TODO wait time to grab the specimen
                         new ParallelAction(
                                 arm.armSpecimenPrueba2(),
                                 etesito.wristDownM(),
