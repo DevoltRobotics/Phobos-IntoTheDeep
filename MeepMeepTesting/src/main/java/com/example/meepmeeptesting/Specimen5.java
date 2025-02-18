@@ -1,6 +1,7 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -15,11 +16,12 @@ public class Specimen5 {
                 .setConstraints(65, 65, Math.toRadians(270), Math.toRadians(180), 17)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(10, -62, 0))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-2, -24, Math.toRadians(270)))
 
-                .strafeToLinearHeading(new Vector2d(-10, -34), Math.toRadians(270))
                 .setTangent(Math.toRadians(270))
-                .splineToLinearHeading(new Pose2d(36, -25, Math.toRadians(0)), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(36, -30), Math.toRadians(90))
+                .strafeToConstantHeading(new Vector2d(36, -10))
+
 /*
                 .strafeToLinearHeading(new Vector2d(30, -40), Math.toRadians(40))
                         .turnTo(Math.toRadians(-50))

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -10,17 +12,21 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.Comands.PIDFController;
+import org.firstinspires.ftc.teamcode.RR.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RR.PinpointDrive;
 
-@TeleOp(name = "ETESITO_MANUALARM")
+@TeleOp(name = "ETESITO")
 
-public class ETMANUALARM extends OpMode {
+public class ET_chassisRR extends OpMode {
+
+    MecanumDrive mecanumDrive;
 
     private final Etesito etesito = new Etesito();
 
-    PIDFController armcontroller = new PIDFController(etesito.armCoefficients);
-    PIDFController rodecontroller = new PIDFController(etesito.rodeCoefficients);
-    PIDFController climbControllerRight = new PIDFController(etesito.climbCoefficients);
-    PIDFController climbControllerLeft = new PIDFController(etesito.climbCoefficients);
+    PIDFController armcontroller = new PIDFController(Etesito.armCoefficients);
+    PIDFController rodecontroller = new PIDFController(Etesito.rodeCoefficients);
+    PIDFController climbControllerRight = new PIDFController(Etesito.climbCoefficients);
+    PIDFController climbControllerLeft = new PIDFController(Etesito.climbCoefficients);
 
     double rodeMin = Double.MIN_VALUE;
     double rodeMax = Double.MAX_VALUE;
@@ -28,13 +34,9 @@ public class ETMANUALARM extends OpMode {
     double armMin = Double.MIN_VALUE;
     double armMax = Double.MAX_VALUE;
 
-    Action armDownAction;
-
     private int armPosition = 0;
 
     private double previousArmPosition;
-
-    private boolean pickSlow = true;
 
     private double powerArm;
 
@@ -42,15 +44,9 @@ public class ETMANUALARM extends OpMode {
 
     private double armTarget;
 
-    //private boolean toggleWrist = true;
-
     boolean escalando = false;
 
-    private final ElapsedTime armSmoothTimer = new ElapsedTime();
-
     private final ElapsedTime manualWristTimer = new ElapsedTime();
-
-    private final ElapsedTime automaticlWristTimer = new ElapsedTime();
 
     private final ElapsedTime extendArmHighBasketTimer = new ElapsedTime();
     private boolean extendArmHighBasket = false;
@@ -65,10 +61,10 @@ public class ETMANUALARM extends OpMode {
     private final ElapsedTime specimenUpArmTimer = new ElapsedTime();
     private boolean specimenUpArm = false;
     private boolean specimenUpWrist = false;
-    private boolean specimenUpRode = false;
-    private boolean specimenMoveWristInit = false;
 
     private final ElapsedTime specimenDownTimer = new ElapsedTime();
+    private boolean specimenOpenClaw = false;
+    private boolean specimenArmSemiDown = false;
     private boolean specimenArmDown = false;
     private boolean specimenWristDown = false;
     private boolean specimenRodeDown = false;
@@ -89,6 +85,9 @@ public class ETMANUALARM extends OpMode {
 
     @Override
     public void init() {
+
+        mecanumDrive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
+
         etesito.init(hardwareMap);
 
         rodeMax = 250;
@@ -108,7 +107,7 @@ public class ETMANUALARM extends OpMode {
         telemetry.addLine("Robot Initialized.");
         telemetry.update();
 
-        rdTarget = etesito.downRodePos;
+        rdTarget = Etesito.downRodePos;
         armTarget = 0;
 
     }
@@ -131,11 +130,11 @@ public class ETMANUALARM extends OpMode {
 
             if (escalando) {
                 etesito.setLight("blue");
-                rodecontroller.targetPosition = etesito.climbingRodePos2;
+                rodecontroller.targetPosition = Etesito.climbingRodePos2;
 
             } else {
                 etesito.setLight("green");
-                rodecontroller.targetPosition = etesito.climbingRodePos1;
+                rodecontroller.targetPosition = Etesito.climbingRodePos1;
 
             }
 
@@ -238,12 +237,13 @@ public class ETMANUALARM extends OpMode {
                 rodecontroller.targetPosition = 0;
 
             } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
-                if (escalando) rodecontroller.targetPosition = etesito.climbingRodePos2;
-                else rodecontroller.targetPosition = etesito.climbingRodePos1;
+                if (escalando) rodecontroller.targetPosition = Etesito.climbingRodePos2;
+                else rodecontroller.targetPosition = Etesito.climbingRodePos1;
 
             }
 
-        } else {
+        }
+        else {
 
             boolean manualArm = Math.abs(gamepad2.left_stick_y) > 0.5;
 
@@ -285,11 +285,21 @@ public class ETMANUALARM extends OpMode {
 
             } else if (gamepad2.dpad_up) {
                 rodecontroller.targetPosition = rdTarget;
+
+                if (armPosition == 2) {
+                    specimenArmSemiDown = true;
+                    specimenOpenClaw = true;
+                    specimenWristDown = true;
+                    specimenRodeDown = true;
+                    specimenArmDown = true;
+
+                    specimenDownTimer.reset();
+                }
             }
 
             if (gamepad2.y && !extended) {
                 powerArm = 0.4;
-                armTarget = etesito.highBasketArmpos;
+                armTarget = Etesito.highBasketArmpos;
                 etesito.wrist_up();
 
                 armPosition = 3;
@@ -301,21 +311,19 @@ public class ETMANUALARM extends OpMode {
 
             } else if (gamepad2.x && !extended) {
                 powerArm = 0.4;
-                armTarget = etesito.specimenArmPos;
+                armTarget = Etesito.specimenArmPos;
                 armPosition = 2;
 
                 extendArmHighBasket = false;
 
                 specimenUpWrist = true;
-                specimenUpRode = true;
-                specimenMoveWristInit = true;
                 specimenUpArmTimer.reset();
 
                 telemetry.addLine("ArmSpecimen");
 
             } else if (gamepad2.b && !extended) {
                 powerArm = 0.4;
-                armTarget = etesito.lowBasketArmpos;
+                armTarget = Etesito.lowBasketArmpos;
                 etesito.wrist_Medium();
 
                 armPosition = 1;
@@ -327,14 +335,13 @@ public class ETMANUALARM extends OpMode {
             } else if (gamepad2.a && !extended) {
 
                 if (previousArmPosition == 2) {
-                    etesito.wristDown();
+                    etesito.wristPickSpecimen();
 
                 } else {
                     etesito.wrist_Contract();
 
                 }
                 powerArm = 0.1;
-
                 armTarget = 0;
 
                 armPosition = 0;
@@ -347,28 +354,28 @@ public class ETMANUALARM extends OpMode {
 
             switch (armPosition) {
                 case 3:
-                    rdTarget = etesito.highRodePos;
-                    rodeMin = etesito.highRodePos - 800;
+                    rdTarget = Etesito.highRodePos;
+                    rodeMin = Etesito.highRodePos - 800;
                     break;
 
                 case 2:
-                    rdTarget = etesito.specimenRodePos - 100;
-                    rodeMin = etesito.specimenRodePos - 900;
+                    rdTarget = Etesito.specimenRodePos - 100;
+                    rodeMin = Etesito.specimenRodePos - 900;
                     break;
 
                 case 1:
-                    rdTarget = etesito.lowBasketRodePos;
-                    rodeMin = etesito.lowBasketRodePos - 200;
+                    rdTarget = Etesito.lowBasketRodePos;
+                    rodeMin = Etesito.lowBasketRodePos - 200;
                     break;
 
                 case 0:
-                    rdTarget = etesito.downRodePos;
+                    rdTarget = Etesito.downRodePos;
 
                     if (etesito.wristIsMedium) {
-                        rodeMin = etesito.downRodePos - 150;
+                        rodeMin = Etesito.downRodePos - 150;
 
                     } else {
-                        rodeMin = etesito.downRodePos - 450;
+                        rodeMin = Etesito.downRodePos - 450;
 
                     }
                     break;
@@ -402,6 +409,8 @@ public class ETMANUALARM extends OpMode {
                     case 2:
                         etesito.wrist_Specimen();
                         specimenWristDown = false;
+                        specimenArmSemiDown = false;
+                        specimenOpenClaw = false;
                         specimenRodeDown = false;
                         specimenArmDown = false;
                         break;
@@ -446,14 +455,6 @@ public class ETMANUALARM extends OpMode {
 
             }
 
-            if (gamepad1.dpad_right) {
-                pickSlow = true;
-
-            } else if (gamepad1.dpad_left) {
-                pickSlow = false;
-
-            }
-
             if (gamepad1.left_bumper || gamepad1.b) {
                 etesito.dropSample();
 
@@ -480,11 +481,8 @@ public class ETMANUALARM extends OpMode {
                 lowBasketArm = false;
 
 
-            } else if (pickSlow) {
-                etesito.pickSampleSlow();
-
             } else {
-                etesito.intake0();
+                etesito.pickSampleSlow();
 
             }
 
@@ -494,21 +492,12 @@ public class ETMANUALARM extends OpMode {
 
                 specimenUpArm = false;
                 specimenUpWrist = false;
-                specimenUpRode = false;
-                specimenMoveWristInit = false;
-
-                if (armPosition == 2) {
-
-                    specimenWristDown = true;
-                    specimenRodeDown = true;
-                    specimenArmDown = true;
-
-                    specimenDownTimer.reset();
-                }
 
             } else if (gamepad2.right_bumper && !extended) {
                 etesito.pickSpecimen();
 
+                specimenArmSemiDown = false;
+                specimenOpenClaw = false;
                 specimenWristDown = false;
                 specimenRodeDown = false;
                 specimenArmDown = false;
@@ -516,23 +505,16 @@ public class ETMANUALARM extends OpMode {
                 if (armPosition == 0) {
                     specimenUpArm = true;
                     specimenUpWrist = true;
-                    specimenUpRode = true;
-                    specimenMoveWristInit = true;
                     specimenUpArmTimer.reset();
                 }
             }
 
             if (specimenUpArm && specimenUpArmTimer.seconds() > 0.3) {
-                armTarget = etesito.specimenArmPos;
+                armTarget = Etesito.specimenArmPos;
                 powerArm = 0.4;
                 armPosition = 2;
                 specimenUpArm = false;
 
-            }
-
-            if (specimenMoveWristInit && specimenUpArmTimer.seconds() > 0.4) {
-                etesito.wrist_Init();
-                specimenMoveWristInit = false;
             }
 
             if (specimenUpWrist && specimenUpArmTimer.seconds() > 0.6) {
@@ -541,23 +523,28 @@ public class ETMANUALARM extends OpMode {
 
             }
 
-            if (specimenUpRode && specimenUpArmTimer.seconds() > 0.9) {
-                rodecontroller.targetPosition = etesito.specimenDownRodePos;
-                specimenUpRode = false;
-
+            if (specimenArmSemiDown && specimenDownTimer.seconds() > 0.2) {
+                armTarget = Etesito.postSpecimenArmPos;
+                powerArm = 0.4;
+                specimenArmSemiDown = false;
             }
 
-            if (specimenWristDown && specimenDownTimer.seconds() > 0.2) {
-                etesito.wrist_down();
-                specimenWristDown = false;
+            if (specimenOpenClaw && specimenDownTimer.seconds() > 0.4) {
+                etesito.dropSpecimen();
+                specimenOpenClaw = false;
             }
 
-            if (specimenRodeDown && specimenDownTimer.seconds() > 0.4) {
+            if (specimenRodeDown && specimenDownTimer.seconds() > 0.6) {
                 rodecontroller.targetPosition = 0;
                 specimenRodeDown = false;
             }
 
-            if (specimenArmDown && specimenDownTimer.seconds() > 0.6) {
+            if (specimenWristDown && specimenDownTimer.seconds() > 0.65) {
+                etesito.wristPickSpecimen();
+                specimenWristDown = false;
+            }
+
+            if (specimenArmDown && specimenDownTimer.seconds() > 0.9) {
                 armTarget = 0;
                 powerArm = 0.1;
 
@@ -592,7 +579,7 @@ public class ETMANUALARM extends OpMode {
         }
 
         armMax = 4000;
-        armMin = etesito.highBasketArmpos - 200;
+        armMin = Etesito.highBasketArmpos - 200;
 
         armcontroller.targetPosition = Range.clip(armTarget, armMin, armMax);
 
@@ -604,11 +591,34 @@ public class ETMANUALARM extends OpMode {
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 
         telemetry.addData("rodePos", etesito.rodeMotor.getCurrentPosition());
-        telemetry.addData("rodeTargetPos", rodecontroller.targetPosition);
+        telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
+
+        /////////////////////////////////////////////////////////////////////////////////
+
+
+        mecanumDrive.updatePoseEstimate();
+
+
+
+        Vector2d drive = new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
+        drive = mecanumDrive.pose.heading.inverse().times(drive);
+
+        mecanumDrive.setDrivePowers(new PoseVelocity2d(drive, -gamepad1.right_stick_x));
+
+        if (gamepad1.dpad_up) {
+            mecanumDrive.pose = (new Pose2d(0, 0, 0));
+        }
 
         double y = gamepad1.left_stick_y;
         double x = -gamepad1.left_stick_x;
         double rx = gamepad1.right_stick_x;
+
+        double potenciaChassis;
+
+        boolean slowMode = gamepad1.right_trigger > 0.5;
+
+        if (slowMode) potenciaChassis = 0.4;
+        else potenciaChassis = 1;
 
         double botHeading = etesito.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -618,26 +628,20 @@ public class ETMANUALARM extends OpMode {
 
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
         double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
-
         double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-        double frontLeftPower = (rotY + rotX + rx) / denominator;
-        double backLeftPower = (rotY - rotX + rx) / denominator;
-        double frontRightPower = (rotY - rotX - rx) / denominator;
-        double backRightPower = (rotY + rotX - rx) / denominator;
 
-        if (gamepad1.right_trigger > 0.5) {
-            etesito.FL.setPower(frontLeftPower * 0.4);
-            etesito.BL.setPower(backLeftPower * 0.4);
-            etesito.FR.setPower(frontRightPower * 0.4);
-            etesito.BR.setPower(backRightPower * 0.4);
+        double frontLeftPower = ((rotY + rotX + rx) / denominator) * potenciaChassis;
+        double backLeftPower = ((rotY - rotX + rx) / denominator) * potenciaChassis;
+        double frontRightPower = ((rotY - rotX - rx) / denominator) * potenciaChassis;
+        double backRightPower = ((rotY + rotX - rx) / denominator) * potenciaChassis;
 
-        } else {
-            etesito.FL.setPower(frontLeftPower);
-            etesito.BL.setPower(backLeftPower);
-            etesito.FR.setPower(frontRightPower);
-            etesito.BR.setPower(backRightPower);
+            etesito.setDrivePower(
+                    frontLeftPower,
+                    backLeftPower,
+                    frontRightPower,
+                    backRightPower
+            );
 
-        }
     }
 
 }
