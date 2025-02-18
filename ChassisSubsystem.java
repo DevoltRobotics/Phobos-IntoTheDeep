@@ -15,16 +15,6 @@ public class ChassisSubsystem {
 
     public DcMotorEx FL, BL, BR, FR;
 
-    private int ArmTarget;
-    private int RodeTarget;
-    private double powerArm;
-
-    private int ratio = 8;
-
-    Etesito etesito = new Etesito();
-
-    ElapsedTime timer = new ElapsedTime();
-
     public ChassisSubsystem(HardwareMap hardwareMap) {
         FL = hardwareMap.get(DcMotorEx.class, "fl");
         BL = hardwareMap.get(DcMotorEx.class, "bl");
@@ -40,8 +30,6 @@ public class ChassisSubsystem {
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
     }
-
-
 
     class MoveChassis implements Action {
         double power;
@@ -72,7 +60,7 @@ public class ChassisSubsystem {
     }
 
     public Action moveChassis() {
-        return new MoveChassis(0.4, 0.2);
+        return new MoveChassis(0.4, 0.15);
 
     }
 
