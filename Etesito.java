@@ -44,10 +44,12 @@ public class Etesito {
     public static double initWristPos = 0.8;
     public static double downWristPos = 0.6;
     public static double pickSpecimenWristPos = 0.64;
-    public static double downMWristPos = 0.53;
+    public static double downMWristPos = 0.57;
     public static double specimenWristPos = 0.47;
     public static double contractWristPos = 0.27;
     public static double mediumWristPos = 0.3;
+    public static double firstSpecimenWristPos = 0.47;
+    public static double previousSpecimenWristPos = 0.1;
     public static double basketWristPos = 0;
 
     /*public static double initWristPos = 0.23;
@@ -61,12 +63,15 @@ public class Etesito {
 
     public static int initArmpos = -950;
     public static int lowBasketArmpos = -1200;
+    public static int firstSpecimenArmPos = -900;
     public static int specimenArmPos = -2050;
     public static int postSpecimenArmPos = -1200;
     public static int highBasketArmpos = -1900;
 
     public static int highRodePos = -2050;
     public static int specimenRodePos = -1300;
+    public static int firstSpecimenRodePos = -1500;
+    public static int specimenPreviousRodePos = -900;
     public static int lowBasketRodePos = -1400;
     public static int downRodePos = -1200;
     public static int climbingRodePos2 = -500;
@@ -292,21 +297,25 @@ public class Etesito {
 
     }
 
-    public Action servosInit(){
+    public Action servosInitAction(){
         return new ParallelAction(
                 new ServoAction(sC1, 0.5 + servosInitPos),
                 new ServoAction(sC2, 0.5 - servosInitPos)
         );
     }
 
-    public Action servosClimbing(){
+    public Action servosClimbingAction(){
         return new ParallelAction(
                 new ServoAction(sC1, 0.5 + servosUpingPos),
                 new ServoAction(sC2, 0.5 - servosUpingPos)
         );
     }
 
-    public Action pickSpecimenAction(){
+    public Action lightOrange(){
+        return new ServoAction(light, 0.33);
+    }
+
+    public Action pickSpecimenActionAction(){
         return new ServoAction(claw, closePos);
     }
 
@@ -314,44 +323,41 @@ public class Etesito {
         return new ServoAction(claw, openPos);
     }
 
-    public Action wristInit(){
+    public Action wristInitAction(){
         return new ServoAction(wrist, initWristPos);
     }
 
-    public Action wristDownM(){
+    public Action previousSpecimenWristAction(){
+        return new ServoAction(wrist, previousSpecimenWristPos);
+    }
+
+    public Action wristDownMAction(){
         return new ServoAction(wrist, downMWristPos);
     }
 
-    public Action wristDown(){
+    public Action wristDownAction(){
         return new ServoAction(wrist, downWristPos);
     }
 
-    public Action pickSpecimenWrist(){
+    public Action wristPickSpecimenAction(){
         return new ServoAction(wrist, pickSpecimenWristPos);
     }
 
+    public Action firstSpecimenWristAction(){
+        return new ServoAction(wrist, firstSpecimenWristPos);
+    }
 
-    /*public Action wristDownM(){
-        return new ServoAction(wrist, Down_M_wrist);
-
-    }*/
-
-    public Action wristContract(){
+    public Action wristContractAction(){
         return new ServoAction(wrist, contractWristPos);
     }
 
-    public Action wristBasket(){
+    public Action wristBasketAction(){
         return new ServoAction(wrist, basketWristPos);
     }
 
-    public Action wristSpecimen(){
+    public Action wristSpecimenAction(){
         return new ServoAction(wrist, specimenWristPos);
     }
-
-
-
-
-
 
 
 }
