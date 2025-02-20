@@ -234,6 +234,10 @@ public class ET extends OpMode {
 
         }
         else {
+            if (gamepad2.start){
+                etesito.resetArmEncoder();
+
+            }
 
             boolean manualArm = Math.abs(gamepad2.left_stick_y) > 0.5;
 
@@ -568,7 +572,7 @@ public class ET extends OpMode {
             }
         }
 
-        armMax = 4000;
+        armMax = 20000;
         armMin = Etesito.highBasketArmpos - 200;
 
         armcontroller.targetPosition = Range.clip(armTarget, armMin, armMax);
