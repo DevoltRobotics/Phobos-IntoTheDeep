@@ -16,8 +16,12 @@ public class Specimen5 {
                 .setConstraints(65, 65, Math.toRadians(270), Math.toRadians(180), 17)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-2, -24, Math.toRadians(270)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(34, -50, Math.toRadians(270)))
+                .strafeToConstantHeading(new Vector2d(0, -34))
+                .splineToSplineHeading(new Pose2d(0, -22.3, Math.toRadians(270)), Math.toRadians(180))
 
+                /* .strafeToLinearHeading(new Vector2d(-10, -34), Math.toRadians(270))
+>>>>>>> d596bb47e69abf9b456e126abca9ef5c11a82b85
                 .setTangent(Math.toRadians(270))
                 .splineToConstantHeading(new Vector2d(36, -30), Math.toRadians(90))
                 .strafeToConstantHeading(new Vector2d(36, -10))

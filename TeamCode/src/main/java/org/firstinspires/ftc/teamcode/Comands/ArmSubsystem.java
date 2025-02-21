@@ -7,8 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 
 
 import com.acmerobotics.roadrunner.ParallelAction;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,6 +19,8 @@ public class ArmSubsystem {
 
     private DcMotorEx armMotor;
     private DcMotorEx rodeMotor;
+
+    private CRServo intake;
 
     private int ArmTarget;
     private int RodeTarget;
@@ -44,6 +45,10 @@ public class ArmSubsystem {
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intake = hardwareMap.get(CRServo.class, "in");
+
+        etesito.init(hardwareMap);
 
         armController.reset();
         rodeController.reset();
@@ -72,13 +77,9 @@ public class ArmSubsystem {
 
         ElapsedTime timer = null;
 
-        public ArmToPosSmooth(int ticks, double timeSeconds) {
-            this.ticks = ticks;
+        public ArmToPosSmooth(int ticksPos, double timeSeconds) {
+            this.ticks = ticksPos;
             this.timeSeconds = timeSeconds;
-        }
-
-        private double lerp(double start, double end, double t) {
-            return start * (1 - t) + end * t;
         }
 
         @Override
@@ -90,7 +91,35 @@ public class ArmSubsystem {
 
             double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
 
-            ArmTarget = (int) lerp(currentTicks, ticks, t);
+            ArmTarget = (int) etesito.lerp(currentTicks, ticks, t);
+
+            return timer.seconds() <= timeSeconds;
+        }
+    }
+
+    class RodeToPosSmooth implements Action {
+        int ticks;
+        double timeSeconds;
+
+        int currentTicks;
+
+        ElapsedTime timer = null;
+
+        public RodeToPosSmooth(int ticksPos, double timeSeconds) {
+            this.ticks = ticksPos;
+            this.timeSeconds = timeSeconds;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            if(timer == null) {
+                timer = new ElapsedTime();
+                currentTicks = rodeMotor.getCurrentPosition();
+            }
+
+            double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
+
+            RodeTarget = (int) etesito.lerp(currentTicks, ticks, t);
 
             return timer.seconds() <= timeSeconds;
         }
@@ -141,6 +170,7 @@ public class ArmSubsystem {
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rodeController.reset();
 
             return false;
         }
@@ -149,213 +179,152 @@ public class ArmSubsystem {
 
     class SamplePickColor implements Action {
 
-        int Color;
-        double Time;
-        ElapsedTime timer;
+        String colorTarget;
 
-        public SamplePickColor(int color, double time) {
-            this.Color = color;
-            this.Time = time;
+        int ticks;
+        double timeSeconds;
+
+        int currentTicks;
+
+        ElapsedTime timer = null;
+
+        boolean detener = true;
+
+        public SamplePickColor(String color, int ticksPos, double timeSeconds) {
+            this.ticks = ticksPos;
+            this.timeSeconds = timeSeconds;
+            this.colorTarget = color;
+        }
+
+        private double lerp(double start, double end, double t) {
+            return start * (1 - t) + end * t;
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
             if (timer == null) {
                 timer = new ElapsedTime();
-                etesito.pickSample();
-                rodeMotor.setPower(0.05);
+                currentTicks = rodeMotor.getCurrentPosition();
+            }
+            intake.setPower(-1);
+
+            double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
+
+            RodeTarget = (int) lerp(currentTicks, ticks, t);
+
+            if (timer.seconds() <= timeSeconds){
+                detener = !etesito.isSampleDetected(colorTarget);
+
+            }else {
+                detener = false;
 
             }
 
-            return (Color < 350 || etesito.getColorGreen() < 600) || timer.seconds() < Time;
+            return detener;
         }
-
-    }
-
-    public Action armSpecimen1() {
-        return new ParallelAction(
-                new ArmToPos(etesito.specimenArmPos - 80),
-                new RodeToPos(etesito.specimenDownRodePos - 80)
-
-        );
-    }
-
-    public Action armSpecimen2() {
-        return new ParallelAction(
-                new ArmToPos(etesito.specimenArmPos - 80),
-                new RodeToPos(etesito.specimenDownRodePos - 320)
-
-        );
-    }
-
-    public Action armSpecimen3() {
-        return new ParallelAction(
-                new ArmToPos(etesito.specimenArmPos - 80),
-                new RodeToPos(etesito.specimenDownRodePos - 440)
-
-        );
-    }
-
-    public Action armUp() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPos(etesito.highBasketArmpos - 50),
-                        new RodeToPos(-150)
-                ),
-                new SleepAction(0.5),
-                new RodeReset()
-
-        );
-    }
-
-    public Action armHighBasketFront() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPos(etesito.highBasketfrontArmpos),
-                        new RodeToPos(-130)
-                ),
-                new SleepAction(0.5),
-                new RodeReset()
-
-        );
     }
 
     public Action armInit() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPos(etesito.initArmpos),
-                        new RodeToPos(-75)
-                ),
-                new SleepAction(0.2),
-                new RodeReset()
+        return new ArmToPos(etesito.initArmpos);
+    }
+
+    public Action armSpecimenFirst() {
+        return new ParallelAction(
+                new ArmToPos(etesito.specimenArmPos - 70),
+                new RodeToPos(etesito.specimenDownRodePos - 100)
 
         );
     }
 
-    public Action armDown() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPosSmooth(0, 1),
-                        new RodeToPos(150)
-                ),
-                new SleepAction(0.2),
-                new RodeReset()
+    public Action armSpecimen() {
+        return new ParallelAction(
+                new ArmToPos(etesito.specimenArmPos - 70),
+                new RodeToPos(etesito.specimenDownRodePos)
+
         );
     }
 
-    public Action armDown2() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPosSmooth(0, 1),
-                        new RodeToPos(0)
-                ),
-                new SleepAction(0.2),
-                new RodeReset()
-        );
-    }
-
-    public Action armDownLast() {
-        return new SequentialAction(
-                new ParallelAction(
-                        new ArmToPosSmooth(0, 1),
-                        new RodeToPos(-250)
-                ),
-                new SleepAction(0.2),
-                new RodeReset()
-        );
-    }
-
-    public Action rodeDown() {
-        return new RodeToPos(-150);
+    public Action armSpecimenPrueba1() {
+        return new ArmToPos(etesito.specimenArmPos - 150);
 
     }
 
-    public Action rodeDown2() {
-        return new RodeToPos(100);
+    public Action armSpecimenPrueba2() {
+        return new ArmToPos(etesito.specimenArmPos - 200);
 
     }
 
-
-
-    public Action rodePickSampleSample1() {
+    public Action rodeSpecimenPrueba() {
         return new RodeToPos(-900);
-
     }
 
-    public Action rodePickSampleSample2() {
-        return new RodeToPos(-950);
 
+    public Action armSpecimenPut() {
+        return new ArmToPos(etesito.specimenArmPos + 400);
     }
 
-    public Action rodePickSample1() {
-        return new RodeToPos(-1100);
-
-    }
-
-    public Action rodePutSample1() {
-        return new RodeToPos(-1300);
-
-    }
-
-    public Action rodePickSample2() {
-        return new RodeToPos(-950);
-
-    }
-
-    public Action rodePutSample2() {
-        return new RodeToPos(-950);
-
-    }
-
-    public Action rodePickSample3() {
-        return new RodeToPos(-1000);
-
-    }
-
-    public Action rodePutSample3() {
-        return new RodeToPos(-950);
-
-    }
-
-    public Action rodeHighBasket() {
-        return new RodeToPos(etesito.highRodePos + 100);
-
+    public Action rodeSpecimen() {
+        return new RodeToPos(etesito.specimenRodePos - 250);
     }
 
     public Action rodeSpecimenPrevious() {
         return new RodeToPos(etesito.specimenDownRodePos);
-
     }
 
-    public Action rodeSpecimen() {
-        return new RodeToPos(etesito.specimenRodePos - 130);
-
+    public Action armDown() {
+        return new ArmToPosSmooth(0, 1);
     }
+
+    public Action armDownLast() {
+        return new ArmToPos(0);
+    }
+
+    public Action armPostSpecimen() {
+        return new ArmToPos(-1200);
+    }
+
+    public Action rodeDown() {
+        return new RodeToPos(0);
+    }
+
+    public Action rodSemiDown() {
+        return new RodeToPos(-70);
+    }
+
+    public Action rodePickSubmersible() {
+        return new RodeToPos(-700);
+    }
+
+    public Action rodePickSample() {
+        return new RodeToPosSmooth(-800, 0.5);
+    }
+
+    public Action rodePutSample1() {
+        return new RodeToPos(-800);
+    }
+
+    public Action rodePutSample2() {
+        return new RodeToPos(-800);
+    }
+
+    public Action rodePutSample3() {
+        return new RodeToPos(-900);
+    }
+
+    public Action armUp() {
+        return new ArmToPos(etesito.highBasketArmpos);
+    }
+
+    public Action rodeHighBasket() {
+        return new RodeToPos(etesito.highRodePos - 100);
+    }
+
 
     public Action armUpdate() {
         return new ArmUpdate();
-
     }
 
-    public Action samplePickRedSpecimen() {
-        return new SamplePickColor(etesito.getColorRed(), 0.5);
-
+    public Action samplePickRedSM() {
+        return new SamplePickColor("red", -1600, 2);
     }
-
-    public Action samplePickRedSubmersible() {
-        return new SamplePickColor(etesito.getColorRed(), 2);
-
-    }
-
-    public Action samplePickBlue() {
-        return new SamplePickColor(etesito.getColorBlue(), 2);
-
-    }
-
 }
-
-
-
-
-
-
