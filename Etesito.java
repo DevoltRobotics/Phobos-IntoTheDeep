@@ -28,7 +28,7 @@ public class Etesito {
     PIDFController climbControllerRight = new PIDFController(climbCoefficients);
     PIDFController climbControllerLeft = new PIDFController(climbCoefficients);
 
-    public DcMotorEx FL, BL, BR, FR, armMotor, rodeMotor, cR, cL;
+    public DcMotorEx FL, BL, BR, FR, armMotor, rodeMotor, mCR, mCL;
 
     public Servo sC1, sC2, claw, wrist, light;
 
@@ -43,7 +43,7 @@ public class Etesito {
 
     public static double initWristPos = 0.8;
     public static double downWristPos = 0.6;
-    public static double pickSpecimenWristPos = 0.64;
+    public static double pickSpecimenWristPos = 0.6;
     public static double downMWristPos = 0.57;
     public static double specimenWristPos = 0.47;
     public static double contractWristPos = 0.27;
@@ -63,14 +63,14 @@ public class Etesito {
 
     public static int initArmpos = -950;
     public static int lowBasketArmpos = -1200;
-    public static int firstSpecimenArmPos = -900;
+    public static int firstSpecimenArmPos = -950;
     public static int specimenArmPos = -2050;
     public static int postSpecimenArmPos = -1200;
     public static int highBasketArmpos = -1900;
 
     public static int highRodePos = -2050;
-    public static int specimenRodePos = -1300;
-    public static int firstSpecimenRodePos = -1500;
+    public static int specimenRodePos = -1350;
+    public static int firstSpecimenRodePos = -1300;
     public static int specimenPreviousRodePos = -900;
     public static int lowBasketRodePos = -1400;
     public static int downRodePos = -1200;
@@ -84,16 +84,20 @@ public class Etesito {
 
     public IMU imu;
 
-    public void init(HardwareMap hardwareMap) {
+    public void init(HardwareMap hardwareMap, boolean resetRode) {
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
+        rodeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        if(resetRode) {
+            rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
 
         claw = hardwareMap.servo.get("cw");
         intake = hardwareMap.get(CRServo.class, "in");
@@ -101,18 +105,18 @@ public class Etesito {
 
         light = hardwareMap.get(Servo.class, "rgb");
 
-        cR = hardwareMap.get(DcMotorEx.class, "mc1");
-        cL = hardwareMap.get(DcMotorEx.class, "mc2");
-        cR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        cL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mCR = hardwareMap.get(DcMotorEx.class, "mc1");
+        mCL = hardwareMap.get(DcMotorEx.class, "mc2");
+        mCR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mCL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mCR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mCR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        cL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mCL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mCL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        cL.setDirection(DcMotorSimple.Direction.REVERSE);
+        mCL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         sC1 = hardwareMap.get(Servo.class,"sc1");
         sC2 = hardwareMap.get(Servo.class,"sc2");
@@ -125,19 +129,18 @@ public class Etesito {
         imu.initialize(parameters);
 
 
-            FL = hardwareMap.get(DcMotorEx.class, "fl"); //ex1
-            BL = hardwareMap.get(DcMotorEx.class, "bl"); //ex2
-            BR = hardwareMap.get(DcMotorEx.class, "br"); //ex3
-            FR = hardwareMap.get(DcMotorEx.class, "fr"); //ex4
+        FL = hardwareMap.get(DcMotorEx.class, "fl"); //ex1
+        BL = hardwareMap.get(DcMotorEx.class, "bl"); //ex2
+        BR = hardwareMap.get(DcMotorEx.class, "br"); //ex3
+        FR = hardwareMap.get(DcMotorEx.class, "fr"); //ex4
 
-            FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            BL.setDirection(DcMotorSimple.Direction.REVERSE);
-            FL.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         wristIsMedium = false;
     }
@@ -245,17 +248,17 @@ public class Etesito {
     public void setLight(String color){
         switch (color){
             case "purple": light.setPosition(0.72);
-            break;
+                break;
             case "blue": light.setPosition(0.62);
-            break;
+                break;
             case "green": light.setPosition(0.5);
-            break;
+                break;
             case "yellow": light.setPosition(0.388);
-            break;
+                break;
             case "orange": light.setPosition(0.33);
-            break;
+                break;
             case "red": light.setPosition(0.28);
-            break;
+                break;
         }
     }
 
