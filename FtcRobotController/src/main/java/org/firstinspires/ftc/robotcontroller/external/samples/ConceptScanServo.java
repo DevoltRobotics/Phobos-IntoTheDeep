@@ -48,9 +48,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
-@Disabled
 @TeleOp(name = "Concept: Scan Servo", group = "Concept")
-
+@Disabled
 public class ConceptScanServo extends LinearOpMode {
 
     static final double INCREMENT   = 0.01;     // amount to slew servo each CYCLE_MS cycle
@@ -59,10 +58,9 @@ public class ConceptScanServo extends LinearOpMode {
     static final double MIN_POS     =  0.0;     // Minimum rotational position
 
     // Define class members
-    Servo claw;
-    Servo wrist;
+    Servo   servo;
     double  position = (MAX_POS - MIN_POS) / 2; // Start at halfway position
-    boolean rampUp = false;
+    boolean rampUp = true;
 
 
     @Override
@@ -70,8 +68,7 @@ public class ConceptScanServo extends LinearOpMode {
 
         // Connect to servo (Assume Robot Left Hand)
         // Change the text in quotes to match any servo name on your robot.
-        claw = hardwareMap.get(Servo.class, "cw");
-        wrist = hardwareMap.get(Servo.class, "wr");
+        servo = hardwareMap.get(Servo.class, "left_hand");
 
         // Wait for the start button
         telemetry.addData(">", "Press Start to scan Servo." );
@@ -80,17 +77,10 @@ public class ConceptScanServo extends LinearOpMode {
 
 
         // Scan servo till stop pressed.
-        while(opModeIsActive()) {
+        while(opModeIsActive()){
 
-            if (gamepad2.dpad_right){
-                claw.setPosition(0.7);
-
-            }else if (gamepad2.dpad_left){
-                claw.setPosition(1);
-
-            }
             // slew the servo, according to the rampUp (direction) variable.
-            /*if (rampUp) {
+            if (rampUp) {
                 // Keep stepping up until we hit the max value.
                 position += INCREMENT ;
                 if (position >= MAX_POS ) {
@@ -104,7 +94,7 @@ public class ConceptScanServo extends LinearOpMode {
                 if (position <= MIN_POS ) {
                     position = MIN_POS;
                     rampUp = !rampUp;  // Switch ramp direction
-                )*/
+                }
             }
 
             // Display the current value
@@ -113,10 +103,13 @@ public class ConceptScanServo extends LinearOpMode {
             telemetry.update();
 
             // Set the servo to the new position and pause;
+            servo.setPosition(position);
+            sleep(CYCLE_MS);
             idle();
         }
 
         // Signal done;
-
+        telemetry.addData(">", "Done");
+        telemetry.update();
     }
-
+}

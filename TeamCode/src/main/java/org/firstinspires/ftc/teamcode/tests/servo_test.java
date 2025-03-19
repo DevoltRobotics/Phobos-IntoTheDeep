@@ -6,14 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Comands.Etesito;
+
 
 @TeleOp
 public class servo_test extends OpMode {
 
-    Servo claw;
-    Servo wrist;
-    Servo sc1;
-    Servo sc2;
+    Etesito etesito = new Etesito();
 
     private boolean alternar_Garra;
     private boolean alternar_wrist;
@@ -25,73 +24,81 @@ public class servo_test extends OpMode {
     ElapsedTime alternar_sc1Timer = new ElapsedTime();
     ElapsedTime alternar_sc2Timer = new ElapsedTime();
 
-    double position;
-
     @Override
     public void init() {
 
-        claw = hardwareMap.servo.get("cw");
-        wrist = hardwareMap.servo.get("wr");
-        sc1 = hardwareMap.servo.get("sc1");
-        sc2 = hardwareMap.servo.get("sc2");
-
-        position = 0;
-
-
+        etesito.init(hardwareMap, false, false);
 
     }
 
-    double before = 0;
 
     @Override
     public void loop() {
 
-        if (gamepad2.a && alternar_Garra && alternar_garraTimer.seconds() > 0.2){
-            claw.setPosition(0.3);
-            alternar_garraTimer.reset();
-        } else if (gamepad2.a && !alternar_Garra  && alternar_garraTimer.seconds() > 0.2){
-            claw.setPosition(0.6);
+        telemetry.addLine("a ---- cw");
+        telemetry.addLine("b ---- wr");
+        telemetry.addLine("y ---- sc1");
+        telemetry.addLine("x ---- sc2");
+        telemetry.addLine("right_stick ---- in");
+
+
+        if (alternar_garraTimer.seconds() > 0.2 && gamepad2.a){
+            if (alternar_Garra){
+                etesito.claw.setPosition(0.4);
+                alternar_Garra = false;
+
+            }else {
+                etesito.claw.setPosition(0.5);
+                alternar_Garra = true;
+
+        }
+
             alternar_garraTimer.reset();
         }
 
-        if (gamepad2.b && alternar_wrist && alternar_garraTimer.seconds() > 0.2){
-            wrist.setPosition(0.3);
-            alternar_wrist = false;
-            alternar_garraTimer.reset();
-        } else if (gamepad2.b && !alternar_wrist  && alternar_garraTimer.seconds() > 0.2){
-            wrist.setPosition(0.6);
-            alternar_wrist = true;
-            alternar_garraTimer.reset();
+        if (alternar_wristTimer.seconds() > 0.2 && gamepad2.b){
+            if (alternar_wrist){
+                etesito.wrist.setPosition(0.4);
+                alternar_Garra = false;
+
+            }else {
+                etesito.wrist.setPosition(0.5);
+                alternar_wrist = true;
+
+            }
+
+            alternar_wristTimer.reset();
         }
 
-        if (gamepad2.y && alternar_sc1 && alternar_garraTimer.seconds() > 0.2){
-            sc1.setPosition(0.3);
-            alternar_sc1 = false;
-            alternar_garraTimer.reset();
-        } else if (gamepad2.y && !alternar_sc1  && alternar_garraTimer.seconds() > 0.2){
-            sc1.setPosition(0.6);
-            alternar_sc1 = true;
-            alternar_garraTimer.reset();
+        if (alternar_sc1Timer.seconds() > 0.2 && gamepad2.y){
+            if (alternar_sc1){
+                etesito.sC1.setPosition(0.4);
+                alternar_sc1 = false;
+
+            }else {
+                etesito.sC1.setPosition(0.5);
+                alternar_sc1 = true;
+
+            }
+
+            alternar_sc1Timer.reset();
         }
 
-        if (gamepad2.x && alternar_sc2 && alternar_garraTimer.seconds() > 0.2){
-            sc2.setPosition(0.3);
-            alternar_sc2 = false;
-            alternar_garraTimer.reset();
-        } else if (gamepad2.x && !alternar_sc2  && alternar_garraTimer.seconds() > 0.2){
-            sc2.setPosition(0.6);
-            alternar_sc2 = true;
-            alternar_garraTimer.reset();
+        if (alternar_sc2Timer.seconds() > 0.2 && gamepad2.x){
+            if (alternar_sc2){
+                etesito.sC2.setPosition(0.4);
+                alternar_sc2 = false;
+
+            }else {
+                etesito.sC2.setPosition(0.5);
+                alternar_sc2 = true;
+
+            }
+
+            alternar_sc2Timer.reset();
         }
 
-        //cw = sc1
-        //wr = cw
-        //sc1 = wr
-        //sc2 = sc2
-
-
-        telemetry.addData( "pos", claw.getPosition());
-
+        etesito.intake.setPower(gamepad2.right_stick_y);
         }
 
     }

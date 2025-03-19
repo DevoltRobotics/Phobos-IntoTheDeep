@@ -6,16 +6,21 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.Comands.PIDFController;
-
-@Disabled
 @TeleOp
 @Config
 public class arm_test extends OpMode {
 
     Etesito etesito = new Etesito();
+
+    double rodeMin = Double.MIN_VALUE;
+    double rodeMax = Double.MAX_VALUE;
+
+    double armMin = Double.MIN_VALUE;
+    double armMax = Double.MAX_VALUE;
 
     public static PIDFController.PIDCoefficients ArmtestPID = new PIDFController.PIDCoefficients(0.0015, 0, 0.017);
 
@@ -31,13 +36,15 @@ public class arm_test extends OpMode {
 
     public static int rodeTarget = -1500;
 
+    public double powerRode;
+
     public double powerArm = 0;
 
 
     @Override
     public void init() {
 
-        etesito.init(hardwareMap);
+        etesito.init(hardwareMap, false, true);
 
         armcontroller.reset();
         rodecontroller.reset();
@@ -48,12 +55,18 @@ public class arm_test extends OpMode {
         );
 
         etesito.wrist.setPosition(0.5);
+
+        rodeMin = -1300;
+
+        rodeMax = 0;
     }
 
     int beforeArmPos = 0;
 
     @Override
     public void loop() {
+
+
 
         etesito.armMotor.setPower(-armcontroller.update(etesito.armMotor.getCurrentPosition()) * powerArm);
 
@@ -87,15 +100,20 @@ public class arm_test extends OpMode {
 
         ///////////////////////////////////////////////////////////////////////////7
 
-        etesito.rodeMotor.setPower(rodecontroller.update(etesito.rodeMotor.getCurrentPosition()) * 0.08);
+        powerRode = rodecontroller.update(etesito.rodeMotor.getCurrentPosition()) * 0.08;
+
+        etesito.rodeMotor.setPower(Range.clip(powerRode, rodeMin, rodeMax));
 
         if (gamepad2.dpad_down) {
-            rodecontroller.targetPosition = 1;
-            rodecontroller.reset();
+            rodeMin = -0.5;
+            rodecontroller.targetPosition = 0;
         } else if (gamepad2.dpad_up) {
+            rodeMin = -1;
             rodecontroller.targetPosition = rodeTarget;
 
         }
+
+        rodeMax = 1;
 
         if (gamepad2.left_bumper){
             etesito.claw.setPosition(0.7);
@@ -117,7 +135,7 @@ public class arm_test extends OpMode {
 
         rodecontroller.targetPosition += gamepad2.right_stick_y * 20;
 
-        telemetry.addData("trd", rodeTarget);
+        telemetry.addData("rdTarget", rodeTarget);
         telemetry.addData("ratio", ratio);
 
         telemetry.addLine("-----------");
@@ -132,12 +150,7 @@ public class arm_test extends OpMode {
         telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
         telemetry.addData("armTargetPos", armcontroller.targetPosition);
 
-        telemetry.addData("poder", powerArm);
-        telemetry.addData("rdTarget", rodeTarget);
-
         ///////////////////////////////////////////////////////////////////////////
-
-
 
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 

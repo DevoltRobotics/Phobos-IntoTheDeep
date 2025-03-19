@@ -1,18 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos1;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos2;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.down2RodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.BasketArmpos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.frontArmPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.lowBasketRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.ratioArm;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenArmPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenRodePos;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -23,16 +10,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.Comands.PIDFController;
 
-@TeleOp(name = "ETESITO")
+@TeleOp(name = "ETESITO_rodetest")
 
 public class ET extends OpMode {
 
     private final Etesito etesito = new Etesito();
 
+    PIDFController armcontroller = new PIDFController(Etesito.armCoefficients);
+    PIDFController rodecontroller = new PIDFController(Etesito.rodeCoefficients);
     PIDFController climbControllerRight = new PIDFController(Etesito.climbCoefficients);
     PIDFController climbControllerLeft = new PIDFController(Etesito.climbCoefficients);
-
-    double currentRodeTicks = 0;
 
     double rodeMin = Double.MIN_VALUE;
     double rodeMax = Double.MAX_VALUE;
@@ -46,26 +33,21 @@ public class ET extends OpMode {
 
     private double powerArm;
 
+    private double powerRode;
+
     private double rdTarget;
 
     private double armTarget;
 
     boolean escalando = false;
 
-    private final ElapsedTime toggleWristTimer = new ElapsedTime();
-
-    private final ElapsedTime timerRode = new ElapsedTime();
-
-    private boolean toggleRodeDown = true;
-    private final ElapsedTime toggleRodeDownTimer = new ElapsedTime();
-
     private final ElapsedTime manualWristTimer = new ElapsedTime();
-
-    private final ElapsedTime contractArmDownTimer = new ElapsedTime();
-    private boolean contractArmDown = false;
 
     private final ElapsedTime extendArmHighBasketTimer = new ElapsedTime();
     private boolean extendArmHighBasket = false;
+
+    private final ElapsedTime contractArmDownTimer = new ElapsedTime();
+    private boolean contractArmDown = false;
 
     private final ElapsedTime lowerArmBasketTimer = new ElapsedTime();
     private boolean contractArmBasket = false;
@@ -82,33 +64,32 @@ public class ET extends OpMode {
     private boolean specimenWristDown = false;
     private boolean specimenRodeDown = false;
 
+    private final ElapsedTime lowBasketWristTimer = new ElapsedTime();
+    private boolean lowBasketWrist = false;
+    private boolean lowBasketArm = false;
+
     private final ElapsedTime colgandoAutomatizadoTimer = new ElapsedTime();
     private boolean colgandoAutomatizado = false;
 
     private final ElapsedTime timerColgar = new ElapsedTime();
 
-    private final ElapsedTime togglePalitoTimer = new ElapsedTime();
-
-    private final ElapsedTime waitServosTimer = new ElapsedTime();
-    private boolean waitServos = false;
+    private final ElapsedTime togglePalito = new ElapsedTime();
 
     boolean manualRight;
     boolean manualLeft;
 
     boolean voltageIndicatorBoolean;
 
-    boolean lanzarBrazitos = false;
-
     @Override
     public void init() {
-        etesito.init(hardwareMap, false, true);
-
-        toggleRodeDown = true;
-
-        lanzarBrazitos = false;
+        etesito.init(hardwareMap, false);
 
         rodeMax = 250;
 
+        etesito.imu.resetYaw();
+
+        armcontroller.reset();
+        rodecontroller.reset();
         climbControllerRight.reset();
         climbControllerLeft.reset();
 
@@ -117,39 +98,27 @@ public class ET extends OpMode {
                 FtcDashboard.getInstance().getTelemetry()
         );*/
 
-        etesito.guardarBrazitosColgada();
-
         telemetry.addLine("Robot Initialized.");
         telemetry.update();
 
-        rdTarget = downRodePos;
+        rdTarget = Etesito.downRodePos;
         armTarget = 0;
 
-        etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
+        rodecontroller.targetPosition = etesito.rodeMotor.getCurrentPosition();
 
     }
 
     int beforeArmPos = 0;
-
-    int beforeRodePos = 0;
 
     @Override
     public void loop() {
 
         boolean colgando = gamepad1.left_trigger > 0.3;
 
-        etesito.rodeController.targetPosition = Range.clip(etesito.rodeController.targetPosition, rodeMin, rodeMax);
-        etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
+        rodecontroller.targetPosition = Range.clip(rodecontroller.targetPosition, rodeMin, rodeMax);
+        etesito.rodeMotor.setPower(rodecontroller.update(etesito.rodeMotor.getCurrentPosition()) * 0.6);
 
         if (colgando) {
-
-            if (!lanzarBrazitos) {
-                etesito.lanzarBrazitosColgada();
-                etesito.servosUping();
-
-            }
-
-            lanzarBrazitos = true;
 
             etesito.dropSpecimen();
 
@@ -157,28 +126,43 @@ public class ET extends OpMode {
 
             if (escalando) {
                 etesito.setLight("blue");
-                etesito.rodeController.targetPosition = climbingRodePos2;
+                rodecontroller.targetPosition = Etesito.climbingRodePos2;
 
             } else {
                 etesito.setLight("green");
-                etesito.rodeController.targetPosition = climbingRodePos1;
+                rodecontroller.targetPosition = Etesito.climbingRodePos1;
 
             }
 
             telemetry.addLine("colgando_activado");
 
+            if (gamepad2.right_stick_button) {
+                telemetry.addLine("Right_Reset");
+
+            } else if (gamepad2.left_stick_button) {
+                telemetry.addLine("Left_Reset");
+
+            }
+
             if (gamepad2.dpad_up) {
                 colgandoAutomatizado = true;
                 colgandoAutomatizadoTimer.reset();
 
-                    climbControllerRight.targetPosition = 0;
-                    climbControllerLeft.targetPosition = 0;
+                if (escalando) {
+                    climbControllerRight.targetPosition = -4500;
+                    climbControllerLeft.targetPosition = -4500;
+
+                } else {
+                    climbControllerRight.targetPosition = -3900;
+                    climbControllerLeft.targetPosition = -3900;
+
+                }
 
                 voltageIndicatorBoolean = false;
 
             } else if (gamepad2.dpad_down) {
 
-                etesito.servosDown();
+                etesito.servos_down();
 
                 colgandoAutomatizado = false;
 
@@ -187,10 +171,10 @@ public class ET extends OpMode {
             if (colgandoAutomatizado && colgandoAutomatizadoTimer.seconds() > 1.9) {
 
                 if (escalando) {
-                    etesito.servosClimbing();
+                    etesito.servos_Climbing();
 
                 } else {
-                    etesito.servosUping();
+                    etesito.servos_Uping();
 
                 }
                 colgandoAutomatizado = false;
@@ -229,46 +213,28 @@ public class ET extends OpMode {
             }
 
             if ((Math.abs(etesito.mCL.getCurrent(CurrentUnit.AMPS)) > 4 && Math.abs(etesito.mCL.getCurrent(CurrentUnit.AMPS)) > 4 && timerColgar.seconds() > 0.2 && voltageIndicatorBoolean)) {
-                etesito.servosDown();
+                etesito.servos_down();
 
                 telemetry.addLine("motor_forzado");
             }
 
             if (gamepad2.y) {
-                etesito.servosUping();
+                etesito.servos_Uping();
 
             } else if (gamepad2.b) {
-                etesito.servosClimbing();
+                etesito.servos_Climbing();
 
             } else if (gamepad2.a) {
-                etesito.servosDown();
+                etesito.servos_down();
 
             }
 
-            if (gamepad2.right_bumper){
-                etesito.lanzarBrazitosColgada();
-
-                waitServos = true;
-                waitServosTimer.reset();
-
-
-            }else if (gamepad2.left_bumper){
-                etesito.guardarBrazitosColgada();
-
-            }
-
-            if (waitServos && waitServosTimer.seconds() > 0.2){
-                etesito.servosUping();
-                waitServos = false;
-
-            }
-
-            if (gamepad2.dpad_left) {
-                etesito.rodeController.targetPosition = 0;
+            if (gamepad1.dpad_left || gamepad2.dpad_left) {
+                rodecontroller.targetPosition = 0;
 
             } else if (gamepad1.dpad_right || gamepad2.dpad_right) {
-                if (escalando) etesito.rodeController.targetPosition = climbingRodePos2;
-                else etesito.rodeController.targetPosition = climbingRodePos1;
+                if (escalando) rodecontroller.targetPosition = Etesito.climbingRodePos2;
+                else rodecontroller.targetPosition = Etesito.climbingRodePos1;
 
             }
 
@@ -290,20 +256,10 @@ public class ET extends OpMode {
                 armTarget = (etesito.armMotor.getCurrentPosition());
 
             } else {
-                etesito.armMotor.setPower(-etesito.armController.update(etesito.armMotor.getCurrentPosition()) * powerArm);
+                etesito.armMotor.setPower(-armcontroller.update(etesito.armMotor.getCurrentPosition()) * powerArm);
 
             }
 
-            boolean manualRode = Math.abs(gamepad2.right_stick_y) > 0.3;
-
-            if (manualRode) {
-                etesito.rodeMotor.setPower(gamepad2.right_stick_y * 0.5);
-                etesito.rodeController.targetPosition = (etesito.rodeMotor.getCurrentPosition());
-
-            } else {
-                etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
-
-            }
             telemetry.addLine("colgando_desactivado");
 
             escalando = false;
@@ -311,26 +267,28 @@ public class ET extends OpMode {
             etesito.setLight("orange");
 
             if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper) {
-                etesito.servos_test();
-                etesito.guardarBrazitosColgada();
+                etesito.servos_Uping();
             }
 
-            boolean extended = !(etesito.rodeMotor.getCurrentPosition() >= -400);
+            rodecontroller.targetPosition += (gamepad2.right_stick_y * 28);
+
+            boolean extended = !(etesito.rodeMotor.getCurrentPosition() >= -200);
+
+            if (gamepad2.right_stick_x > 0.9) {
+                etesito.resetRodeEncoder();
+                rodecontroller.reset();
+
+            } else if (gamepad2.left_stick_x > 0.9) {
+                etesito.resetArmEncoder();
+                armcontroller.reset();
+            }
 
             if (gamepad2.dpad_down) {
+                rodecontroller.targetPosition = 0;
                 extendArmHighBasket = false;
 
-                toggleRodeDown = true;
-
-                if (armPosition == 3){
-                    etesito.rodeController.targetPosition = 0;
-
-                }else {
-                    etesito.rodeController.targetPosition = 0;
-
-                }
-
             } else if (gamepad2.dpad_up) {
+                rodecontroller.targetPosition = rdTarget;
 
                 if (armPosition == 2) {
                     specimenArmSemiDown = true;
@@ -340,70 +298,51 @@ public class ET extends OpMode {
                     specimenArmDown = true;
 
                     specimenDownTimer.reset();
-                } else if (armPosition == 0) {
-                    if (toggleRodeDownTimer.seconds() > 0.2){
-                        if (toggleRodeDown){
-                            toggleRodeDown = false;
-
-                        } else {
-                            toggleRodeDown = true;
-
-                        }
-                        toggleRodeDownTimer.reset();
-
-                    }
-
                 }
-                etesito.rodeController.targetPosition = rdTarget;
             }
 
             if (gamepad2.y && !extended) {
                 powerArm = 0.4;
-                armTarget = BasketArmpos;
-                etesito.wristUp();
+                armTarget = Etesito.highBasketArmpos;
+                etesito.wrist_up();
 
                 armPosition = 3;
 
                 extendArmHighBasket = true;
                 extendArmHighBasketTimer.reset();
 
-                toggleRodeDown = true;
-
                 telemetry.addLine("Arm_up");
 
             } else if (gamepad2.x && !extended) {
                 powerArm = 0.4;
-                armTarget = BasketArmpos;
-                etesito.wristUp();
-
+                armTarget = Etesito.specimenArmPos;
                 armPosition = 2;
 
                 extendArmHighBasket = false;
 
-                toggleRodeDown = true;
+                specimenUpWrist = true;
+                specimenUpArmTimer.reset();
 
-                telemetry.addLine("ArmSemiDown");
+                telemetry.addLine("ArmSpecimen");
 
             } else if (gamepad2.b && !extended) {
                 powerArm = 0.4;
-                armTarget = frontArmPos;
-                etesito.wristMedium();
+                armTarget = Etesito.lowBasketArmpos;
+                etesito.wrist_Medium();
 
                 armPosition = 1;
 
                 extendArmHighBasket = false;
-
-                toggleRodeDown = true;
 
                 telemetry.addLine("Arm_mediumLow");
 
             } else if (gamepad2.a && !extended) {
 
                 if (previousArmPosition == 2) {
-                    etesito.wristDown();
+                    etesito.wristPickSpecimen();
 
                 } else {
-                    etesito.wristContract();
+                    etesito.wrist_Contract();
 
                 }
                 powerArm = 0.1;
@@ -413,63 +352,54 @@ public class ET extends OpMode {
 
                 extendArmHighBasket = false;
 
-                toggleRodeDown = true;
-
                 telemetry.addLine("Arm_down");
 
             }
 
             switch (armPosition) {
                 case 3:
-                    rdTarget = highRodePos;
-                    rodeMin = highRodePos - 800;
+                    rdTarget = Etesito.highRodePos;
+                    rodeMin = Etesito.highRodePos - 800;
                     break;
 
                 case 2:
-                    rdTarget = specimenRodePos - 100;
-                    rodeMin = specimenRodePos - 900;
+                    rdTarget = Etesito.specimenRodePos - 100;
+                    rodeMin = Etesito.specimenRodePos - 900;
                     break;
 
                 case 1:
-                    rdTarget = lowBasketRodePos;
-                    rodeMin = lowBasketRodePos - 200;
+                    rdTarget = Etesito.lowBasketRodePos;
+                    rodeMin = Etesito.lowBasketRodePos - 200;
                     break;
 
                 case 0:
-
-                        if (toggleRodeDown) {
-                            rdTarget = down2RodePos;
-
-                        } else {
-                            rdTarget = downRodePos;
-                        }
+                    rdTarget = Etesito.downRodePos;
 
                     if (etesito.wristIsMedium) {
-                        rodeMin = downRodePos - 150;
+                        rodeMin = Etesito.downRodePos - 150;
 
                     } else {
-                        rodeMin = downRodePos - 350;
+                        rodeMin = Etesito.downRodePos - 450;
 
                     }
                     break;
             }
 
-            if (extendArmHighBasket && extendArmHighBasketTimer.seconds() >= 0.4) {
-                etesito.rodeController.targetPosition = rdTarget;
-
+            if (extendArmHighBasket && extendArmHighBasketTimer.seconds() >= 0.6) {
+                rodecontroller.targetPosition = rdTarget;
                 extendArmHighBasket = false;
             }
 
             if (gamepad2.right_trigger > 0.5 && manualWristTimer.seconds() > 0.2) {
-                etesito.wristManualUp();
+                etesito.wrist_ManualUp();
                 manualWristTimer.reset();
 
             } else if (gamepad2.left_trigger > 0.5 && manualWristTimer.seconds() > 0.2) {
-                etesito.wristManualDown();
+                etesito.wrist_ManualDown();
                 manualWristTimer.reset();
 
             } else {
-                etesito.wristManualMantener();
+                etesito.wrist_ManualMantener();
 
             }
 
@@ -478,10 +408,10 @@ public class ET extends OpMode {
 
                 switch (armPosition) {
                     case 3:
-                        etesito.wristUp();
+                        etesito.wrist_up();
                         break;
                     case 2:
-                        etesito.wristSpecimen();
+                        etesito.wrist_Specimen();
                         specimenWristDown = false;
                         specimenArmSemiDown = false;
                         specimenOpenClaw = false;
@@ -489,10 +419,10 @@ public class ET extends OpMode {
                         specimenArmDown = false;
                         break;
                     case 1:
-                        etesito.wristMedium();
+                        etesito.wrist_Medium();
                         break;
                     case 0:
-                        etesito.wristContract();
+                        etesito.wrist_Contract();
 
                         contractArmDown = true;
                         contractArmDownTimer.reset();
@@ -506,31 +436,22 @@ public class ET extends OpMode {
 
                 switch (armPosition) {
                     case 3:
-                        etesito.wristDown();
+                        etesito.wrist_down();
 
                         contractArmBasket = true;
                         lowerArmBasketTimer.reset();
                         break;
 
                     case 2:
-                        etesito.wristSpecimen();
+                        etesito.wrist_Specimen();
                         break;
 
                     case 1:
-                        etesito.wristDown();
+                        etesito.wrist_down();
                         break;
 
                     case 0:
-
-                        if (etesito.toggleWrist && toggleWristTimer.seconds() > 0.2) {
-                            etesito.wristDown();
-                            etesito.toggleWrist = false;
-                            toggleWristTimer.reset();
-                        }else if (!etesito.toggleWrist && toggleWristTimer.seconds() > 0.2) {
-                            etesito.wristContract();
-                            etesito.toggleWrist = true;
-                            toggleWristTimer.reset();
-                        }
+                        etesito.wrist_down();
 
                         break;
 
@@ -538,12 +459,12 @@ public class ET extends OpMode {
 
             }
 
-            if (gamepad1.dpad_left && togglePalitoTimer.seconds() > 0.2){
+            if (gamepad2.dpad_left && togglePalito.seconds() > 0.2){
                 etesito.esconderPalito();
-                togglePalitoTimer.reset();
-            }else if (gamepad1.dpad_right && togglePalitoTimer.seconds() > 0.2){
+                togglePalito.reset();
+            }else if (gamepad2.dpad_right && togglePalito.seconds() > 0.2){
                 etesito.lanzarSample();
-                togglePalitoTimer.reset();
+                togglePalito.reset();
             }
 
             if (gamepad1.left_bumper || gamepad1.b) {
@@ -552,9 +473,9 @@ public class ET extends OpMode {
                 contractArmDown = false;
 
                 if (armPosition == 1) {
-                    lowerWristBasket = true;
-                    contractArmBasket = true;
-                    lowerArmBasketTimer.reset();
+                    lowBasketWrist = true;
+                    lowBasketArm = true;
+                    lowBasketWristTimer.reset();
 
                 } else if (armPosition == 3) {
                     lowerWristBasket = true;
@@ -565,8 +486,12 @@ public class ET extends OpMode {
             } else if (gamepad1.right_bumper || gamepad1.a) {
                 etesito.pickSample();
 
+                lowBasketWrist = false;
                 lowerWristBasket = false;
                 contractArmBasket = false;
+
+                lowBasketArm = false;
+
 
             } else {
                 etesito.pickSampleSlow();
@@ -597,28 +522,22 @@ public class ET extends OpMode {
             }
 
             if (specimenUpArm && specimenUpArmTimer.seconds() > 0.3) {
-                armTarget = specimenArmPos;
+                armTarget = Etesito.specimenArmPos;
                 powerArm = 0.4;
                 armPosition = 2;
-
-                toggleRodeDown = true;
-
                 specimenUpArm = false;
 
             }
 
             if (specimenUpWrist && specimenUpArmTimer.seconds() > 0.6) {
-                etesito.wristSpecimen();
+                etesito.wrist_Specimen();
                 specimenUpWrist = false;
 
             }
 
             if (specimenArmSemiDown && specimenDownTimer.seconds() > 0.2) {
-                armTarget = postSpecimenArmPos;
+                armTarget = Etesito.postSpecimenArmPos;
                 powerArm = 0.4;
-
-                toggleRodeDown = true;
-
                 specimenArmSemiDown = false;
             }
 
@@ -628,8 +547,7 @@ public class ET extends OpMode {
             }
 
             if (specimenRodeDown && specimenDownTimer.seconds() > 0.6) {
-
-                etesito.rodeController.targetPosition = 0;
+                rodecontroller.targetPosition = 0;
                 specimenRodeDown = false;
             }
 
@@ -639,46 +557,59 @@ public class ET extends OpMode {
             }
 
             if (specimenArmDown && specimenDownTimer.seconds() > 0.9) {
-                powerArm = 0.1;
                 armTarget = 0;
+                powerArm = 0.1;
 
                 armPosition = 0;
                 specimenArmDown = false;
             }
 
             if (lowerWristBasket && lowerArmBasketTimer.seconds() > 0.3) {
-                etesito.wristContract();
+                etesito.wrist_Contract();
                 lowerWristBasket = false;
             }
 
             if (contractArmBasket && lowerArmBasketTimer.seconds() > 0.6) {
-                etesito.rodeController.targetPosition = 0;
+                rodecontroller.targetPosition = 0;
                 contractArmBasket = false;
             }
 
             if (contractArmDown && contractArmDownTimer.seconds() > 0.3) {
-                etesito.rodeController.targetPosition = 0;
+                rodecontroller.targetPosition = 0;
                 contractArmDown = false;
             }
 
+            if (lowBasketWrist && lowBasketWristTimer.seconds() >= 0.3) {
+                etesito.wrist_up();
+                lowBasketWrist = false;
+            }
+
+            if (lowBasketArm && lowBasketWristTimer.seconds() >= 0.5) {
+                rodecontroller.targetPosition = 0;
+                lowBasketArm = true;
+            }
         }
 
         armMax = 20000;
-        armMin = BasketArmpos - 350;
+        armMin = Etesito.highBasketArmpos - 350;
 
-        etesito.armController.targetPosition = Range.clip(armTarget, armMin, armMax);
+        armcontroller.targetPosition = Range.clip(armTarget, armMin, armMax);
 
         previousArmPosition = armPosition;
 
         double deltaArmPos = etesito.armMotor.getCurrentPosition() - beforeArmPos;
 
-        etesito.rodeController.targetPosition += (deltaArmPos / ratioArm);
+        rodecontroller.targetPosition += (deltaArmPos / etesito.ratioArm);
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 
-        telemetry.addData("rodeTarget", etesito.rodeController.targetPosition);
         telemetry.addData("rodePos", etesito.rodeMotor.getCurrentPosition());
         telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
         telemetry.addData("rode Power", etesito.rodeMotor.getPower());
+
+
+        double y = gamepad1.left_stick_y;
+        double x = -gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
 
         double potenciaChassis;
 
@@ -693,15 +624,23 @@ public class ET extends OpMode {
             etesito.imu.resetYaw();
         }
 
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+
+        double frontLeftPower = ((rotY + rotX + rx) / denominator) * potenciaChassis;
+        double backLeftPower = ((rotY - rotX + rx) / denominator) * potenciaChassis;
+        double frontRightPower = ((rotY - rotX - rx) / denominator) * potenciaChassis;
+        double backRightPower = ((rotY + rotX - rx) / denominator) * potenciaChassis;
+
             etesito.setDrivePower(
-                    etesito.chassisPower(botHeading, potenciaChassis, gamepad1)[0],
-                    etesito.chassisPower(botHeading, potenciaChassis, gamepad1)[1],
-                    etesito.chassisPower(botHeading, potenciaChassis, gamepad1)[2],
-                    etesito.chassisPower(botHeading, potenciaChassis, gamepad1)[3]
+                    frontLeftPower,
+                    backLeftPower,
+                    frontRightPower,
+                    backRightPower
             );
 
     }
-
 
 }
 
