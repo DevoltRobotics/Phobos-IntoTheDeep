@@ -1,25 +1,40 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class CRservoAction implements Action {
+public class CRservoAction extends SubsystemBase {
 
+        CRServo servo;
 
-    CRServo CRservo;
-    double power;
+        public CRservoAction(CRServo servo) {
+            this.servo = servo;
+        }
 
-    public CRservoAction(CRServo CRservo, double power) {
-        this.CRservo = CRservo;
-        this.power = power;
-    }
+        public Command crservoCMD(double power) {
+            return new CRServoCMD(power);
+        }
 
-    @Override
-    public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-        CRservo.setPower(power);
-        return false;
-    }
+        class CRServoCMD extends CommandBase {
+            double power;
+
+            public CRServoCMD(double power) {
+                this.power = power;
+                addRequirements(CRservoAction.this);
+            }
+
+            @Override
+            public void execute() {
+                servo.setPower(power);
+
+            }
+
+            @Override
+            public boolean isFinished() {
+                return true;
+            }
+        }
 }

@@ -1,17 +1,43 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
+
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import static org.firstinspires.ftc.teamcode.Comands.Constants.BasketArmpos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.basketWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.closeClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.esconderPalitoPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.initWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.lanzarBrazitosPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.lanzarSamplePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.mediumWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.openClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSpecimenWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosTEstPost;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosUpingPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.sostenerBrazitosPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenWristPos;
 
 @Config
 public class Etesito {
@@ -21,70 +47,42 @@ public class Etesito {
 
     public static PIDFController.PIDCoefficients climbCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.0017);
 
-    //public static PIDFController.PIDCoefficients chassisCoefficients = new PIDFController.PIDCoefficients(0.06, 0, 0.035);
+    public static PIDFController.PIDCoefficients chassisCoefficients = new PIDFController.PIDCoefficients(0.06, 0, 0.035);
 
-    PIDFController armController = new PIDFController(armCoefficients);
-    PIDFController rodeController = new PIDFController(rodeCoefficients);
+    public PIDFController armController = new PIDFController(armCoefficients);
+    public PIDFController rodeController = new PIDFController(rodeCoefficients);
+    public PIDFController chassiscontroller = new PIDFController(chassisCoefficients);
     PIDFController climbControllerRight = new PIDFController(climbCoefficients);
     PIDFController climbControllerLeft = new PIDFController(climbCoefficients);
 
     public DcMotorEx FL, BL, BR, FR, armMotor, rodeMotor, mCR, mCL;
 
-    public Servo sC1, sC2, claw, wrist, light;
+    public Servo sC1, sC2, claw, wrist, light, palito, palitoLeft, palitoRight;
 
     public CRServo intake;
 
     public boolean wristIsMedium;
 
-    public int ratioArm = 8;
-
-    public static double closePos = 1;
-    public static double openPos = 0;
-
-    public static double initWristPos = 0.8;
-    public static double downWristPos = 0.6;
-    public static double pickSpecimenWristPos = 0.6;
-    public static double downMWristPos = 0.57;
-    public static double specimenWristPos = 0.47;
-    public static double contractWristPos = 0.27;
-    public static double mediumWristPos = 0.3;
-    public static double firstSpecimenWristPos = 0.47;
-    public static double previousSpecimenWristPos = 0.1;
-    public static double basketWristPos = 0;
-
-    /*public static double initWristPos = 0.23;
-    public static double pickSpecimenWristPos = 0.4;
-    public static double downWristPos = 0.43;
-    public static double downMWristPos = 0.5;
-    public static double specimenWristPos = 0.53;
-    public static double contractWristPos = 0.66;
-    public static double mediumWristPos = 0.73;
-    public static double basketWristPos = 0.83;*/
-
-    public static int initArmpos = -950;
-    public static int lowBasketArmpos = -1200;
-    public static int firstSpecimenArmPos = -950;
-    public static int specimenArmPos = -2050;
-    public static int postSpecimenArmPos = -1200;
-    public static int highBasketArmpos = -1900;
-
-    public static int highRodePos = -2050;
-    public static int specimenRodePos = -1350;
-    public static int firstSpecimenRodePos = -1300;
-    public static int specimenPreviousRodePos = -900;
-    public static int lowBasketRodePos = -1400;
-    public static int downRodePos = -1200;
-    public static int climbingRodePos2 = -500;
-    public static int climbingRodePos1 = -200;
-    public static int specimenDownRodePos = -390;
-
-    public static double servosUpingPos = 0.2;
-    public static double servosClimbingPos = 0.1;
-    public static double servosInitPos = -0.05;
-
     public IMU imu;
 
+    public ServoAction clawAction;
+    public ServoAction wristAction;
+    public ServoAction servosAction;
+    public CRservoAction intakeAction;
+    public ArmSb armSb;
+
+
+    public boolean toggleWrist = true;
+
     public void init(HardwareMap hardwareMap, boolean resetRode) {
+
+
+        rodeController.reset();
+        armController.reset();
+        chassiscontroller.reset();
+
+        armSb.setDefaultCommand(armSb.armUpdate());
+
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -94,14 +92,17 @@ public class Etesito {
         rodeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        if(resetRode) {
+        if (resetRode) {
             rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
+        palitoLeft = hardwareMap.get(Servo.class, "plL");
+        palitoRight = hardwareMap.get(Servo.class, "plR");
         claw = hardwareMap.servo.get("cw");
         intake = hardwareMap.get(CRServo.class, "in");
         wrist = hardwareMap.servo.get("wr");
+        palito = hardwareMap.servo.get("sr");
 
         light = hardwareMap.get(Servo.class, "rgb");
 
@@ -118,8 +119,8 @@ public class Etesito {
 
         mCL.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        sC1 = hardwareMap.get(Servo.class,"sc1");
-        sC2 = hardwareMap.get(Servo.class,"sc2");
+        sC1 = hardwareMap.get(Servo.class, "sc1");
+        sC2 = hardwareMap.get(Servo.class, "sc2");
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -143,136 +144,191 @@ public class Etesito {
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         wristIsMedium = false;
+
+        clawAction = new ServoAction(claw);
+        wristAction = new ServoAction(wrist);
+        servosAction = new ServoAction(sC1, sC2);
+        intakeAction = new CRservoAction(intake);
+
+        armSb = new ArmSb(rodeMotor, rodeController, armMotor, armController);
+
+        CommandScheduler.getInstance().registerSubsystem(clawAction);
+        CommandScheduler.getInstance().registerSubsystem(wristAction);
+        CommandScheduler.getInstance().registerSubsystem(servosAction);
+        CommandScheduler.getInstance().registerSubsystem(intakeAction);
+
+        CommandScheduler.getInstance().registerSubsystem(armSb);
     }
 
-    public void pickSpecimen(){
-        claw.setPosition(closePos);
+    public void lanzarBrazitosColgada() {
+        palitoRight.setPosition(0.5 - sostenerBrazitosPos);
+        palitoLeft.setPosition(0.5 + sostenerBrazitosPos);
     }
 
-    public void dropSpecimen(){
-        claw.setPosition(openPos);
+    public void guardarBrazitosColgada() {
+        palitoRight.setPosition(0.5 - lanzarBrazitosPos);
+        palitoLeft.setPosition(0.5  + lanzarBrazitosPos);
     }
 
-    public void pickSample(){
-        intake.setPower(-1);
+    public void pickSpecimen() {
+        claw.setPosition(closeClawPos);
     }
 
-    public void pickSampleSlow(){
-        intake.setPower(-0.2);
+    public void dropSpecimen() {
+        claw.setPosition(openClawPos);
     }
 
-    public void dropSample(){
+    public void pickSample() {
         intake.setPower(1);
     }
 
-    public void intake0(){
+    public void pickSampleSlow() {
+        intake.setPower(0.1);
+    }
+
+    public void dropSample() {
+        intake.setPower(-1);
+    }
+
+    public void intake0() {
         intake.setPower(0);
     }
 
-    public void wrist_down(){
+    public void wristDown() {
         wrist.setPosition(downWristPos);
         wristIsMedium = false;
     }
 
-    public void wrist_Contract(){
+    public void wristContract() {
         wrist.setPosition(contractWristPos);
         wristIsMedium = true;
     }
 
-    public void wrist_Medium(){
+    public void wristToggle() {
+        if (wristIsMedium){
+            wristDown();
+
+        }else {
+            wristContract();
+        }
+    }
+
+    public void wristMedium() {
         wrist.setPosition(mediumWristPos);
         wristIsMedium = true;
     }
 
-    public void wrist_up(){
+    public void wristUp() {
         wrist.setPosition(basketWristPos);
-        wristIsMedium = false;
+        wristIsMedium = true;
     }
 
-    public void wristPickSpecimen(){
+    public void wristPickSpecimen() {
         wrist.setPosition(pickSpecimenWristPos);
         wristIsMedium = false;
     }
 
-    public void wrist_Specimen(){
+    public void wristSpecimen() {
         wrist.setPosition(specimenWristPos);
-        wristIsMedium = false;
+        wristIsMedium = true;
     }
 
-    public void wrist_Init(){
+    public void wristInit() {
         wrist.setPosition(initWristPos);
         wristIsMedium = false;
+        toggleWrist = true;
     }
 
-    public void wrist_ManualUp(){
+    public void wristManualUp() {
         wrist.setPosition(wrist.getPosition() + 0.03);
     }
 
-    public void wrist_ManualDown(){
+    public void wristManualDown() {
         wrist.setPosition(wrist.getPosition() - 0.03);
     }
 
-    public void wrist_ManualMantener(){
+    public void wristManualMantener() {
         wrist.setPosition(wrist.getPosition());
     }
 
-    public void servosOff(){
+    public void lanzarSample() {
+        palito.setPosition(lanzarSamplePos);
+    }
+
+    public void esconderPalito() {
+        palito.setPosition(esconderPalitoPos);
+    }
+
+    public void servosOff() {
         sC1.getController().pwmDisable();
         sC2.getController().pwmDisable();
     }
 
-    public void servos_Uping(){
+    public void servosUping() {
 
         sC1.setPosition(0.5 + servosUpingPos);
         sC2.setPosition(0.5 - servosUpingPos);
     }
 
-    public void servos_Climbing(){
+    public void servosClimbing() {
 
         sC1.setPosition(0.5 + servosClimbingPos);
         sC2.setPosition(0.5 - servosClimbingPos);
     }
 
-    public void servos_down() {
+    public void servos_test() {
+
+        sC1.setPosition(0.5 + servosTEstPost);
+        sC2.setPosition(0.5 - servosTEstPost);
+
+    }
+
+    public void servosDown() {
         ElapsedTime timer = new ElapsedTime();
 
         sC1.setPosition(0);
         sC2.setPosition(1);
 
-        if (timer.seconds() > 0.2){
+        if (timer.seconds() > 0.2) {
             servosOff();
 
         }
     }
 
-    public void setLight(String color){
-        switch (color){
-            case "purple": light.setPosition(0.72);
+    public void setLight(String color) {
+        switch (color) {
+            case "purple":
+                light.setPosition(0.72);
                 break;
-            case "blue": light.setPosition(0.62);
+            case "blue":
+                light.setPosition(0.62);
                 break;
-            case "green": light.setPosition(0.5);
+            case "green":
+                light.setPosition(0.5);
                 break;
-            case "yellow": light.setPosition(0.388);
+            case "yellow":
+                light.setPosition(0.388);
                 break;
-            case "orange": light.setPosition(0.33);
+            case "orange":
+                light.setPosition(0.33);
                 break;
-            case "red": light.setPosition(0.28);
+            case "red":
+                light.setPosition(0.28);
                 break;
         }
     }
 
-    public void resetArmEncoder(){
+    public void resetArmEncoder() {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void resetRodeEncoder(){
+    public void resetRodeEncoder() {
         rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setDrivePower(double fL, double bL, double fR, double bR){
+    public void setDrivePower(double fL, double bL, double fR, double bR) {
         FL.setPower(fL);
         BL.setPower(bL);
         FR.setPower(fR);
@@ -283,83 +339,88 @@ public class Etesito {
         return start * (1 - t) + end * t;
     }
 
-    public Action pickSampleAction (){
-        return new CRservoAction(intake, -1);
+    public double[] chassisPower (double botHeading, double potenciaChassis, Gamepad gamepad1){
+        double y = gamepad1.left_stick_y;
+        double x = -gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
+
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+
+        return new double[]{
+                ((rotY + rotX + rx) / denominator) * potenciaChassis, //fl
+                ((rotY - rotX + rx) / denominator) * potenciaChassis, // bl
+                ((rotY - rotX - rx) / denominator) * potenciaChassis, //fr
+                ((rotY + rotX - rx) / denominator) * potenciaChassis //br
+        };
+
     }
 
-    public Action pickSampleSlowAction (){
-        return new CRservoAction(intake, -0.5);
-    }
 
-    public Action dropSampleAction (){
-        return new CRservoAction(intake, 1);
-    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public Action mantenerSampleAction (){
-        return new CRservoAction(intake, 0);
+    public Command contractArmDownCmd(){
+        return new SequentialCommandGroup(
+            wristAction.servoPosCMD(contractWristPos),
+            new WaitCommand(300),
+            armSb.rodeToPos(0)
 
-    }
-
-    public Action servosInitAction(){
-        return new ParallelAction(
-                new ServoAction(sC1, 0.5 + servosInitPos),
-                new ServoAction(sC2, 0.5 - servosInitPos)
         );
     }
 
-    public Action servosClimbingAction(){
-        return new ParallelAction(
-                new ServoAction(sC1, 0.5 + servosUpingPos),
-                new ServoAction(sC2, 0.5 - servosUpingPos)
+    public Command extendArmHighBasketCmd(){
+        return new SequentialCommandGroup(
+                wristAction.servoPosCMD(basketWristPos),
+                armSb.armToPos(BasketArmpos),
+                new WaitCommand(300),
+                armSb.rodeToPos(highRodePos)
+
         );
     }
 
-    public Action lightOrange(){
-        return new ServoAction(light, 0.33);
+    public Command contractArmBasketCmd(){
+        return new SequentialCommandGroup(
+                armSb.armToPos(BasketArmpos),
+                new WaitCommand(400),
+
+                armSb.rodeToPosSmooth(0, 0.5)
+        );
     }
 
-    public Action pickSpecimenActionAction(){
-        return new ServoAction(claw, closePos);
+    public Command putSpecimenCmd(){
+        return new SequentialCommandGroup(
+                armSb.rodeToPos(specimenRodePos),
+                new WaitCommand(200),
+
+                armSb.armToPos(postSpecimenArmPos),
+                new WaitCommand(200),
+
+                clawAction.servoPosCMD(openClawPos),
+                new WaitCommand(200),
+
+                armSb.rodeToPosSmooth(0, 3),
+                new WaitCommand(50),
+
+                wristAction.servoPosCMD(downWristPos),
+                new WaitCommand(300),
+
+                armSb.armToPosSmooth(0, 0.5)
+        );
     }
 
-    public Action dropSpecimenAction(){
-        return new ServoAction(claw, openPos);
-    }
+    public Command pickSpecimenCmd(){
+        return new SequentialCommandGroup(
+                clawAction.servoPosCMD(closeClawPos),
+                new WaitCommand(300),
 
-    public Action wristInitAction(){
-        return new ServoAction(wrist, initWristPos);
-    }
+                armSb.armToPos(specimenArmPos),
+                new WaitCommand(200),
 
-    public Action previousSpecimenWristAction(){
-        return new ServoAction(wrist, previousSpecimenWristPos);
-    }
+                wristAction.servoPosCMD(specimenWristPos)
+        );
 
-    public Action wristDownMAction(){
-        return new ServoAction(wrist, downMWristPos);
-    }
 
-    public Action wristDownAction(){
-        return new ServoAction(wrist, downWristPos);
-    }
-
-    public Action wristPickSpecimenAction(){
-        return new ServoAction(wrist, pickSpecimenWristPos);
-    }
-
-    public Action firstSpecimenWristAction(){
-        return new ServoAction(wrist, firstSpecimenWristPos);
-    }
-
-    public Action wristContractAction(){
-        return new ServoAction(wrist, contractWristPos);
-    }
-
-    public Action wristBasketAction(){
-        return new ServoAction(wrist, basketWristPos);
-    }
-
-    public Action wristSpecimenAction(){
-        return new ServoAction(wrist, specimenWristPos);
     }
 
 
