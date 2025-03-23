@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Comands.Constants.climbCoefficients;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos1;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos2;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.down2RodePos;
@@ -29,8 +30,8 @@ public class ET extends OpMode {
 
     private final Etesito etesito = new Etesito();
 
-    PIDFController climbControllerRight = new PIDFController(Etesito.climbCoefficients);
-    PIDFController climbControllerLeft = new PIDFController(Etesito.climbCoefficients);
+    PIDFController climbControllerRight = new PIDFController(climbCoefficients);
+    PIDFController climbControllerLeft = new PIDFController(climbCoefficients);
 
     double currentRodeTicks = 0;
 

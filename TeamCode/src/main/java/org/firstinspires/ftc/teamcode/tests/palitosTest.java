@@ -9,29 +9,26 @@ import org.firstinspires.ftc.teamcode.Comands.Etesito;
 @TeleOp
 public class palitosTest extends OpMode {
 
-    Servo palitoLeft;
-    Servo palitoRight;
-
     Etesito etesito = new Etesito();
 
     @Override
     public void init() {
-        palitoLeft = hardwareMap.get(Servo.class, "plL");
-        palitoRight = hardwareMap.get(Servo.class, "plR");
-
         etesito.init(hardwareMap, false, false);
+
+        etesito.palitoLeft.setPosition(0.5);
+        etesito.palitoRight.setPosition(0.5);
+
+
     }
 
 
     @Override
     public void loop() {
         if (gamepad2.left_bumper) {
-            palitoLeft.setPosition(0.5);
-            palitoRight.setPosition(0.5);
+            etesito.guardarBrazitosColgada();
 
         } else if (gamepad2.right_bumper) {
-            palitoLeft.setPosition(0.63);
-            palitoRight.setPosition(0.37);
+            etesito.lanzarBrazitosColgada();
 
         }
 
