@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
-import org.firstinspires.ftc.teamcode.Vision.CrosshairVision;
+import org.firstinspires.ftc.teamcode.tests.Vision.CrosshairVision;
 import org.opencv.core.RotatedRect;
 
 @Autonomous

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 
@@ -15,8 +14,8 @@ public class palitosTest extends OpMode {
     public void init() {
         etesito.init(hardwareMap, false, false);
 
-        etesito.palitoLeft.setPosition(0.5);
-        etesito.palitoRight.setPosition(0.5);
+        etesito.launcherLeft.setPosition(0.5);
+        etesito.launcherRight.setPosition(0.5);
 
 
     }
@@ -25,15 +24,15 @@ public class palitosTest extends OpMode {
     @Override
     public void loop() {
         if (gamepad2.left_bumper) {
-            etesito.guardarBrazitosColgada();
+            etesito.supportHangArms();
 
         } else if (gamepad2.right_bumper) {
-            etesito.lanzarBrazitosColgada();
+            etesito.launchHangArms();
 
         }
 
         if (gamepad2.dpad_right){
-            etesito.servosUping();
+            etesito.servosHanging();
 
         } else if (gamepad2.dpad_left) {
             etesito.servos_test();

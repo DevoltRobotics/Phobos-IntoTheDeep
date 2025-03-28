@@ -17,11 +17,11 @@ public class srTest extends OpMode {
     @Override
     public void loop() {
         if (gamepad2.left_bumper) {
-            servo.setPosition(0.5);
+            servo.setPosition(0.53);
 
 
         } else if (gamepad2.right_bumper) {
-            servo.setPosition(0.3);
+            servo.setPosition(0.1);
 
         }
     }
