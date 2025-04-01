@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.Vision;
+package org.firstinspires.ftc.teamcode.subsystems.Vision;
 
 import com.acmerobotics.dashboard.config.Config;
 
@@ -22,8 +22,8 @@ public class Crosshair_Example extends OpenCvPipeline {
 
     public Mat bitwiseANDMat = new Mat();
 
-    public static int erodeValue = ((int) (9));
-    public static int dilateValue = ((int) (3));
+    public static int erodeValue = ((int) (20));
+    public static int dilateValue = ((int) (15));
     private Mat element = null;
     private Mat bitwiseANDMatErodedDilated = new Mat();
 
@@ -59,7 +59,7 @@ public class Crosshair_Example extends OpenCvPipeline {
 
     private MatOfPoint biggestContour = null;
 
-    private Object rectsLock = new Object();
+    private final Object rectsLock = new Object();
     private ArrayList<RotatedRect> exportedRects = new ArrayList<>();
 
     @Override

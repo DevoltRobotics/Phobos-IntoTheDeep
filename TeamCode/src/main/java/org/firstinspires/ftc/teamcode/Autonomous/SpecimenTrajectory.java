@@ -14,7 +14,7 @@ import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@Autonomous(name = "SpecimenTrajectory", group = "Autonomous")
+@Autonomous
 public class SpecimenTrajectory extends OpMode {
 
     private Follower follower;
@@ -24,21 +24,23 @@ public class SpecimenTrajectory extends OpMode {
 
     //This visualizer is very easy to use to find and create paths/pathchains/poses: <https://pedro-path-generator.vercel.app/>
 
-    private final Pose startPose = new Pose(8.5, 78, Math.toRadians(0));
+    private final Pose startPose = new Pose(8.5, 79.5, Math.toRadians(0));
 
-    private final Pose putSpecimen1 = new Pose(25, 78, Math.toRadians(0));
+    private final Pose putSpecimen1 = new Pose(25, 79, Math.toRadians(0));
 
-    private final Pose pickup1SamplePose = new Pose(32, 39, Math.toRadians(320));
+    private final Pose pickup1SamplePose = new Pose(38, 39, Math.toRadians(300));
 
-    private final Pose put1SamplePose = new Pose(15, 55, Math.toRadians(230));
+    private final Pose pickup1PoseControl = new Pose(22, 53, Math.toRadians(260));
 
-    private final Pose pickup2SamplePose = new Pose(32, 32, Math.toRadians(320));
+    private final Pose put1SamplePose = new Pose(27, 37, Math.toRadians(260));
 
-    private final Pose put2SamplePose = new Pose(15, 50, Math.toRadians(230));
+    private final Pose pickup2SamplePose = new Pose(38, 29, Math.toRadians(300));
 
-    private final Pose pickup3SamplePose = new Pose(40, 18, Math.toRadians(290));
+    private final Pose put2SamplePose = new Pose(27, 27, Math.toRadians(260));
 
-    private final Pose pick2specimenyput3sample = new Pose(10, 30, Math.toRadians(180));
+    private final Pose pickup3SamplePose = new Pose(30, 27, Math.toRadians(295));
+
+    private final Pose pick2specimenyput3sample = new Pose(16, 35, Math.toRadians(180));
 
     private final Pose put2specimen = new Pose(41, 75, Math.toRadians(180));
 
@@ -61,11 +63,9 @@ public class SpecimenTrajectory extends OpMode {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), putSpecimen1.getHeading());
 
-        //PickSample1 = new Path(new BezierCurve(new Point(putSpecimen1), new Point(pickup1PoseControl), new Point(pickup1SamplePose)));
-        //PickSample1.setLinearHeadingInterpolation(putSpecimen1.getHeading(), pickup1SamplePose.getHeading());
-
-        PickSample1 = new Path(new BezierLine(new Point(putSpecimen1), new Point(pickup1SamplePose)));
+        PickSample1 = new Path(new BezierCurve(new Point(putSpecimen1), new Point(pickup1PoseControl), new Point(pickup1SamplePose)));
         PickSample1.setLinearHeadingInterpolation(putSpecimen1.getHeading(), pickup1SamplePose.getHeading());
+
 
         PutSample1 = new Path(new BezierLine(new Point(pickup1SamplePose), new Point(put1SamplePose)));
         PutSample1.setLinearHeadingInterpolation(pickup1SamplePose.getHeading(), put1SamplePose.getHeading());
@@ -142,7 +142,7 @@ public class SpecimenTrajectory extends OpMode {
                 }
                 break;
 
-/*
+
             case 5:
                 if(!follower.isBusy()) {
                     follower.followPath(PickSample3,true);
@@ -157,10 +157,7 @@ public class SpecimenTrajectory extends OpMode {
                 }
                 break;
 
-
-                 */
-
-            case 5:
+            case 7:
                 if(!follower.isBusy()) {
                     setPathState(-1);
                 }

@@ -74,7 +74,6 @@ public class RodeSb extends SubsystemBase {
             if (smooth){
                 double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
                 rodeTarget = (int) lerp(currentTicks, targetPos, t);
-                rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
 
             }else {
                 rodeTarget = targetPos;
@@ -82,19 +81,23 @@ public class RodeSb extends SubsystemBase {
             }
 
             rodeController.targetPosition = rodeTarget;
-
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
         }
 
         @Override
         public boolean isFinished() {
             if (smooth) {
                 return timer.seconds() >= timeSeconds;
-
-            } else {
+            }else {
                 return true;
             }
+
         }
 
+        @Override
+        public void end(boolean interrupted) {
+            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
+        }
     }
 
     class RodeUpdate extends CommandBase {

@@ -76,8 +76,8 @@ public class ArmSb extends SubsystemBase {
 
             }
 
-            armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
             armController.targetPosition = armTarget;
+            armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
 
         }
 
@@ -85,10 +85,8 @@ public class ArmSb extends SubsystemBase {
         public boolean isFinished() {
             if (smooth) {
                 return timer.seconds() >= timeSeconds;
+            }else return true;
 
-            } else {
-                return true;
-            }
         }
 
         @Override

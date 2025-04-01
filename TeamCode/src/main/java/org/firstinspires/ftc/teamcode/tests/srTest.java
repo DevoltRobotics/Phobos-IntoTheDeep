@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import static org.firstinspires.ftc.teamcode.Comands.Constants.contractAbramPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.midOpenAbramPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.openAbramPos;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -16,12 +20,15 @@ public class srTest extends OpMode {
 
     @Override
     public void loop() {
-        if (gamepad2.left_bumper) {
-            servo.setPosition(0.53);
+        if (gamepad2.dpad_right) {
+            servo.setPosition(openAbramPos);
 
 
-        } else if (gamepad2.right_bumper) {
-            servo.setPosition(0.1);
+        } else if (gamepad2.dpad_up) {
+            servo.setPosition(midOpenAbramPos);
+
+        }else if (gamepad2.dpad_left) {
+            servo.setPosition(contractAbramPos);
 
         }
     }
