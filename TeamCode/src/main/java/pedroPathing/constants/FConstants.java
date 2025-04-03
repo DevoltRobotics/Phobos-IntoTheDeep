@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class FConstants {
     static {
+
+        FollowerConstants.turnHeadingErrorThreshold = 0.15;
+
         FollowerConstants.localizers = Localizers.PINPOINT;
 
         FollowerConstants.leftFrontMotorName = "fl";
@@ -30,9 +33,13 @@ public class FConstants {
         FollowerConstants.useSecondaryTranslationalPID = true;
         FollowerConstants.secondaryTranslationalPIDFCoefficients.setCoefficients(0.1,0,0.01,0);
 
-        FollowerConstants.headingPIDFCoefficients.setCoefficients(0.55,0,0.009,0);
+        //FollowerConstants.headingPIDFCoefficients.setCoefficients(0.55,0,0.009,0);
+        //FollowerConstants.useSecondaryHeadingPID = true;
+        //FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(1,0,0.05,0); // Not being used, @see useSecondaryHeadingPID
+
+        FollowerConstants.headingPIDFCoefficients.setCoefficients(2.2,0,0.12,0);
         FollowerConstants.useSecondaryHeadingPID = true;
-        FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(1,0,0.05,0); // Not being used, @see useSecondaryHeadingPID
+        FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(2.2,0,0.12,0); // Not being used, @see useSecondaryHeadingPID
 
         FollowerConstants.drivePIDFCoefficients.setCoefficients(0.0098,0,0.0003,0,0);
         FollowerConstants.useSecondaryDrivePID = true;

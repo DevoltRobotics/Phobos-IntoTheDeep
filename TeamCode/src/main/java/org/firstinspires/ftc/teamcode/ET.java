@@ -20,6 +20,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.Comands.PIDFController;
@@ -33,7 +34,6 @@ public class ET extends OpMode {
 
     private final Etesito etesito = new Etesito();
 
-    private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
 
     PIDFController climbControllerRight = new PIDFController(climbCoefficients);
@@ -99,8 +99,6 @@ public class ET extends OpMode {
         etesito.init(hardwareMap, true, true);
 
         Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
 
         launchArms = false;
 
@@ -127,11 +125,6 @@ public class ET extends OpMode {
     }
 
     int beforeArmPos = 0;
-
-    @Override
-    public void start() {
-        follower.startTeleopDrive();
-    }
 
     @Override
     public void loop() {
@@ -364,7 +357,7 @@ public class ET extends OpMode {
                     break;
             }
 
-            if (extendArmHighBasket && extendArmHighBasketTimer.seconds() >= 0.4) {
+            if (extendArmHighBasket && extendArmHighBasketTimer.seconds() >= 0.3) {
                 etesito.rodeController.targetPosition = rdTarget;
 
                 extendArmHighBasket = false;
@@ -575,20 +568,9 @@ public class ET extends OpMode {
 
         double turbo = 1 - (gamepad1.right_trigger * 0.65);
 
-        double tY = -gamepad1.left_stick_y * turbo;
-        double tX = -gamepad1.left_stick_y * turbo;
-        double turn = -gamepad1.right_stick_x * turbo;
-
-        follower.setTeleOpMovementVectors(tY, tX, turn, true);
-        follower.update();
-
         /* Telemetry Outputs of our Follower */
-        telemetry.addData("X", follower.getPose().getX());
-        telemetry.addData("Y", follower.getPose().getY());
-        telemetry.addData("Heading in Degrees", Math.toDegrees(follower.getPose().getHeading()));
 
-
-        /*double chassisPower = 1 - (gamepad1.right_trigger * 0.65);
+        double chassisPower = 1 - (gamepad1.right_trigger * 0.65);
 
         if (gamepad1.dpad_up){
             etesito.imu.resetYaw();
@@ -602,7 +584,7 @@ public class ET extends OpMode {
                 etesito.chassisPower(botHeading, chassisPower, gamepad1)[1],
                 etesito.chassisPower(botHeading, chassisPower, gamepad1)[2],
                 etesito.chassisPower(botHeading, chassisPower, gamepad1)[3]
-            );*/
+            );
 
     }
 

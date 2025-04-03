@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
@@ -32,7 +33,7 @@ public class SamplesTrajectory extends OpMode {
 
     private final Pose pickUp2SamplePose = new Pose(25, 130, Math.toRadians(340));
 
-    private final Pose move2SamplePose = new Pose(25, 130, Math.toRadians(325));
+    private final Pose move2SamplePose = new Pose(pickUp2SamplePose.getX(), pickUp2SamplePose.getY(), Math.toRadians(325));
 
     private final Pose putSample2Pose = new Pose(12, 130, Math.toRadians(315));
 
@@ -56,7 +57,7 @@ public class SamplesTrajectory extends OpMode {
 
     private Path scorePreload, PickSample2, MoveSample2, PutSample2, PickSample3, MoveSample3, PutSample3, PickSample4, MoveSample4, PutSample4,
             PickSample5, PutSample5;
-    private PathChain MoveSample2Chain;
+
 
     public void buildPaths() {
         scorePreload = new Path(new BezierCurve(new Point(startPose), new Point(putSample1ControlPose), new Point(putSample1Pose)));
@@ -65,13 +66,8 @@ public class SamplesTrajectory extends OpMode {
         PickSample2 = new Path(new BezierLine(new Point(putSample1Pose), new Point(pickUp2SamplePose)));
         PickSample2.setLinearHeadingInterpolation(putSample1Pose.getHeading(), pickUp2SamplePose.getHeading());
 
-        MoveSample2 = new Path(new BezierLine(new Point(pickUp2SamplePose), new Point(move2SamplePose)));
-        MoveSample2.setLinearHeadingInterpolation(pickUp2SamplePose.getHeading(), move2SamplePose.getHeading());
-
-        MoveSample2Chain = new PathChain(PickSample2, MoveSample2);
-
         PutSample2 = new Path(new BezierLine(new Point(move2SamplePose), new Point(putSample2Pose)));
-        PutSample2.setLinearHeadingInterpolation(move2SamplePose.getHeading(), putSample2Pose.getHeading());
+        PutSample2.setLinearHeadingInterpolation(Math.toRadians(325), putSample2Pose.getHeading());
 
         PickSample3 = new Path(new BezierLine(new Point(putSample2Pose), new Point(pickUp3SamplePose)));
         PickSample3.setLinearHeadingInterpolation(putSample2Pose.getHeading(), pickUp3SamplePose.getHeading());
@@ -97,7 +93,6 @@ public class SamplesTrajectory extends OpMode {
         PutSample5 = new Path(new BezierCurve(new Point(pickUp5SamplePose), new Point(put5SampleControlPose), new Point(put5SamplePos)));
         PutSample5.setLinearHeadingInterpolation(pickUp5SamplePose.getHeading(), put5SamplePos.getHeading());
 
-
     }
 
     public void autonomousPathUpdate() {
@@ -108,27 +103,33 @@ public class SamplesTrajectory extends OpMode {
                 break;
             case 1:
                 if(!follower.isBusy()) {
-                     follower.followPath(PickSample2,true);
-
+                     follower.followPath(PickSample2);
                     setPathState(2);
                 }
                 break;
 
             case 2:
                 if(!follower.isBusy()) {
-                    follower.followPath(MoveSample2Chain,true);
-                    setPathState(-1);
+                    follower.turnToDegrees(325);
+                    setPathState(3);
                 }
+
                 break;
 
-            /*case 3:
-                if(!follower.isBusy()) {
-                    follower.followPath(PutSample2,true);
+            case 3:
+                if(!follower.isTurning()) {
+                    follower.followPath(PutSample2);
                     setPathState(4);
                 }
                 break;
 
+            case 4:
+                if(!follower.isBusy()) {
+                    setPathState(-1);
+                }
+                break;
 
+/*
             case 4:
                 if(!follower.isBusy()) {
                     follower.followPath(PickSample3,true);
@@ -217,8 +218,8 @@ public class SamplesTrajectory extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
-        Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
+        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
+
         follower.setStartingPose(startPose);
         buildPaths();
     }

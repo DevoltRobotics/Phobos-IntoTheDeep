@@ -25,6 +25,9 @@ public class PedroSubsystem extends SubsystemBase {
         return new FollowPathCmd(path);
     }
 
+    public Command turn(double radians) {
+        return new turn(radians);
+    }
 
     public Command followPathCmd(PathChain path) {
         return new FollowPathChainCmd(path);
@@ -45,10 +48,28 @@ public class PedroSubsystem extends SubsystemBase {
 
         @Override
         public boolean isFinished() {
-            return !follower.isBusy();
+            return !follower.isBusy() && !follower.isTurning();
         }
     }
 
+    class turn extends CommandBase {
+        Double radians;
+
+        turn(Double radians) {
+            this.radians = radians;
+            addRequirements(PedroSubsystem.this);
+        }
+
+        @Override
+        public void initialize() {
+            follower.turnTo(radians);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return !follower.isBusy();
+        }
+    }
 
     class FollowPathChainCmd extends CommandBase {
         PathChain path;
