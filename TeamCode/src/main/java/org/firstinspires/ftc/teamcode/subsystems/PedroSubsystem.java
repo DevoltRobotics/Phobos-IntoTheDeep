@@ -5,8 +5,11 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
+import com.pedropathing.pathgen.Point;
 
 public class PedroSubsystem extends SubsystemBase {
 
@@ -26,7 +29,7 @@ public class PedroSubsystem extends SubsystemBase {
     }
 
     public Command turn(double radians) {
-        return new turn(radians);
+        return new Turn(radians);
     }
 
     public Command followPathCmd(PathChain path) {
@@ -44,25 +47,6 @@ public class PedroSubsystem extends SubsystemBase {
         @Override
         public void initialize() {
             follower.followPath(path);
-        }
-
-        @Override
-        public boolean isFinished() {
-            return !follower.isBusy() && !follower.isTurning();
-        }
-    }
-
-    class turn extends CommandBase {
-        Double radians;
-
-        turn(Double radians) {
-            this.radians = radians;
-            addRequirements(PedroSubsystem.this);
-        }
-
-        @Override
-        public void initialize() {
-            follower.turnTo(radians);
         }
 
         @Override
@@ -87,6 +71,54 @@ public class PedroSubsystem extends SubsystemBase {
         @Override
         public boolean isFinished() {
             return !follower.isBusy();
+        }
+    }
+
+    class Turn extends CommandBase {
+        double radians;
+
+        Turn(double radians) {
+            this.radians = radians;
+            addRequirements(PedroSubsystem.this);
+        }
+
+        @Override
+        public void initialize() {
+            follower.turnTo(radians);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return !follower.isTurning();
+        }
+    }
+
+    class HoldPoint extends CommandBase {
+        BezierPoint holdPoint;
+        double heading;
+
+
+        public HoldPoint(BezierPoint holdPoint, double heading) {
+            this.holdPoint = holdPoint;
+            this.heading = heading;
+        }
+
+        public HoldPoint(Point holdPoint, double heading) {
+            this(new BezierPoint(holdPoint), heading);
+        }
+
+        public HoldPoint(Pose holdPose) {
+            this(new BezierPoint(new Point(holdPose)), holdPose.getHeading());
+        }
+
+        @Override
+        public void initialize() {
+            follower.holdPoint(holdPoint, heading);
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            follower.breakFollowing();
         }
     }
 

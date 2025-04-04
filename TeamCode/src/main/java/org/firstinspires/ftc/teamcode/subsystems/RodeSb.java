@@ -81,7 +81,6 @@ public class RodeSb extends SubsystemBase {
             }
 
             rodeController.targetPosition = rodeTarget;
-            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
         }
 
         @Override
@@ -96,7 +95,6 @@ public class RodeSb extends SubsystemBase {
 
         @Override
         public void end(boolean interrupted) {
-            rodeMotor.setPower(rodeController.update(rodeMotor.getCurrentPosition()) * 0.09);
         }
     }
 

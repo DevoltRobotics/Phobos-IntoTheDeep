@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbCoefficients;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos1;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.BasketArmpos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.ratioArm;
@@ -12,7 +12,6 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenRodePos;
 
-import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -289,7 +288,7 @@ public class ET extends OpMode {
 
             if (gamepad2.y && !extended) {
                 powerArm = 0.4;
-                armTarget = BasketArmpos;
+                armTarget = basketArmPos;
                 etesito.wristUp();
 
                 armPosition = 1;
@@ -299,7 +298,7 @@ public class ET extends OpMode {
 
             } else if (gamepad2.b && !extended) {
                 powerArm = 0.4;
-                armTarget = BasketArmpos;
+                armTarget = basketArmPos;
                 etesito.wristUp();
 
                 armPosition = 1;
@@ -537,7 +536,7 @@ public class ET extends OpMode {
                 lowerWristBasket = false;
             }
 
-            if (contractArmBasket && lowerArmBasketTimer.seconds() > 0.6) {
+            if (contractArmBasket && lowerArmBasketTimer.seconds() > 0.5) {
                 etesito.rodeController.targetPosition = 0;
                 contractArmBasket = false;
             }
@@ -550,7 +549,7 @@ public class ET extends OpMode {
         }
 
         armMax = 20000;
-        armMin = BasketArmpos - 350;
+        armMin = basketArmPos - 350;
 
         etesito.armController.targetPosition = Range.clip(armTarget, armMin, armMax);
 

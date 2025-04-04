@@ -15,9 +15,11 @@ import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.Vision.CrosshairVision;
+import org.opencv.core.Mat;
 import org.opencv.core.RotatedRect;
 
 import pedroPathing.constants.FConstants;
@@ -46,9 +48,12 @@ public class PedroOpenCv extends OpMode {
 
     }
 
+    double beforeHeading;
+    double beforeXPos;
+    double beforeRodeIn;
+
     @Override
     public void loop() {
-
         // These loop the movements of the robot
         follower.update();
 
@@ -63,15 +68,18 @@ public class PedroOpenCv extends OpMode {
         double tY = vision.pipeline.vectorY / ScaleFactor;
         double tX = vision.pipeline.vectorX / ScaleFactor;
 
-        double targetAngle = Math.atan2(tY, tX);
+        double targetX = Range.clip(beforeXPos - tX, -4, 4);
+        double targetAngle = Range.clip(beforeHeading - Math.atan2(tY, tX), Math.toRadians(-15), Math.toRadians(15));
 
-        follower.holdPoint(new BezierPoint (new Point(tX, startPose.getY())), targetAngle);
-
-        double armCurrentIn = -etesito.rodeMotor.getCurrentPosition() * rodeTicksToIn;
+        if (gamepad1.right_trigger > 0.5) {
+            follower.holdPoint(new BezierPoint(new Point(targetX, startPose.getY())), targetAngle);
+        }else {
+            follower.holdPoint(new BezierPoint(new Point(beforeXPos, startPose.getY())), targetAngle);
+        }
 
         double tYRode = tY * rodeInToTicks;
 
-        int rodeTarget = (int)(armCurrentIn + tYRode);
+        int rodeTarget = (int)(beforeRodeIn + tYRode);
 
         if (gamepad2.dpad_up){
             etesito.rodeSb.rodeToPos(rodeTarget).schedule();
@@ -79,7 +87,11 @@ public class PedroOpenCv extends OpMode {
             etesito.rodeSb.rodeToPos(preSubmRodePos).schedule();
         }
 
-        telemetry.addData("tX", tX);
+        beforeRodeIn = -etesito.rodeMotor.getCurrentPosition() * rodeTicksToIn;
+        beforeXPos = follower.getPose().getX();
+        beforeHeading = follower.getPose().getHeading();
+
+                telemetry.addData("tX", tX);
         telemetry.addData("tY", tY);
         telemetry.addData("tYRode", tYRode);
         telemetry.addData("tAngle", targetAngle);
@@ -89,7 +101,6 @@ public class PedroOpenCv extends OpMode {
 
     @Override
     public void init() {
-
         etesito.init(hardwareMap, true, true);
 
         etesito.rodeSb.setDefaultCommand(etesito.rodeSb.rodeUpdate());
@@ -108,6 +119,7 @@ public class PedroOpenCv extends OpMode {
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
 
         follower.setStartingPose(startPose);
+
         buildPaths();
     }
     @Override

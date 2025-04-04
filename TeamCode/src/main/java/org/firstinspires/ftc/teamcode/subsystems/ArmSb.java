@@ -77,7 +77,6 @@ public class ArmSb extends SubsystemBase {
             }
 
             armController.targetPosition = armTarget;
-            armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
 
         }
 
