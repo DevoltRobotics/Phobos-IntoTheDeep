@@ -39,26 +39,26 @@ public class AutonomousSample extends OpMode {
 
     Etesito etesito = new Etesito();
 
-    private int rodePick2 = -950;
+    private int rodePick2 = -1000;
     private int rodePick3 = -850;
 
     private int rodePick4 = -350;
 
     private Command pathCommand;
 
-    private final Pose startPose = new Pose(8.5, 112, Math.toRadians(0));
+    private final Pose startPose = new Pose(8.5, 112, Math.toRadians(270));
 
-    private final Pose putSample1Pose = new Pose(16, 130, Math.toRadians(319));
-    private final Pose putSample1ControlPose = new Pose(20, 112, Math.toRadians(340));
+    private final Pose putSample1Pose = new Pose(15, 128, Math.toRadians(319));
+    //private final Pose putSample1ControlPose = new Pose(20, 112, Math.toRadians(340));
 
     private final Pose pickUp2SamplePose = new Pose(30, 117, Math.toRadians(50));
 
     private final Pose putSample2Pose = new Pose(17, 135, Math.toRadians(320));
     private final Pose putSample2ControlPose = new Pose(23, 136, Math.toRadians(340));
 
-    private final Pose pickUp3SamplePose = new Pose(30, 128, Math.toRadians(50));
+    private final Pose pickUp3SamplePose = new Pose(30, 128, Math.toRadians(48));
 
-    private final Pose put3SamplePose = new Pose(17, 131, Math.toRadians(319));
+    private final Pose put3SamplePose = new Pose(16, 132, Math.toRadians(319));
     private final Pose putSample3ControlPose = new Pose(26, 136, Math.toRadians(340));
 
     private final Pose pickUp4SamplePose = new Pose(37, 135, Math.toRadians(300));
@@ -79,7 +79,7 @@ public class AutonomousSample extends OpMode {
 
 
     public void buildPaths() {
-        PutSample1 = new Path(new BezierCurve(new Point(startPose), new Point(putSample1ControlPose), new Point(putSample1Pose)));
+        PutSample1 = new Path(new BezierLine(new Point(startPose), new Point(putSample1Pose)));
         PutSample1.setLinearHeadingInterpolation(startPose.getHeading(), putSample1Pose.getHeading());
 
         PickSample2 = follower.pathBuilder()
@@ -150,7 +150,7 @@ public class AutonomousSample extends OpMode {
 
                         ),
 
-                        etesito.rodeSb.rodeToPosSmooth(rodePick2, 0.7),
+                        etesito.rodeSb.rodeToPosSmooth(rodePick2, 0.73),
 
                         etesito.wristSb.servoPosCMD(basketWristPos),
                         etesito.rodeSb.rodeToPos(-350),
@@ -159,7 +159,7 @@ public class AutonomousSample extends OpMode {
 
                         etesito.armSb.armToPos(basketArmPos),
 
-                        new WaitCommand(250),
+                        new WaitCommand(150),
                         etesito.rodeSb.rodeToPos(highRodePos),
                         new WaitCommand(200),
 
@@ -197,7 +197,7 @@ public class AutonomousSample extends OpMode {
 
                         etesito.armSb.armToPos(basketArmPos),
 
-                        new WaitCommand(250),
+                        new WaitCommand(150),
                         etesito.rodeSb.rodeToPos(highRodePos),
                         new WaitCommand(200),
 
@@ -226,13 +226,13 @@ public class AutonomousSample extends OpMode {
                                 etesito.intakeSb.crservoCMD(1)
                         ),
 
-                        etesito.rodeSb.rodeToPosSmooth(rodePick4, 0.4),
+                        etesito.rodeSb.rodeToPosSmooth(rodePick4, 0.45),
 
                         etesito.wristSb.servoPosCMD(basketWristPos),
 
                         etesito.armSb.armToPos(basketArmPos),
 
-                        new WaitCommand(250),
+                        new WaitCommand(150),
                         etesito.rodeSb.rodeToPos(highRodePos),
                         new WaitCommand(120),
 
@@ -241,7 +241,7 @@ public class AutonomousSample extends OpMode {
                                 etesito.intakeSb.crservoCMD(0)
                         ),
 
-                        new WaitCommand(100),
+                        new WaitCommand(50),
 
                         etesito.intakeSb.crservoCMD(-1),
 

@@ -5,8 +5,10 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
+import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -32,90 +34,139 @@ public class specimeneTraj extends OpMode {
 
     private final Pose startPose = new Pose(8.5, 60, Math.toRadians(0));
 
-    private final Pose putSpecimen1 = new Pose(23, 60, Math.toRadians(0));
+    private final Pose putSpecimen1Pose = new Pose(23, 60, Math.toRadians(0));
 
-    private final Pose pickUp1SamplePose = new Pose(36, 38, Math.toRadians(320));
+    private final Pose pickUpSample1Pose = new Pose(36, 38, Math.toRadians(320));
 
-    private final Pose put1SamplePose = new Pose(25, 33, Math.toRadians(230));
+    private final Pose putSample1Pose = new Pose(25, 33, Math.toRadians(230));
 
-    private final Pose pickUp2SamplePose = new Pose(36, 28, Math.toRadians(320));
+    private final Pose pickUpSample2Pose = new Pose(36, 28, Math.toRadians(320));
 
-    private final Pose put2SamplePose = new Pose(25, 28 , Math.toRadians(230));
+    private final Pose putSample2Pose = new Pose(25, 28 , Math.toRadians(230));
 
-    private final Pose pickUp3SamplePose = new Pose(36, 18, Math.toRadians(320));
+    private final Pose pickUpSample3Pose = new Pose(36, 18, Math.toRadians(320));
 
-    private final Pose pick2specimenyput3sample = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen2yPutSample3Pose = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen2yPutSample3ControlPose = new Pose(34, 28, Math.toRadians(180));
 
-    private final Pose put2specimen = new Pose(41, 75, Math.toRadians(180));
+    private final Pose putSpecimen2Pose = new Pose(41, 75, Math.toRadians(180));
 
-    private final Pose pick3specimen = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen3Pose = new Pose(12, 24, Math.toRadians(180));
 
-    private final Pose put3specimen = new Pose(41, 72, Math.toRadians(180));
+    private final Pose putSpecimen3Pose = new Pose(41, 72, Math.toRadians(180));
 
-    private final Pose pick4specimen = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen4Pose = new Pose(12, 24, Math.toRadians(180));
 
-    private final Pose put4specimen = new Pose(41, 69, Math.toRadians(180));
+    private final Pose putSpecimen4Pose = new Pose(41, 69, Math.toRadians(180));
 
-    private final Pose pick5specimen = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen5Pose = new Pose(12, 24, Math.toRadians(180));
 
-    private final Pose put5specimen = new Pose(41, 66, Math.toRadians(180));
+    private final Pose putSpecimen5Pose = new Pose(41, 66, Math.toRadians(180));
 
-    private Path PutSpecimen1, PickSample1, pickSpecimen2, PutSample1, PickSample2, PutSample2, PickSample3, PutSample3,
-            PutSpecimen2, PickSpecimen3, PutSpecimen3, PickSpecimen4, PutSpecimen4, pickSpecimen5, PutSpecimen5;
+    private Path PutSpecimen1;
+
+    private PathChain  PickSample1, pickSpecimen2, PutSample1, PickSample2, PutSample2, PickSample3, PickSpecimen2yPutSample3,
+            PutSpecimen2, PickSpecimen3, PutSpecimen3, PickSpecimen4, PutSpecimen4, PickSpecimen5, PutSpecimen5;
 
     public void buildPaths() {
-        PutSpecimen1 = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1)));
-        PutSpecimen1.setLinearHeadingInterpolation(startPose.getHeading(), putSpecimen1.getHeading());
+        PutSpecimen1 = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1Pose)));
+        PutSpecimen1.setLinearHeadingInterpolation(startPose.getHeading(), putSpecimen1Pose.getHeading());
 
-        PickSample1 = new Path(new BezierLine(new Point(putSpecimen1), new Point(pickUp1SamplePose)));
-        PickSample1.setLinearHeadingInterpolation(putSpecimen1.getHeading(), pickUp1SamplePose.getHeading());
 
-        PutSample1 = new Path(new BezierLine(new Point(pickUp1SamplePose), new Point(put1SamplePose)));
-        PutSample1.setLinearHeadingInterpolation(pickUp1SamplePose.getHeading(), put1SamplePose.getHeading());
+        PickSample1 = follower.pathBuilder()
+               .addPath(new BezierLine(new Point(putSpecimen1Pose), new Point(pickUpSample1Pose)))
+               .setLinearHeadingInterpolation(putSpecimen1Pose.getHeading(), pickUpSample1Pose.getHeading())
+               .build();
 
-        PickSample2 = new Path(new BezierLine(new Point(put1SamplePose), new Point(pickUp2SamplePose)));
-        PickSample2.setLinearHeadingInterpolation(put1SamplePose.getHeading(), pickUp2SamplePose.getHeading());
+        PutSample1 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickUpSample1Pose), new Point(putSample1Pose)))
+                .setLinearHeadingInterpolation(pickUpSample1Pose.getHeading(), putSample1Pose.getHeading())
+                .build();
 
-        PutSample2 = new Path(new BezierLine(new Point(pickUp2SamplePose), new Point(put2SamplePose)));
-        PutSample2.setLinearHeadingInterpolation(pickUp2SamplePose.getHeading(), put2SamplePose.getHeading());
+        PickSample2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(putSample1Pose), new Point(pickUpSample2Pose)))
+                .setLinearHeadingInterpolation(putSample1Pose.getHeading(), pickUpSample2Pose.getHeading())
+                .build();
 
-        PickSample3 = new Path(new BezierLine(new Point(put2SamplePose), new Point(pickUp3SamplePose)));
-        PickSample3.setLinearHeadingInterpolation(put2SamplePose.getHeading(), pickUp3SamplePose.getHeading());
+        PutSample2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickUpSample2Pose), new Point(putSample2Pose)))
+                .setLinearHeadingInterpolation(pickUpSample2Pose.getHeading(), putSample2Pose.getHeading())
+                .build();
 
-        PutSample3 = new Path(new BezierLine(new Point(pickUp3SamplePose), new Point(pick2specimenyput3sample)));
-        PutSample3.setLinearHeadingInterpolation(pickUp3SamplePose.getHeading(), pick2specimenyput3sample.getHeading());
+        PickSample3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(putSample2Pose), new Point(pickUpSample3Pose)))
+                .setLinearHeadingInterpolation(putSample2Pose.getHeading(), pickUpSample3Pose.getHeading())
+                .build();
 
-        PutSpecimen2 = new Path(new BezierLine(new Point(pick2specimenyput3sample), new Point(put2specimen)));
-        PutSpecimen2.setConstantHeadingInterpolation(put2specimen.getHeading());
+        PickSpecimen2yPutSample3 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(pickUpSample3Pose), new Point(pickSpecimen2yPutSample3Pose)))
+                .setLinearHeadingInterpolation(pickUpSample3Pose.getHeading(), pickSpecimen2yPutSample3Pose.getHeading())
+                .build();
 
-        PickSpecimen3 = new Path(new BezierLine(new Point(put2specimen), new Point(pick3specimen)));
-        PickSpecimen3.setConstantHeadingInterpolation(pick3specimen.getHeading());
+        PutSpecimen2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickSpecimen2yPutSample3Pose), new Point(putSpecimen2Pose)))
+                .setConstantHeadingInterpolation(putSpecimen2Pose.getHeading())
+                .build();
 
-        PutSpecimen3 = new Path(new BezierLine(new Point(pick3specimen), new Point(put3specimen)));
-        PutSpecimen3.setConstantHeadingInterpolation(put3specimen.getHeading());
+        PickSpecimen3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(putSpecimen2Pose), new Point(pickSpecimen3Pose)))
+                .setConstantHeadingInterpolation(pickSpecimen3Pose.getHeading())
+                .build();
 
-        PickSpecimen4 = new Path(new BezierLine(new Point(put3specimen), new Point(pick4specimen)));
-        PickSpecimen4.setConstantHeadingInterpolation(pick4specimen.getHeading());
+        PutSpecimen3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickSpecimen3Pose), new Point(putSpecimen3Pose)))
+                .setConstantHeadingInterpolation(putSpecimen3Pose.getHeading())
+                .build();
 
-        PutSpecimen4 = new Path(new BezierLine(new Point(pick4specimen), new Point(put4specimen)));
-        PutSpecimen4.setConstantHeadingInterpolation(put4specimen.getHeading());
+        PickSpecimen4 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(putSpecimen3Pose), new Point(pickSpecimen4Pose)))
+                .setConstantHeadingInterpolation(pickSpecimen4Pose.getHeading())
+                .build();
 
-        pickSpecimen5 = new Path(new BezierLine(new Point(put4specimen), new Point(pick5specimen)));
-        pickSpecimen5.setConstantHeadingInterpolation(pick5specimen.getHeading());
+        PutSpecimen4 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickSpecimen4Pose), new Point(putSpecimen4Pose)))
+                .setConstantHeadingInterpolation(putSpecimen4Pose.getHeading())
+                .build();
 
-        PutSpecimen5 = new Path(new BezierLine(new Point(pick5specimen), new Point(put5specimen)));
-        PutSpecimen5.setConstantHeadingInterpolation(put5specimen.getHeading());
+        PickSpecimen5 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(putSpecimen4Pose), new Point(pickSpecimen5Pose)))
+                .setConstantHeadingInterpolation(pickSpecimen5Pose.getHeading())
+                .build();
+
+        PutSpecimen5 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickSpecimen4Pose), new Point(putSpecimen5Pose)))
+                .setConstantHeadingInterpolation(putSpecimen5Pose.getHeading())
+                .build();
+
 
         pathCommand = new SequentialCommandGroup(
-            pedroSb.followPathCmd(PutSpecimen1),
+            pedroSb.followPathCmd(PutSample1),
                 pedroSb.followPathCmd(PickSample1),
-                pedroSb.followPathCmd(PutSample2)
+                pedroSb.followPathCmd(PutSample1),
 
-        );
+                pedroSb.followPathCmd(PickSample2),
+                pedroSb.followPathCmd(PutSample2),
+
+                pedroSb.followPathCmd(PickSample3),
+                pedroSb.followPathCmd(PickSpecimen2yPutSample3),
+
+                pedroSb.followPathCmd(PutSpecimen2),
+
+                pedroSb.followPathCmd(PickSpecimen3),
+                pedroSb.followPathCmd(PutSpecimen3),
+
+                pedroSb.followPathCmd(PickSpecimen4),
+                pedroSb.followPathCmd(PutSpecimen4),
+
+                pedroSb.followPathCmd(PickSpecimen5),
+                pedroSb.followPathCmd(PutSpecimen5)
+
+                );
     }
 
     @Override
     public void init() {
+
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 

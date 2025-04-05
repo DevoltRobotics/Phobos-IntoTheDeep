@@ -5,31 +5,39 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeInToTicks;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeTicksToIn;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
-import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.Vision.CrosshairVision;
-import org.opencv.core.Mat;
 import org.opencv.core.RotatedRect;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
-
-@Autonomous
+@Config
+@TeleOp
 public class PedroOpenCv extends OpMode {
-    double ScaleFactor = 200;
+    public static double ScaleFactor = 10;
+    public static double focalLenghtXMid = 160;
 
-    Etesito etesito;
+    public static boolean move = false;
+
+    double cX;
+
+
+    Etesito etesito = new Etesito();
 
     CrosshairVision vision;
     private Follower follower;
@@ -37,7 +45,7 @@ public class PedroOpenCv extends OpMode {
 
     //This visualizer is very easy to use to find and create paths/pathchains/poses: <https://pedro-path-generator.vercel.app/>
 
-    private final Pose startPose = new Pose(0, 01, Math.toRadians(0));
+    private final Pose startPose = new Pose(0, 0, Math.toRadians(0));
 
     private final Pose putSpecimen1 = new Pose(25, 78, Math.toRadians(0));
 
@@ -55,6 +63,9 @@ public class PedroOpenCv extends OpMode {
     @Override
     public void loop() {
         // These loop the movements of the robot
+
+        etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
+
         follower.update();
 
         RotatedRect[] rects = vision.getLastRects();
@@ -63,20 +74,35 @@ public class PedroOpenCv extends OpMode {
             telemetry.addData("detection #" + i, rects[i].center);
         }
 
-        vision.updateExposure();
-
-        double tY = vision.pipeline.vectorY / ScaleFactor;
-        double tX = vision.pipeline.vectorX / ScaleFactor;
-
-        double targetX = Range.clip(beforeXPos - tX, -4, 4);
-        double targetAngle = Range.clip(beforeHeading - Math.atan2(tY, tX), Math.toRadians(-15), Math.toRadians(15));
-
-        if (gamepad1.right_trigger > 0.5) {
-            follower.holdPoint(new BezierPoint(new Point(targetX, startPose.getY())), targetAngle);
-        }else {
-            follower.holdPoint(new BezierPoint(new Point(beforeXPos, startPose.getY())), targetAngle);
+        RotatedRect rect = new RotatedRect();
+        if(rects.length > 0) {
+            rect = rects[0];
         }
 
+        vision.updateExposure();
+
+
+        if (rect.center.x >= focalLenghtXMid){
+            cX = rect.center.x - focalLenghtXMid;
+
+        } else if (rect.center.x < focalLenghtXMid){
+            cX = -(focalLenghtXMid - rect.center.x);
+
+        }else {
+            cX = 0;
+        }
+
+        double tY = rect.center.y / ScaleFactor;
+        double tX = cX / ScaleFactor;
+
+        //double targetX = Range.clip(beforeXPos - tX, -4, 4);
+        double targetAngle = beforeHeading - tX;
+
+        if (move) {
+            follower.holdPoint(new BezierPoint(new Point(startPose.getX(), startPose.getY())), Math.toRadians(targetAngle));
+        }else {
+            follower.holdPoint(new BezierPoint(new Point(0,0)), 0);
+        }
         double tYRode = tY * rodeInToTicks;
 
         int rodeTarget = (int)(beforeRodeIn + tYRode);
@@ -89,24 +115,31 @@ public class PedroOpenCv extends OpMode {
 
         beforeRodeIn = -etesito.rodeMotor.getCurrentPosition() * rodeTicksToIn;
         beforeXPos = follower.getPose().getX();
-        beforeHeading = follower.getPose().getHeading();
+        beforeHeading = Math.toDegrees(follower.getPose().getHeading());
 
-                telemetry.addData("tX", tX);
-        telemetry.addData("tY", tY);
-        telemetry.addData("tYRode", tYRode);
+        //telemetry.addData("tX", tX);
+        //telemetry.addData("tY", tY);
+        //telemetry.addData("tYRode", tYRode);
+        telemetry.addData("tY", rect.center.y);
+        telemetry.addData("tX", tX);
+
         telemetry.addData("tAngle", targetAngle);
-        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
         telemetry.update();
+
+        CommandScheduler.getInstance().run();
+
     }
 
     @Override
     public void init() {
         etesito.init(hardwareMap, true, true);
 
-        etesito.rodeSb.setDefaultCommand(etesito.rodeSb.rodeUpdate());
+        //FollowerConstants.headingPIDFCoefficients.setCoefficients(0.55, 0, 0.009, 0);
+        //FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(1, 0, 0.05, 0);
+
 
         etesito.rodeSb.rodeToPos(preSubmRodePos).schedule();
-
         etesito.wristSb.servoPosCMD(preSubWristPos).schedule();
 
         vision = new CrosshairVision(etesito.webcam);
@@ -120,14 +153,24 @@ public class PedroOpenCv extends OpMode {
 
         follower.setStartingPose(startPose);
 
+        telemetry = new MultipleTelemetry(
+                telemetry,
+                FtcDashboard.getInstance().getTelemetry()
+        );
+
         buildPaths();
     }
     @Override
     public void init_loop() {
+        etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
+        CommandScheduler.getInstance().run();
+
     }
 
     @Override
     public void start() {
+        etesito.rodeSb.rodeToPos(preSubmRodePos).schedule();
+        etesito.wristSb.servoPosCMD(preSubWristPos).schedule();
         opmodeTimer.resetTimer();
     }
 

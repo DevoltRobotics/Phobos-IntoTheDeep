@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Autonomous;
+package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -17,10 +17,13 @@ public class VisionTest extends OpMode {
         hdw.init(hardwareMap, false, false);
         vision = new CrosshairVision(hdw.webcam);
         vision.init();
+
+        hdw.wrist.getController().pwmDisable();
     }
 
     @Override
     public void loop() {
+        hdw.wrist.getController().pwmDisable();
 
         RotatedRect[] rects = vision.getLastRects();
 
@@ -31,3 +34,4 @@ public class VisionTest extends OpMode {
         vision.updateExposure();
     }
 }
+
