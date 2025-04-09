@@ -37,6 +37,10 @@ public class FConstants {
         //FollowerConstants.useSecondaryHeadingPID = true;
         //FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(1,0,0.05,0); // Not being used, @see useSecondaryHeadingPID
 
+        //FollowerConstants.headingPIDFCoefficients.setCoefficients(1.2,0,0.8,0);
+        //FollowerConstants.useSecondaryHeadingPID = true;
+        //FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(1.2,0,0.5,0); // Not being used, @see useSecondaryHeadingPID
+
         FollowerConstants.headingPIDFCoefficients.setCoefficients(2.2,0,0.12,0);
         FollowerConstants.useSecondaryHeadingPID = true;
         FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(2.2,0,0.12,0); // Not being used, @see useSecondaryHeadingPID

@@ -1,9 +1,14 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.firstinspires.ftc.teamcode.Comands.Constants.ScaleFactor;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.degreesPerPixel;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubmRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeInToTicks;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -24,12 +29,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
+import org.firstinspires.ftc.teamcode.subsystems.Vision.CrosshairVision;
+import org.opencv.core.RotatedRect;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous
-public class AutonomousSample extends OpMode {
+public class SampleCamera extends OpMode {
 
     private Follower follower;
     private Timer actionTimer;
@@ -39,9 +46,10 @@ public class AutonomousSample extends OpMode {
 
     Etesito etesito = new Etesito();
 
+    CrosshairVision vision;
+
     private int rodePick2 = -1000;
     private int rodePick3 = -850;
-
     private int rodePick4 = -350;
 
     private Command pathCommand;
@@ -255,18 +263,17 @@ public class AutonomousSample extends OpMode {
 
                         new WaitCommand(200),
 
-                        etesito.wristSb.servoPosCMD(downWristPos),
+                        etesito.wristSb.servoPosCMD(preSubWristPos),
                         new WaitCommand(150),
 
-                        etesito.rodeSb.rodeToPos(0),
+                        etesito.rodeSb.rodeToPos(preSubmRodePos),
 
-                        new WaitCommand(300),
+                        new WaitCommand(200),
 
                         new ParallelCommandGroup(
-                                pedroSb.followPathCmd(Park),
+                                pedroSb.followPathCmd(PickSample5),
                                 etesito.armSb.armToPosSmooth(0, 0.8)
                         )
-
                 );
     }
 
@@ -280,7 +287,7 @@ public class AutonomousSample extends OpMode {
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
 
-        pedroSb = new PedroSb(follower);
+        pedroSb = new PedroSb(follower, etesito.chassiscontroller, vision, telemetry, etesito.fl, etesito.bl, etesito.br, etesito.fr);
 
         buildPaths();
 
@@ -304,6 +311,28 @@ public class AutonomousSample extends OpMode {
     @Override
     public void loop() {
         // These loop te movements of the robot
+
+        RotatedRect[] rects = vision.getLastRects();
+
+        for (int i = 0; i < rects.length; i++) {
+            telemetry.addData("detection #" + i, rects[i].center);
+        }
+
+        RotatedRect rect = new RotatedRect();
+        if (rects.length > 0) {
+            rect = rects[0];
+        }
+
+        double targetX = rect.center.x;
+        double pixelErrorFromCenterX = targetX - 160;
+        double angleError = pixelErrorFromCenterX * degreesPerPixel;
+
+        double targetY = rect.center.y;
+        double yError  = 180 - targetY; // targetX es el valor que detectas
+        double tagetYIn = yError / ScaleFactor;
+        double tYRode = tagetYIn * rodeInToTicks;
+
+        vision.updateExposure();
 
         etesito.armMotor.setPower(-etesito.armController.update(etesito.armMotor.getCurrentPosition()) * 0.4);
         etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);

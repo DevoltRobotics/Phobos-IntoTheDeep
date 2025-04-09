@@ -1,14 +1,9 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.Comands.Constants.openAbramPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.contractAbramPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenWristPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.initArmpos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.initWristPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.midOpenAbramPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.openClawPos;
 
 import com.arcrobotics.ftclib.command.Command;
@@ -22,13 +17,12 @@ import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
-import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
-import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -40,7 +34,7 @@ public class AutonomousSpecimene extends OpMode {
     private Timer actionTimer;
     private Timer opmodeTimer;
 
-    PedroSubsystem pedroSb;
+    PedroSb pedroSb;
 
     Etesito etesito = new Etesito();
 
@@ -224,7 +218,7 @@ public class AutonomousSpecimene extends OpMode {
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
 
-        pedroSb = new PedroSubsystem(follower);
+        pedroSb = new PedroSb(follower);
         CommandScheduler.getInstance().registerSubsystem(pedroSb);
 
         buildPaths();

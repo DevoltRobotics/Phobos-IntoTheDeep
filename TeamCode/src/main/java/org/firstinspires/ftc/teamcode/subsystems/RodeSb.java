@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.ScaleFactor;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubmRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeInToTicks;
+
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
@@ -7,18 +12,24 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Comands.PIDFController;
+import org.firstinspires.ftc.teamcode.subsystems.Vision.CrosshairVision;
+import org.opencv.core.RotatedRect;
 
 public class RodeSb extends SubsystemBase {
-
 
     DcMotorEx rodeMotor;
     PIDFController rodeController;
 
-
     public RodeSb(DcMotorEx rodeMotor, PIDFController rodeController){
         this.rodeMotor = rodeMotor;
         this.rodeController = rodeController;
+
+    }
+
+    public Command rodeToPosVision(CrosshairVision vision, Telemetry telemetry){
+        return new RodeToPosVision(vision, telemetry);
 
     }
 
@@ -97,6 +108,80 @@ public class RodeSb extends SubsystemBase {
         public void end(boolean interrupted) {
         }
     }
+
+    class RodeToPosVision extends CommandBase {
+        boolean targeteado = false;
+        int rodeTarget;
+
+        int beforeTicks;
+        ElapsedTime timer = null;
+
+        CrosshairVision vision;
+
+        Telemetry telemetry;
+
+        double error;
+
+        public RodeToPosVision(CrosshairVision vision, Telemetry telemetry) {
+            this.vision = vision;
+            this.telemetry = telemetry;
+            addRequirements(RodeSb.this);
+        }
+
+        @Override
+        public void initialize() {
+            timer = new ElapsedTime();
+            beforeTicks = rodeMotor.getCurrentPosition();
+        }
+
+        @Override
+        public void execute() {
+            RotatedRect[] rects = vision.getLastRects();
+
+            for (int i = 0; i < rects.length; i++) {
+                telemetry.addData("detection #" + i, rects[i].center);
+            }
+
+            int targetY;
+            RotatedRect rect = new RotatedRect();
+            if (rects.length > 0) {
+                rect = rects[0];
+                targetY = (int)rect.center.y;
+            }else {
+                targetY = 220;
+            }
+
+            double yError  = 220 - targetY;
+            double tagetYIn = yError / ScaleFactor;
+            double tYRode = -(tagetYIn * rodeInToTicks);
+
+            if (!targeteado) {
+                rodeTarget =  Range.clip((int)(beforeTicks + tYRode), preSubmRodePos - 450, preSubmRodePos);
+                rodeController.targetPosition = rodeTarget;
+
+                targeteado = true;
+            }
+
+            error = Math.abs(rodeTarget - rodeMotor.getCurrentPosition());
+
+            telemetry.addData("tyR", tYRode);
+            telemetry.addData("rdTarget", rodeTarget);
+            telemetry.addData("current", rodeMotor.getCurrentPosition());
+            telemetry.addData("error", error);
+
+        }
+
+        @Override
+        public boolean isFinished() {
+            return timer.seconds() >= 0.3 || error <= 30;
+
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+        }
+    }
+
 
     class RodeUpdate extends CommandBase {
 

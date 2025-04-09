@@ -35,7 +35,7 @@ public class Crosshair_Example extends OpenCvPipeline {
     private ArrayList<MatOfPoint> contoursByArea = new ArrayList<>();
 
     public static int minRatio = 25;
-    public static int maxRatio = 70;
+    public static int maxRatio = 200;
     private ArrayList<MatOfPoint> contoursByAreaByRatio = new ArrayList<>();
     private MatOfPoint2f contoursByArea2f = new MatOfPoint2f();
 

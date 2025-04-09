@@ -88,10 +88,17 @@ public class ET extends OpMode {
 
     boolean voltageIndicatorBoolean;
 
+    boolean launchArmsAutomatic = false;
+    boolean upServos = false;
+    private final ElapsedTime launchArmsAutomaticTimer = new ElapsedTime();
+
     boolean launchArms = false;
 
     private boolean toggleHang;
     private final ElapsedTime toggleHangTimer = new ElapsedTime();
+
+    private boolean downArmClimb;
+    private final ElapsedTime downArmClimbTimer = new ElapsedTime();
 
     @Override
     public void init() {
@@ -137,25 +144,59 @@ public class ET extends OpMode {
         }
 
         if (toggleHang) {
+            etesito.wristDown();
 
             telemetry.addLine("colgando_activado");
 
             if (!launchArms) {
-                etesito.launchHangArms();
+                etesito.servosDownNomral();
+                launchArmsAutomatic = true;
+                upServos = true;
+                launchArmsAutomaticTimer.reset();
             }
+
+            if (launchArmsAutomatic && launchArmsAutomaticTimer.seconds() > 0.15){
+                etesito.launchHangArms();
+                launchArmsAutomatic = false;
+
+            }
+
+            if (upServos && launchArmsAutomaticTimer.seconds() > 0.3){
+                etesito.servosHanging();
+                upServos = false;
+
+            }
+
+            if (gamepad1.dpad_right){
+                etesito.armMotor.setPower(1);
+
+                downArmClimb = true;
+                downArmClimbTimer.reset();
+
+            }else if (gamepad1.dpad_left){
+                etesito.armMotor.setPower(-1);
+                etesito.armController.targetPosition = 0;
+
+                downArmClimb = true;
+                downArmClimbTimer.reset();
+
+            }else {
+                etesito.armMotor.setPower(0);
+            }
+
 
             launchArms = true;
 
             etesito.dropSpecimen();
 
-            etesito.setLight("green");
+            //etesito.setLight("green");
 
             if (gamepad2.dpad_up) {
                 automaticHang = true;
                 automaticHangingTimer.reset();
 
-                climbControllerRight.targetPosition = 0;
-                climbControllerLeft.targetPosition = 0;
+                climbControllerRight.targetPosition = -537;
+                climbControllerLeft.targetPosition = -537;
 
                 voltageIndicatorBoolean = false;
             }
@@ -189,9 +230,10 @@ public class ET extends OpMode {
 
             if (manualRightHang || manualLeftHang) {
                 voltageIndicatorBoolean = true;
-                hangTimer.reset();
+
 
             } else {
+                hangTimer.reset();
                 voltageIndicatorBoolean = false;
 
             }
@@ -229,6 +271,8 @@ public class ET extends OpMode {
                 etesito.rodeController.targetPosition = climbingRodePos1;
 
             }
+
+            telemetry.addData("HangTimer", hangTimer.seconds());
 
         }
         else {
@@ -268,8 +312,6 @@ public class ET extends OpMode {
                 extendArmHighBasket = false;
 
                 etesito.rodeController.targetPosition = 0;
-
-
 
             } else if (gamepad2.dpad_up) {
 
@@ -342,9 +384,7 @@ public class ET extends OpMode {
                     break;
 
                 case 0:
-
                     rdTarget = downRodePos;
-
 
                     if (etesito.wristIsMedium) {
                         rodeMin = downRodePos - 150;
@@ -564,6 +604,7 @@ public class ET extends OpMode {
         telemetry.addData("rodePos", etesito.rodeMotor.getCurrentPosition());
         telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
         telemetry.addData("rode Power", etesito.rodeMotor.getPower());
+        telemetry.addData("arm Power", etesito.armMotor.getPower());
 
         double turbo = 1 - (gamepad1.right_trigger * 0.65);
 

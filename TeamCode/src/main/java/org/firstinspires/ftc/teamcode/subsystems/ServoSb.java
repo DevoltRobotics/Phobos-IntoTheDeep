@@ -4,6 +4,8 @@ import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 public class ServoSb extends SubsystemBase {
     Servo servo1;
@@ -24,6 +26,10 @@ public class ServoSb extends SubsystemBase {
 
     public Command servoPosCMD(double position) {
         return new ServoCMD(position);
+    }
+
+    public Command servoSmootrCMD(double position, double timeSeconds) {
+        return new ServoSmootCMD(position, timeSeconds);
     }
 
     public Command mirrorServoPosCMD(double position) {
@@ -47,6 +53,46 @@ public class ServoSb extends SubsystemBase {
         public boolean isFinished() {
             return true;
         }
+    }
+
+    class ServoSmootCMD extends CommandBase {
+        double timeSeconds;
+        double currentPosition;
+
+        double targetPos;
+        double servoTarget;
+
+        ElapsedTime timer = null;
+
+        public ServoSmootCMD(double position, double timeSeconds) {
+            this.targetPos = position;
+            this.timeSeconds = timeSeconds;
+            addRequirements(ServoSb.this);
+        }
+
+        double lerp(double start, double end, double t) {
+            return start * (1 - t) + end * t;
+        }
+
+        @Override
+        public void initialize() {
+            timer = new ElapsedTime();
+            currentPosition = servo1.getPosition();
+        }
+
+        @Override
+        public void execute() {
+            double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
+            servoTarget = lerp(currentPosition, targetPos, t);
+
+            servo1.setPosition(servoTarget);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return timer.seconds() >= timeSeconds;
+        }
+
     }
 
     class ColorCMD extends CommandBase {
@@ -99,6 +145,11 @@ public class ServoSb extends SubsystemBase {
         public void execute() {
             servo1.setPosition(0.5 + position);
             servo2.setPosition(0.5 - position);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
         }
 
     }

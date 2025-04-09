@@ -14,9 +14,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Comands.Etesito;
-import org.firstinspires.ftc.teamcode.subsystems.PedroSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -28,7 +26,7 @@ public class sampleTraj extends OpMode {
     private Timer actionTimer;
     private Timer opmodeTimer;
 
-    PedroSubsystem pedroSb;
+    PedroSb pedroSb;
 
     private Command pathCommand;
 
@@ -122,8 +120,6 @@ public class sampleTraj extends OpMode {
                 pedroSb.followPathCmd(PutSample4),
                 pedroSb.followPathCmd(PickSample5)
 
-
-
         );
     }
 
@@ -136,7 +132,7 @@ public class sampleTraj extends OpMode {
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
 
-        pedroSb = new PedroSubsystem(follower);
+        pedroSb = new PedroSb(follower);
         CommandScheduler.getInstance().registerSubsystem(pedroSb);
 
         buildPaths();
