@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import static org.firstinspires.ftc.teamcode.Comands.Constants.ScaleFactor;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.degreesPerPixel;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.getTargetAngleY;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.xDegreesPerPixel;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.yPixels;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.GoBildaPinpointDriver;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
@@ -83,6 +83,11 @@ public class PedroSb extends SubsystemBase {
 
     public Command turnChassis(double power, IMU imu) {
         return new TurnChassis(power, imu);
+
+    }
+
+    public Command reTurnChassis(double power, IMU imu) {
+        return new ReTurnChassis(power, imu);
 
     }
 
@@ -162,64 +167,9 @@ public class PedroSb extends SubsystemBase {
             timer = new ElapsedTime();
         }
 
-        //@Override
-        /*public void execute() {
-            follower.breakFollowing();
-
-            RotatedRect[] rects = vision.getLastRects();
-
-            for (int i = 0; i < rects.length; i++) {
-                telemetry.addData("detection #" + i, rects[i].center);
-            }
-
-            int targetX ;
-
-            RotatedRect rect = new RotatedRect();
-            if (rects.length > 0) {
-                rect = rects[0];
-
-                targetX = (int)(rect.center.x);
-            }else {
-                targetX = 160;
-            }
-
-            double pixelErrorFromCenterX = targetX - 160;
-            double angl = pixelErrorFromCenterX / degreesPerPixel;
-            double angleError = Range.clip((angl), -10, 10);
-
-            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-
-            if (!targeteado) {
-                target = (int)(headingDegrees - angleError);
-                chassisController.targetPosition = target;
-
-                targeteado = true;
-            }
-
-            error = Math.abs(target - headingDegrees);
-
-            power = chassisController.update(headingDegrees) * powerMult;
-
-            if (Math.abs(error) >= 0.4) {
-                fl.setPower(-power);
-                bl.setPower(-power);
-                fr.setPower(power);
-                br.setPower(power);
-            }else {
-                fl.setPower(0);
-                bl.setPower(0);
-                fr.setPower(0);
-                br.setPower(0);
-            }
-
-            telemetry.addData("heading", headingDegrees);
-            telemetry.addData("target", chassisController.targetPosition);
-            telemetry.addData("error", error);
-        }
-        */
-
         @Override
         public void execute() {
+            following = false;
             follower.breakFollowing();
 
             RotatedRect[] rects = vision.getLastRects();
@@ -231,7 +181,6 @@ public class PedroSb extends SubsystemBase {
             int targetX;
             int targetY;
 
-
             RotatedRect rect = new RotatedRect();
             if (rects.length > 0) {
                 rect = rects[0];
@@ -241,14 +190,14 @@ public class PedroSb extends SubsystemBase {
                 size = rect.size.area();
             }else {
                 targetX = 160;
-                targetY = 220;
+                targetY = yPixels;
             }
 
-            pixelErrorFromCenterY = 220 - targetY;
-            double targetYAngl = pixelErrorFromCenterY / degreesPerPixel;
+            pixelErrorFromCenterY = yPixels - targetY;
+            double targetYAngl = getTargetAngleY(targetY);
 
             double pixelErrorFromCenterX = targetX - 160;
-            double targetXAngl = pixelErrorFromCenterX / degreesPerPixel;
+            double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
             double tAngl;
             if (pixelErrorFromCenterX >= 0){
@@ -294,6 +243,138 @@ public class PedroSb extends SubsystemBase {
         @Override
         public boolean isFinished() {
             return (timer.seconds() >= 0.4) || Math.abs(error) <= 0.4;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            /*if (((size <= 4000 && pixelErrorFromCenterY >= 120) ||(size <= 9000 && pixelErrorFromCenterY < 120)) && !reajusted){
+                turnChassis(0.5, imu).schedule();
+                reajusted = true;
+            }else {
+                fl.setPower(0);
+                bl.setPower(0);
+                fr.setPower(0);
+                br.setPower(0);
+            }*/
+
+            fl.setPower(0);
+            bl.setPower(0);
+            fr.setPower(0);
+            br.setPower(0);
+        }
+    }
+
+    class ReTurnChassis extends CommandBase {
+        boolean targeteado = false;
+        double target = 0;
+        double power;
+
+        boolean centered = false;
+
+        double error;
+        double powerMult;
+        ElapsedTime timer;
+
+        double size;
+
+        double pixelErrorFromCenterY;
+
+        boolean reajusted = false;
+
+        IMU imu;
+        public ReTurnChassis(double power, IMU imu) {
+            this.powerMult = power;
+            this.imu = imu;
+
+            addRequirements(PedroSb.this);
+        }
+
+        @Override
+        public void initialize() {
+            timer = new ElapsedTime();
+        }
+
+        @Override
+        public void execute() {
+            following = false;
+            follower.breakFollowing();
+
+            RotatedRect[] rects = vision.getLastRects();
+
+            for (int i = 0; i < rects.length; i++) {
+                telemetry.addData("detection #" + i, rects[i].center);
+            }
+
+            int targetX;
+            int targetY;
+
+            RotatedRect rect = new RotatedRect();
+            if (rects.length > 0) {
+                rect = rects[0];
+
+                targetX = (int)(rect.center.x);
+                targetY = (int)rect.center.y;
+                size = rect.size.area();
+            }else {
+                targetX = 160;
+                targetY = yPixels;
+            }
+
+
+            pixelErrorFromCenterY = yPixels - targetY;
+            double targetYAngl = pixelErrorFromCenterY / xDegreesPerPixel;
+
+            double pixelErrorFromCenterX = targetX - 160;
+            double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
+
+            if (pixelErrorFromCenterX <= 30){
+                centered = true;
+            }
+
+            double tAngl;
+            if (pixelErrorFromCenterX >= 0){
+                tAngl = Math.toDegrees(Math.atan2(targetYAngl, targetXAngl));
+
+            }else {
+                tAngl = -(Math.toDegrees(Math.atan2(targetYAngl, targetXAngl)));
+            }
+
+            double angleError = Range.clip((tAngl), -10, 10);
+
+            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+
+            if (!targeteado) {
+                target = (int)(headingDegrees - angleError);
+                chassisController.targetPosition = target;
+
+                targeteado = true;
+            }
+
+            error = Math.abs(target - headingDegrees);
+
+            power = chassisController.update(headingDegrees) * powerMult;
+
+            if (Math.abs(error) >= 0.4) {
+                fl.setPower(-power);
+                bl.setPower(-power);
+                fr.setPower(power);
+                br.setPower(power);
+            }else {
+                fl.setPower(0);
+                bl.setPower(0);
+                fr.setPower(0);
+                br.setPower(0);
+            }
+
+            telemetry.addData("heading", headingDegrees);
+            telemetry.addData("target", chassisController.targetPosition);
+            telemetry.addData("error", error);
+        }
+
+
+        @Override
+        public boolean isFinished() {
+            return (centered) || (timer.seconds() >= 0.4) || Math.abs(error) <= 0.4;
         }
 
         @Override
@@ -363,8 +444,8 @@ public class PedroSb extends SubsystemBase {
 
     }
 
-        class ReturnPath extends CommandBase {
-            public ReturnPath() {
+    class ReturnPath extends CommandBase {
+        public ReturnPath() {
                 addRequirements(PedroSb.this);
             }
 

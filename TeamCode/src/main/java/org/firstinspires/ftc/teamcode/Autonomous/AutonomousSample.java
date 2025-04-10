@@ -4,6 +4,10 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubmRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosInitPos;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -135,7 +139,8 @@ public class AutonomousSample extends OpMode {
                         new ParallelDeadlineGroup(
                                 pedroSb.followPathCmd(PutSample1),
                                 etesito.rodeSb.rodeToPos(highRodePos),
-                                etesito.wristSb.servoPosCMD(basketWristPos)
+                                etesito.wristSb.servoPosCMD(basketWristPos),
+                                etesito.servosSb.mirrorServoPosCMD(servosHangingPos)
                         ),
 
                         etesito.intakeSb.crservoCMD(-1),
@@ -255,15 +260,15 @@ public class AutonomousSample extends OpMode {
 
                         new WaitCommand(200),
 
-                        etesito.wristSb.servoPosCMD(downWristPos),
+                        etesito.wristSb.servoPosCMD(preSubWristPos),
                         new WaitCommand(150),
 
-                        etesito.rodeSb.rodeToPos(0),
+                        etesito.rodeSb.rodeToPos(preSubmRodePos),
 
-                        new WaitCommand(300),
+                        new WaitCommand(200),
 
                         new ParallelCommandGroup(
-                                pedroSb.followPathCmd(Park),
+                                pedroSb.followPathCmd(PickSample5),
                                 etesito.armSb.armToPosSmooth(0, 0.8)
                         )
 
@@ -318,6 +323,7 @@ public class AutonomousSample extends OpMode {
 
     @Override
     public void stop() {
+        etesito.wristSb.servoPosCMD(0.5);
         pathCommand.cancel();
     }
 }

@@ -1,32 +1,30 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import static org.firstinspires.ftc.teamcode.Comands.Constants.ScaleFactor;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.SubWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.degreesPerPixel;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSubWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.postSubmRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubmRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeInToTicks;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeTicksToIn;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.submArmPos;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.ParallelDeadlineGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
-import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
@@ -56,6 +54,8 @@ public class PedroOpenCv extends OpMode {
 
     private Path scorePreload, back;
 
+    int currentRode = 0;
+
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1)));
         scorePreload .setConstantHeadingInterpolation(putSpecimen1.getHeading());
@@ -68,23 +68,15 @@ public class PedroOpenCv extends OpMode {
 
                 pedroSb.turnChassis(0.5, etesito.imu),
 
-                new WaitCommand(50),
+                /*new WaitCommand(100),
 
-                pedroSb.turnChassis(0.3, etesito.imu),
+                pedroSb.reTurnChassis(0.3, etesito.imu), */
 
-                new WaitCommand(50),
-
-                etesito.rodeSb.rodeToPosVision(vision, telemetry),
                 new WaitCommand(50),
 
                 etesito.intakeSb.crservoCMD(1),
+                etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb)
 
-                new WaitCommand(200),
-                etesito.wristSb.servoSmootrCMD(downWristPos, 0.2),
-
-                new WaitCommand(50),
-
-                etesito.wristSb.servoPosCMD(contractWristPos)
 
                 /*
                 new ParallelDeadlineGroup(
@@ -110,11 +102,13 @@ public class PedroOpenCv extends OpMode {
 
         etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
 
+        currentRode = etesito.rodeMotor.getCurrentPosition();
         RotatedRect[] rects = vision.getLastRects();
 
         for (int i = 0; i < rects.length; i++) {
             telemetry.addData("detection #" + i, rects[i].center);
         }
+
         //double targetX = Range.clip(beforeXPos - tX, -4, 4);
 
         /*
@@ -173,7 +167,7 @@ public class PedroOpenCv extends OpMode {
         etesito.init(hardwareMap, true, true);
 
         etesito.rodeSb.rodeToPos(preSubmRodePos).schedule();
-        etesito.wristSb.servoPosCMD(preSubWristPos).schedule();
+        etesito.wristSb.servoPosCMD(SubWristPos).schedule();
 
         vision = new CrosshairVision(etesito.webcam);
         vision.init();

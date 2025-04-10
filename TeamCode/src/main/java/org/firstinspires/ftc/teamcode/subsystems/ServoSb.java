@@ -28,7 +28,7 @@ public class ServoSb extends SubsystemBase {
         return new ServoCMD(position);
     }
 
-    public Command servoSmootrCMD(double position, double timeSeconds) {
+    public Command servoSmoothCMD(double position, double timeSeconds) {
         return new ServoSmootCMD(position, timeSeconds);
     }
 

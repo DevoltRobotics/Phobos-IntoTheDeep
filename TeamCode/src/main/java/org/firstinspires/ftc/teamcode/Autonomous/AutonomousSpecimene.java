@@ -133,6 +133,7 @@ public class AutonomousSpecimene extends OpMode {
                 ),
                 etesito.clawSb.servoPosCMD(openClawPos),
                 new WaitCommand(100),
+
                 etesito.wristSb.servoPosCMD(contractWristPos),
                 etesito.rodeSb.rodeToPos(0),
 

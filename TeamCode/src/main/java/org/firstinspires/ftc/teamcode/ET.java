@@ -6,6 +6,8 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSpecimenRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.previousSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.ratioArm;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
@@ -459,7 +461,7 @@ public class ET extends OpMode {
                         break;
 
                     case 0:
-                        if (toggleWristTimer.seconds() > 0.2) {
+                        if (toggleWristTimer.seconds() > 0.35) {
                             if (etesito.wristIsMedium) {
                                 etesito.wristDown();
                             } else {
@@ -531,36 +533,30 @@ public class ET extends OpMode {
                 armPosition = 2;
 
                 specimenUpArm = false;
-
             }
 
             if (specimenUpWrist && specimenUpArmTimer.seconds() > 0.6) {
                 etesito.wristSpecimen();
+                etesito.rodeController.targetPosition = preSpecimenRodePos;
                 specimenUpWrist = false;
-
             }
 
-            if (specimenArmSemiDown && specimenDownTimer.seconds() > 0.2) {
+            if (specimenArmSemiDown && specimenDownTimer.seconds() > 0.15) {
                 armTarget = postSpecimenArmPos;
+                etesito.wristDown();
                 powerArm = 0.4;
 
                 specimenArmSemiDown = false;
             }
 
-            if (specimenOpenClaw && specimenDownTimer.seconds() > 0.4) {
+            if (specimenOpenClaw && specimenDownTimer.seconds() > 0.3) {
                 etesito.dropSpecimen();
                 specimenOpenClaw = false;
             }
 
             if (specimenRodeDown && specimenDownTimer.seconds() > 0.6) {
-
                 etesito.rodeController.targetPosition = 0;
                 specimenRodeDown = false;
-            }
-
-            if (specimenWristDown && specimenDownTimer.seconds() > 0.65) {
-                etesito.wristPickSpecimen();
-                specimenWristDown = false;
             }
 
             if (specimenArmDown && specimenDownTimer.seconds() > 0.9) {
