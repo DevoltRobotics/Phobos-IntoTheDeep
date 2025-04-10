@@ -28,6 +28,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
+import org.firstinspires.ftc.teamcode.subsystems.Vision.CrosshairVision;
+import org.opencv.core.RotatedRect;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -42,6 +44,8 @@ public class AutonomousSample extends OpMode {
     PedroSb pedroSb;
 
     Etesito etesito = new Etesito();
+
+    CrosshairVision vision;
 
     private int rodePick2 = -1000;
     private int rodePick3 = -850;
@@ -270,7 +274,16 @@ public class AutonomousSample extends OpMode {
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PickSample5),
                                 etesito.armSb.armToPosSmooth(0, 0.8)
-                        )
+                        ),
+
+                        pedroSb.breakPath(),
+
+                        pedroSb.turnChassis(0.5, etesito.imu),
+
+                        new WaitCommand(50),
+
+                        etesito.intakeSb.crservoCMD(1),
+                        etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb)
 
                 );
     }
@@ -279,13 +292,16 @@ public class AutonomousSample extends OpMode {
     public void init() {
         etesito.init(hardwareMap, true, true);
 
+        vision = new CrosshairVision(etesito.webcam);
+        vision.init();
+
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
 
-        pedroSb = new PedroSb(follower);
+        pedroSb = new PedroSb(follower, etesito.chassiscontroller, vision, telemetry, etesito.fl, etesito.bl, etesito.br, etesito.fr);
 
         buildPaths();
 
@@ -309,6 +325,14 @@ public class AutonomousSample extends OpMode {
     @Override
     public void loop() {
         // These loop te movements of the robot
+
+        RotatedRect[] rects = vision.getLastRects();
+
+        for (int i = 0; i < rects.length; i++) {
+            telemetry.addData("detection #" + i, rects[i].center);
+        }
+
+        vision.updateExposure();
 
         etesito.armMotor.setPower(-etesito.armController.update(etesito.armMotor.getCurrentPosition()) * 0.4);
         etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);

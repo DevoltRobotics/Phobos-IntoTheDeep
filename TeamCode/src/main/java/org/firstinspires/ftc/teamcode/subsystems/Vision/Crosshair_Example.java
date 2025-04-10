@@ -47,7 +47,7 @@ public class Crosshair_Example extends OpenCvPipeline {
     public int crosshairSize = 5;
 
     public double vectorX = 0.0;
-    public double vectorY = 70.0;
+    public double vectorY = 0.0;
 
     public Scalar lineColor1 = new Scalar(0.0, 255.0, 0.0, 0.0);
     public int lineThickness1 = 3;

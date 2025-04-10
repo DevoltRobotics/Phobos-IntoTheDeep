@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenWristPos;
@@ -33,6 +34,15 @@ public class AutonomousSpecimene extends OpMode {
     private Follower follower;
     private Timer actionTimer;
     private Timer opmodeTimer;
+
+    int pickSample1RodePos = -500;
+    int putSample1RodePos = -800;
+
+    int pickSample2RodePos = -500;
+    int putSample2RodePos = -800;
+
+    int pickSample3RodePos = -500;
+    int putSample3RodePos = -800;
 
     PedroSb pedroSb;
 
@@ -147,61 +157,37 @@ public class AutonomousSpecimene extends OpMode {
                         etesito.intakeSb.crservoCMD(1)
                 ),
 
-                etesito.rodeSb.rodeToPos(-500),
+                etesito.rodeSb.rodeToPosSmooth(pickSample1RodePos, 0.5),
 
                 new WaitCommand(300),
                 etesito.wristSb.servoPosCMD(contractWristPos),
-                etesito.rodeSb.rodeToPos(-800),
+                etesito.rodeSb.rodeToPos(putSample1RodePos),
+                pedroSb.followPathCmd(PutSample1),
+
+                etesito.intakeSb.crservoCMD(-1),
+                new WaitCommand(200),
+
+                //FIRST_TO_HUMAN
+
+                new ParallelDeadlineGroup(
+                pedroSb.followPathCmd(PickSample2),
+                etesito.rodeSb.rodeToPos(-400),
+                etesito.intakeSb.crservoCMD(1)
+        ),
+
+                etesito.wristSb.servoPosCMD(downWristPos),
+
+                new WaitCommand(200),
+
+                etesito.rodeSb.rodeToPosSmooth(pickSample2RodePos, 0.5),
+
+                new WaitCommand(300),
+                etesito.wristSb.servoPosCMD(contractWristPos),
+                etesito.rodeSb.rodeToPos(putSample2RodePos),
                 pedroSb.followPathCmd(PutSample1),
 
                 etesito.intakeSb.crservoCMD(-1),
                 new WaitCommand(200)
-
-                //FIRST_TO_HUMAN
-
-                /*pedroSb.followPathCmd(PickSample2),
-                etesito.abrahamSb.servoPosCMD(contractAbramPos),
-
-                etesito.abrahamSb.servoPosCMD(midOpenAbramPos),
-                new WaitCommand(100),
-
-                pedroSb.followPathCmd(PutSample2),
-                etesito.abrahamSb.servoPosCMD(openAbramPos),
-                new WaitCommand(200),
-
-                //SECOND_TO_HUMAN
-
-                new ParallelDeadlineGroup(
-                        pedroSb.followPathCmd(PickSample3),
-                        etesito.downArm3rdSample()
-
-                        ),
-
-                etesito.rodeSb.rodeToPos(-900),
-                new WaitCommand(500),
-
-                new ParallelDeadlineGroup(
-                        pedroSb.followPathCmd(PutSample3yPickSpecimen2),
-                        etesito.rodeSb.rodeToPos(0)
-                        ),
-
-                //THIRD_TO_HUMAN && PICK_SECOND
-
-                new ParallelDeadlineGroup(
-                        etesito.pickSpecimenSeqCmd(),
-                        etesito.intakeSb.crservoCMD(-1)
-                        ),
-
-                etesito.intakeSb.crservoCMD(0),
-                pedroSb.followPathCmd(PutSpecimen2),
-
-                etesito.putSpecimenSeqCmd(),
-
-                new ParallelDeadlineGroup(
-                        pedroSb.followPathCmd(PickSpecimen3),
-                        etesito.rodeSb.rodeToPos(0),
-                        etesito.armSb.armToPosSmooth(0, 0.5)
-                )*/
 
                 );
     }

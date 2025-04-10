@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
@@ -14,6 +15,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Comands.Etesito;
 import org.firstinspires.ftc.teamcode.subsystems.PedroSb;
 
 import pedroPathing.constants.FConstants;
@@ -26,57 +28,59 @@ public class specimeneTraj extends OpMode {
     private Timer actionTimer;
     private Timer opmodeTimer;
 
+    Etesito etesito = new Etesito();
+
     PedroSb pedroSb;
 
     private Command pathCommand;
 
     //This visualizer is very easy to use to find and create paths/pathchains/poses: <https://pedro-path-generator.vercel.app/>
 
-    private final Pose startPose = new Pose(8.5, 60, Math.toRadians(0));
+    private final Pose startPose = new Pose(8.5, 62, Math.toRadians(0));
 
-    private final Pose putSpecimen1Pose = new Pose(23, 60, Math.toRadians(0));
+    private final Pose putSpecimen1Pose = new Pose(23, 62, Math.toRadians(0));
 
-    private final Pose pickUpSample1Pose = new Pose(36, 38, Math.toRadians(320));
+    private final Pose pickUpSample1Pose = new Pose(32, 42, Math.toRadians(320));
 
-    private final Pose putSample1Pose = new Pose(25, 33, Math.toRadians(230));
+    private final Pose putSample1Pose = new Pose(27, 34, Math.toRadians(230));
 
-    private final Pose pickUpSample2Pose = new Pose(36, 28, Math.toRadians(320));
+    private final Pose pickUpSample2Pose = new Pose(30, 32, Math.toRadians(320));
 
-    private final Pose putSample2Pose = new Pose(25, 28 , Math.toRadians(230));
+    private final Pose putSample2Pose = new Pose(27, 32, Math.toRadians(230));
 
-    private final Pose pickUpSample3Pose = new Pose(36, 18, Math.toRadians(320));
+    private final Pose pickUpSample3Pose = new Pose(30, 22, Math.toRadians(320));
 
-    private final Pose pickSpecimen2yPutSample3Pose = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen2yPutSample3Pose = new Pose(16, 34, Math.toRadians(180));
     private final Pose pickSpecimen2yPutSample3ControlPose = new Pose(34, 28, Math.toRadians(180));
 
     private final Pose putSpecimen2Pose = new Pose(41, 75, Math.toRadians(180));
 
-    private final Pose pickSpecimen3Pose = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen3Pose = new Pose(12, 28, Math.toRadians(180));
 
     private final Pose putSpecimen3Pose = new Pose(41, 72, Math.toRadians(180));
 
-    private final Pose pickSpecimen4Pose = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen4Pose = new Pose(12, 28, Math.toRadians(180));
 
     private final Pose putSpecimen4Pose = new Pose(41, 69, Math.toRadians(180));
 
-    private final Pose pickSpecimen5Pose = new Pose(12, 24, Math.toRadians(180));
+    private final Pose pickSpecimen5Pose = new Pose(12, 28, Math.toRadians(180));
 
     private final Pose putSpecimen5Pose = new Pose(41, 66, Math.toRadians(180));
 
     private Path PutSpecimen1;
 
-    private PathChain  PickSample1, pickSpecimen2, PutSample1, PickSample2, PutSample2, PickSample3, PickSpecimen2yPutSample3,
+    private PathChain PickSample1, PutSample1, PickSample2, PutSample2, PickSample3, PickSpecimen2yPutSample3,
             PutSpecimen2, PickSpecimen3, PutSpecimen3, PickSpecimen4, PutSpecimen4, PickSpecimen5, PutSpecimen5;
 
     public void buildPaths() {
         PutSpecimen1 = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1Pose)));
-        PutSpecimen1.setLinearHeadingInterpolation(startPose.getHeading(), putSpecimen1Pose.getHeading());
+        PutSpecimen1.setConstantHeadingInterpolation(putSpecimen1Pose.getHeading());
 
 
         PickSample1 = follower.pathBuilder()
-               .addPath(new BezierLine(new Point(putSpecimen1Pose), new Point(pickUpSample1Pose)))
-               .setLinearHeadingInterpolation(putSpecimen1Pose.getHeading(), pickUpSample1Pose.getHeading())
-               .build();
+                .addPath(new BezierLine(new Point(putSpecimen1Pose), new Point(pickUpSample1Pose)))
+                .setLinearHeadingInterpolation(putSpecimen1Pose.getHeading(), pickUpSample1Pose.getHeading())
+                .build();
 
         PutSample1 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickUpSample1Pose), new Point(putSample1Pose)))
@@ -134,22 +138,32 @@ public class specimeneTraj extends OpMode {
                 .build();
 
         PutSpecimen5 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickSpecimen4Pose), new Point(putSpecimen5Pose)))
+                .addPath(new BezierLine(new Point(pickSpecimen5Pose), new Point(putSpecimen5Pose)))
                 .setConstantHeadingInterpolation(putSpecimen5Pose.getHeading())
                 .build();
 
-
         pathCommand = new SequentialCommandGroup(
-            pedroSb.followPathCmd(PutSample1),
+                pedroSb.followPathCmd(PutSpecimen1),
+                new WaitCommand(300),
                 pedroSb.followPathCmd(PickSample1),
+                new WaitCommand(300),
+
                 pedroSb.followPathCmd(PutSample1),
+                new WaitCommand(300),
 
                 pedroSb.followPathCmd(PickSample2),
+                new WaitCommand(300),
+
                 pedroSb.followPathCmd(PutSample2),
+                new WaitCommand(300),
 
                 pedroSb.followPathCmd(PickSample3),
-                pedroSb.followPathCmd(PickSpecimen2yPutSample3),
+                new WaitCommand(300),
 
+                pedroSb.followPathCmd(PickSpecimen2yPutSample3),
+                new WaitCommand(300)
+
+                /*
                 pedroSb.followPathCmd(PutSpecimen2),
 
                 pedroSb.followPathCmd(PickSpecimen3),
@@ -161,11 +175,16 @@ public class specimeneTraj extends OpMode {
                 pedroSb.followPathCmd(PickSpecimen5),
                 pedroSb.followPathCmd(PutSpecimen5)
 
-                );
+                 */
+
+        );
     }
 
     @Override
     public void init() {
+        etesito.init(hardwareMap,true, true);
+
+        etesito.wristDown();
 
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
