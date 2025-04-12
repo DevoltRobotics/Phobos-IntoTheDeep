@@ -156,6 +156,9 @@ public class PedroSb extends SubsystemBase {
 
         boolean reajusted = false;
 
+        double angleError;
+        double headingDegrees;
+
         IMU imu;
         public TurnChassis(double power, IMU imu) {
             this.powerMult = power;
@@ -178,38 +181,25 @@ public class PedroSb extends SubsystemBase {
             if (rect != null) {
                 targetY = (int)rect.center.y;
                 targetX = (int)rect.center.x;
+
+                pixelErrorFromCenterY = yPixels - targetY;
+                double targetYAngl = getTargetAngleY(targetY);
+
+                double pixelErrorFromCenterX = targetX - 160;
+                double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
+
+                double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);
+
+                angleError = Range.clip((tAngl), -15, 15);
+
+                headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+
             }else {
-                Pose orgPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading());
-                Pose pose = new Pose(follower.getPose().getX() + 5, follower.getPose().getY(), follower.getPose().getHeading());
-                PathChain nevPat;
+                target = 5;
+                chassisController.targetPosition = target;
+                targeteado = true;
 
-                nevPat = follower.pathBuilder()
-                        .addPath(new BezierLine(new Point(orgPose), new Point(pose)))
-                        .setConstantHeadingInterpolation(pose.getHeading())
-                        .build();
-
-                followPathCmd(nevPat).schedule();
-
-                if (rect != null) {
-                    targetY = (int)rect.center.y;
-                    targetX = (int)rect.center.x;
-                }else {
-                    targetY = 240;
-                    targetX = 160;
-                }
             }
-
-            pixelErrorFromCenterY = yPixels - targetY;
-            double targetYAngl = getTargetAngleY(targetY);
-
-            double pixelErrorFromCenterX = targetX - 160;
-            double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
-
-            double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);
-
-            double angleError = Range.clip((tAngl), -15, 15);
-
-            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             if (!targeteado) {
                 target = (int)(headingDegrees - angleError);
@@ -280,8 +270,6 @@ public class PedroSb extends SubsystemBase {
         double target = 0;
         double power;
 
-        boolean centered = false;
-
         double error;
         double powerMult;
         ElapsedTime timer;
@@ -292,7 +280,12 @@ public class PedroSb extends SubsystemBase {
 
         boolean reajusted = false;
 
+        double angleError;
+        double headingDegrees;
+
         IMU imu;
+
+        boolean centered;
         public ReTurnChassis(double power, IMU imu) {
             this.powerMult = power;
             this.imu = imu;
@@ -303,12 +296,8 @@ public class PedroSb extends SubsystemBase {
         @Override
         public void initialize() {
             timer = new ElapsedTime();
-        }
 
-        @Override
-        public void execute() {
             following = false;
-            follower.breakFollowing();
 
             RotatedRect rect = vision.getRect();
 
@@ -316,35 +305,29 @@ public class PedroSb extends SubsystemBase {
             int targetY;
 
             if (rect != null) {
-                targetX = (int)(rect.center.x);
                 targetY = (int)rect.center.y;
-                size = rect.size.area();
-            } else {
-                targetX = 160;
-                targetY = yPixels;
-            }
+                targetX = (int)rect.center.x;
 
-            pixelErrorFromCenterY = yPixels - targetY;
-            double targetYAngl = pixelErrorFromCenterY / xDegreesPerPixel;
+                centered = Math.abs(targetX) <= 10;
 
-            double pixelErrorFromCenterX = targetX - 160;
-            double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
+                    pixelErrorFromCenterY = yPixels - targetY;
+                    double targetYAngl = getTargetAngleY(targetY);
 
-            if (pixelErrorFromCenterX <= 30){
-                centered = true;
-            }
+                    double pixelErrorFromCenterX = targetX - 160;
+                    double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
-            double tAngl;
-            if (pixelErrorFromCenterX >= 0){
-                tAngl = Math.toDegrees(Math.atan2(targetYAngl, targetXAngl));
+                    double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);
+
+                    angleError = Range.clip((tAngl), -15, 15);
+
+                    headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+
 
             }else {
-                tAngl = -(Math.toDegrees(Math.atan2(targetYAngl, targetXAngl)));
+                centered = true;
+
+
             }
-
-            double angleError = Range.clip((tAngl), -10, 10);
-
-            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             if (!targeteado) {
                 target = (int)(headingDegrees - angleError);
@@ -352,6 +335,14 @@ public class PedroSb extends SubsystemBase {
 
                 targeteado = true;
             }
+
+            follower.breakFollowing();
+
+        }
+
+        @Override
+        public void execute() {
+            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             error = Math.abs(target - headingDegrees);
 

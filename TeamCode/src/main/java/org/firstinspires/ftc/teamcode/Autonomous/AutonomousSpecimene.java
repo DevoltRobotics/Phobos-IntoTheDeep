@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenArmP
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.firstSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.openClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
 
 import com.arcrobotics.ftclib.command.Command;
@@ -45,7 +46,7 @@ public class AutonomousSpecimene extends OpMode {
     int putSample2RodePos = -600;
 
     int pickSample3RodePos = -900;
-    int putSample3RodePos = -800;
+    int putSample3RodePos = -600;
 
     PedroSb pedroSb;
 
@@ -71,26 +72,28 @@ public class AutonomousSpecimene extends OpMode {
 
     private final Pose pickUpSample3Pose = new Pose(32, 26, Math.toRadians(303));
 
-    private final Pose pickSpecimen2yPutSample3Pose = new Pose(18.5, 37, Math.toRadians(180));
-    private final Pose pickSpecimen2yPutSample3ControlPose = new Pose(34, 28, Math.toRadians(180));
+    private final Pose putSample3Pose = new Pose(27, 32, Math.toRadians(230));
 
-    private final Pose putSpecimen2Pose = new Pose(41, 75, Math.toRadians(180));
+    private final Pose pickSpecimen2Pose = new Pose(18.5, 37, Math.toRadians(180));
+    private final Pose pickSpecimen2ControlPose = new Pose(27, 35, Math.toRadians(180));
+
+    private final Pose putSpecimen2Pose = new Pose(40, 78, Math.toRadians(180));
 
     private final Pose pickSpecimen3Pose = new Pose(18, 38, Math.toRadians(180));
 
-    private final Pose putSpecimen3Pose = new Pose(41, 72, Math.toRadians(180));
+    private final Pose putSpecimen3Pose = new Pose(40, 72, Math.toRadians(180));
 
     private final Pose pickSpecimen4Pose = new Pose(12, 28, Math.toRadians(180));
 
-    private final Pose putSpecimen4Pose = new Pose(41, 69, Math.toRadians(180));
+    private final Pose putSpecimen4Pose = new Pose(40, 69, Math.toRadians(180));
 
     private final Pose pickSpecimen5Pose = new Pose(12, 28, Math.toRadians(180));
 
-    private final Pose putSpecimen5Pose = new Pose(41, 66, Math.toRadians(180));
+    private final Pose putSpecimen5Pose = new Pose(40, 66, Math.toRadians(180));
 
     private Path PutSpecimen1;
 
-    private PathChain PickSample1, PutSample1, PickSample2, PutSample2, PickSample3, PickSpecimen2yPutSample3,
+    private PathChain PickSample1, PutSample1, PickSample2, PutSample2, PickSample3, PutSample3, PickSpecimen2,
             PutSpecimen2, PickSpecimen3, PutSpecimen3, PickSpecimen4, PutSpecimen4, PickSpecimen5, PutSpecimen5;
 
     public void buildPaths() {
@@ -123,13 +126,18 @@ public class AutonomousSpecimene extends OpMode {
                 .setLinearHeadingInterpolation(putSample2Pose.getHeading(), pickUpSample3Pose.getHeading())
                 .build();
 
-        PickSpecimen2yPutSample3 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(pickUpSample3Pose), new Point(pickSpecimen2yPutSample3Pose)))
-                .setLinearHeadingInterpolation(pickUpSample3Pose.getHeading(), pickSpecimen2yPutSample3Pose.getHeading())
+        PutSample3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickUpSample3Pose), new Point(putSample3Pose)))
+                .setLinearHeadingInterpolation(pickUpSample3Pose.getHeading(), putSample3Pose.getHeading())
+                .build();
+
+        PickSpecimen2 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(pickUpSample3Pose), new Point(pickSpecimen2ControlPose), new Point(pickSpecimen2Pose)))
+                .setLinearHeadingInterpolation(putSample3Pose.getHeading(), pickSpecimen2Pose.getHeading())
                 .build();
 
         PutSpecimen2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickSpecimen2yPutSample3Pose), new Point(putSpecimen2Pose)))
+                .addPath(new BezierLine(new Point(pickSpecimen2Pose), new Point(putSpecimen2Pose)))
                 .setConstantHeadingInterpolation(putSpecimen2Pose.getHeading())
                 .build();
 
@@ -186,7 +194,7 @@ public class AutonomousSpecimene extends OpMode {
                 new ParallelCommandGroup(
                         pedroSb.followPathCmd(PickSample1),
                         etesito.wristSb.servoPosCMD(downWristPos),
-                        etesito.armSb.armToPosSmooth(0,1),
+                        etesito.armSb.armToPosSmooth(0,0.8),
                         etesito.intakeSb.crservoCMD(1)
                 ),
 
@@ -245,21 +253,27 @@ public class AutonomousSpecimene extends OpMode {
                 new WaitCommand(100),
                 new ParallelCommandGroup(
                         etesito.intakeSb.crservoCMD(0),
-                        etesito.rodeSb.rodeToPos(0),
-                        pedroSb.followPathCmd(PickSpecimen2yPutSample3)
+                        etesito.rodeSb.rodeToPos(putSample3RodePos),
+                        etesito.wristSb.servoPosCMD(contractWristPos),
+                        pedroSb.followPathCmd(PutSample3)
                 ),
 
                 //THIRD_TO_HUMAN
 
                 etesito.intakeSb.crservoCMD(-1),
+                new WaitCommand(200),
 
-                new WaitCommand(100),
+                new ParallelCommandGroup(
+                        etesito.intakeSb.crservoCMD(0),
+                        etesito.rodeSb.rodeToPos(0),
+                        etesito.wristSb.servoPosCMD(downWristPos),
+                        pedroSb.followPathCmd(PickSpecimen2)
+                ),
 
                 etesito.pickSpecimenOneSeqCmd(),
 
-
                 new ParallelCommandGroup(
-                        pedroSb.followPathCmd(PutSpecimen3),
+                        pedroSb.followPathCmd(PutSpecimen2),
                         etesito.pickSpecimenTwoSeqCmd()
                 ),
 
@@ -268,8 +282,9 @@ public class AutonomousSpecimene extends OpMode {
                 new ParallelCommandGroup(
                         pedroSb.followPathCmd(PickSpecimen3),
                         etesito.armSb.armToPosSmooth(0, 0.7)
-
                 )
+
+
                 );
     }
 

@@ -1,226 +1,548 @@
 package org.firstinspires.ftc.teamcode.Comands;
 
-import android.graphics.Color;
+import com.acmerobotics.dashboard.config.Config;
 
-import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.RR.Localizer;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.openftc.easyopencv.OpenCvCamera;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.armCoefficients;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.basketWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.chassisCoefficients;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.climbCoefficients;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.closeClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.contractAbramPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.initArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.initWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.launchArmsPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.midOpenAbramPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.mediumWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.openClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSpecimenWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeCoefficients;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosInitPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosTestPost;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSpecimenRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.supportArmsPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenWristPos;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.subsystems.ArmSb;
+import org.firstinspires.ftc.teamcode.subsystems.BooleanSb;
+import org.firstinspires.ftc.teamcode.subsystems.CRservoSb;
+import org.firstinspires.ftc.teamcode.subsystems.RodeSb;
+import org.firstinspires.ftc.teamcode.subsystems.ServoSb;
+
+@Config
 public class Etesito {
 
-    public DcMotorEx FL, BL, BR, FR;
+    public PIDFController armController = new PIDFController(armCoefficients);
+    public PIDFController rodeController = new PIDFController(rodeCoefficients);
+    public PIDFController chassiscontroller = new PIDFController(chassisCoefficients);
+    PIDFController climbControllerRight = new PIDFController(climbCoefficients);
+    PIDFController climbControllerLeft = new PIDFController(climbCoefficients);
 
-    public DcMotorEx armMotor;
-    public DcMotorEx rodeMotor;
-    public DcMotorEx cR;
-    public DcMotorEx cL;
+    public DcMotorEx fl, bl, br, fr, armMotor, rodeMotor, mCR, mCL;
 
-    public Servo servoC1;
-    public Servo servoC2;
+    public WebcamName webcam;
 
-    public Servo claw;
+    public Servo sC1, sC2, claw, wrist, light, abraham, launcherLeft, launcherRight;
 
-    public Servo wrist;
+    public CRServo intake;
 
-    public RevColorSensorV3 color;
-
-    public double Pos_close = 0.6;
-    public double Pos_open = 1;
-
-    public double Down_wrist = 0.6;
-    public double Down_M_wrist = 0.5;
-    public double Medium_wrist = 0.3;
-    public double Up_wrist = 0.2;
-    public double Clim_Wrist = 0;
-
-    public double down_ArmPos = 0;
-    public double lowBasket_Armpos = -1200;
-    public double specimen_ArmPos = -1700;
-    public double high_Armpos = -1900;
-    public double rode_High = -2100;
-    public double rode_specimen = -1800;
-    public double rode_medium = -1400;
-    public double rode_down = -1200;
-
-    float hsv[] = {0.0f, 0.0f, 0.0f};
-    float SCALE_FACTOR = 255;
-
-    public int ratio = 8;
-
-    public float red, green, blue;
-
-    public double scaleFactor = 10;
-
-    public double redTarget = 200;
-    public double greenTarget = 100;
-    public double blueTarget = 100;
-    public double TargetValue = 1000;
+    public boolean wristIsMedium;
 
     public IMU imu;
 
-    public OpenCvCamera Camera;
-    public VisionPortal visionPortal;
-    private AprilTagProcessor aprilTag;
-    public Localizer localizer;
+    public CRservoSb intakeSb;
 
-    public void init(HardwareMap hardwareMap) {
+    public ServoSb clawSb;
+    public ServoSb wristSb;
+    public ServoSb abrahamSb;
+    public ServoSb servosSb;
+    public ServoSb launchersSb;
+    public ServoSb lightSb;
+
+    public ChassisSubsystem chassisSb;
+
+    public ArmSb armSb;
+    public RodeSb rodeSb;
+
+    public BooleanSb booleanAction;
+
+    public int armPosition = 0;
+
+    public double headingAuto = 0;
+    
+    public void init(HardwareMap hardwareMap, boolean resetRode, boolean resetImu) {
+        rodeController.reset();
+        armController.reset();
+        climbControllerRight.reset();
+        climbControllerLeft.reset();
+        chassiscontroller.reset();
+
+        webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
+        rodeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if (resetRode) {
+            rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
 
+        launcherLeft = hardwareMap.get(Servo.class, "plL");
+        launcherRight = hardwareMap.get(Servo.class, "plR");
         claw = hardwareMap.servo.get("cw");
+        intake = hardwareMap.get(CRServo.class, "in");
         wrist = hardwareMap.servo.get("wr");
+        abraham = hardwareMap.servo.get("sr");
 
-        color = hardwareMap.get(RevColorSensorV3.class, "color");
+        light = hardwareMap.get(Servo.class, "rgb");
 
-        cR = hardwareMap.get(DcMotorEx.class, "mc1");
-        cL = hardwareMap.get(DcMotorEx.class, "mc2");
-        cR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        cL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mCR = hardwareMap.get(DcMotorEx.class, "mc1");
+        mCL = hardwareMap.get(DcMotorEx.class, "mc2");
+        mCR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mCL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        cR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mCR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mCR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        cL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        mCL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mCL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        cL.setDirection(DcMotorSimple.Direction.REVERSE);
+        mCL.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        servoC1 = hardwareMap.get(Servo.class,"sc1");
-        servoC2 = hardwareMap.get(Servo.class,"sc2");
+        sC1 = hardwareMap.get(Servo.class, "sc1");
+        sC2 = hardwareMap.get(Servo.class, "sc2");
 
         imu = hardwareMap.get(IMU.class, "imu");
 
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
-        imu.initialize(parameters);
+        if (resetImu){
+            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                    RevHubOrientationOnRobot.UsbFacingDirection.LEFT));
+            imu.initialize(parameters);
+            imu.resetYaw();
+        }
 
-        FL = hardwareMap.get(DcMotorEx.class, "fl");
-        BL = hardwareMap.get(DcMotorEx.class, "bl");
-        BR = hardwareMap.get(DcMotorEx.class, "br");
-        FR = hardwareMap.get(DcMotorEx.class, "fr");
+        fl = hardwareMap.get(DcMotorEx.class, "fl"); //ex1
+        bl = hardwareMap.get(DcMotorEx.class, "bl"); //ex2
+        br = hardwareMap.get(DcMotorEx.class, "br"); //ex3
+        fr = hardwareMap.get(DcMotorEx.class, "fr"); //ex4
 
-        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        BR.setDirection(DcMotorSimple.Direction.REVERSE);
-        FR.setDirection(DcMotorSimple.Direction.REVERSE);
+        bl.setDirection(DcMotorSimple.Direction.REVERSE);
+        fl.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        wristIsMedium = false;
+
+        intakeSb = new CRservoSb(intake);
+
+        clawSb = new ServoSb(claw);
+        wristSb = new ServoSb(wrist);
+        abrahamSb = new ServoSb(abraham);
+        servosSb = new ServoSb(sC1, sC2);
+        launchersSb = new ServoSb(launcherRight, launcherLeft);
+
+        lightSb = new ServoSb(light);
+
+        chassisSb = new ChassisSubsystem(chassiscontroller, fl, bl, br, fr);
+
+        armSb = new ArmSb(armMotor, armController);
+        rodeSb = new RodeSb(rodeMotor, rodeController);
+
+        booleanAction = new BooleanSb();
+
+        CommandScheduler.getInstance().registerSubsystem(clawSb, wristSb, chassisSb, servosSb, launchersSb, intakeSb,
+                                                         armSb, rodeSb, booleanAction);
+    }
+
+    public void launchHangArms() {
+        launcherRight.setPosition(0.5 + launchArmsPos);
+        launcherLeft.setPosition(0.5 - launchArmsPos);
+    }
+
+    public void supportHangArms() {
+        launcherRight.setPosition(0.5 + supportArmsPos);
+        launcherLeft.setPosition(0.5  - supportArmsPos);
+    }
+
+    public void pickSpecimen() {
+        claw.setPosition(closeClawPos);
+    }
+
+    public void dropSpecimen() {
+        claw.setPosition(openClawPos);
+    }
+
+    public void pickSample() {
+        intake.setPower(1);
+    }
+
+    public void pickSampleSlow() {
+        intake.setPower(0.1);
+    }
+
+    public void dropSample() {
+        intake.setPower(-1);
+    }
+
+    public void intake0() {
+        intake.setPower(0);
+    }
+
+    public void wristDown() {
+        wrist.setPosition(downWristPos);
+        wristIsMedium = false;
+    }
+
+    public void wristContract() {
+        wrist.setPosition(contractWristPos);
+        wristIsMedium = true;
+    }
+
+    public void wristToggle() {
+        if (wristIsMedium){
+            wristDown();
+
+        }else {
+            wristContract();
+        }
+    }
+
+    public void wristMedium() {
+        wrist.setPosition(mediumWristPos);
+        wristIsMedium = true;
+    }
+
+    public void wristUp() {
+        wrist.setPosition(basketWristPos);
+        wristIsMedium = true;
+    }
+
+    public void wristSpecimen() {
+        wrist.setPosition(specimenWristPos);
+        wristIsMedium = true;
+    }
+
+    public void wristManualUp() {
+        wrist.setPosition(wrist.getPosition() + 0.03);
+    }
+
+    public void wristManualDown() {
+        wrist.setPosition(wrist.getPosition() - 0.03);
+    }
+
+    public void wristManualMantener() {
+        wrist.setPosition(wrist.getPosition());
+    }
+
+    public void lanzarSample() {
+        abraham.setPosition(midOpenAbramPos);
+    }
+
+    public void esconderPalito() {
+        abraham.setPosition(contractAbramPos);
+    }
+
+    public void servosOff() {
+        sC1.getController().pwmDisable();
+        sC2.getController().pwmDisable();
+    }
+
+    public void servosHanging() {
+
+        sC1.setPosition(0.5 + servosHangingPos);
+        sC2.setPosition(0.5 - servosHangingPos);
+    }
+
+    public void servosClimbing() {
+
+        sC1.setPosition(0.5 + servosClimbingPos);
+        sC2.setPosition(0.5 - servosClimbingPos);
+    }
+
+    public void servos_test() {
+
+        sC1.setPosition(0.5 + servosTestPost);
+        sC2.setPosition(0.5 - servosTestPost);
 
     }
 
-
-    public void pick(){
-        claw.setPosition(Pos_close);
-
-
-    }
-
-    public void open(){
-        claw.setPosition(Pos_open);
+    public void servosDownNomral() {
+        sC1.setPosition(0);
+        sC2.setPosition(1);
 
 
     }
 
-    public void wrist_down(){
-        wrist.setPosition(Down_wrist);
-
-    }
-
-    public void wrist_Down_M(){
-        wrist.setPosition(Down_M_wrist);
-
-    }
-
-    public void wrist_Medium(){
-        wrist.setPosition(Medium_wrist);
-
-    }
-
-
-    public void wrist_up(){
-        wrist.setPosition(Up_wrist);
-
-    }
-
-    public void wrist_Climb(){
-        wrist.setPosition(Clim_Wrist);
-
-    }
-
-    public void servosOff(){
-
-        servoC1.getController().pwmDisable();
-        servoC2.getController().pwmDisable();
-    }
-
-    public void servos_Uping(){
-
-        servoC1.setPosition(0.7);
-        servoC2.setPosition(0.3);
-    }
-
-    public void servos_Climbing(){
-
-        servoC1.setPosition(0.6);
-        servoC2.setPosition(0.4);
-    }
-
-    public void servos_down(){
-
+    public void servosDown() {
         ElapsedTime timer = new ElapsedTime();
 
-        servoC1.setPosition(0);
-        servoC2.setPosition(1);
+        sC1.setPosition(0);
+        sC2.setPosition(1);
 
-        timer.reset();
-
-        if (timer.seconds() > 0.2){
+        if (timer.seconds() > 0.2) {
             servosOff();
 
         }
     }
 
-    public void getColors(){
+    public void setLight(String color) {
+        switch (color) {
+            case "purple":
+                light.setPosition(0.72);
+                break;
+            case "blue":
+                light.setPosition(0.62);
+                break;
+            case "green":
+                light.setPosition(0.5);
+                break;
+            case "yellow":
+                light.setPosition(0.388);
+                break;
+            case "orange":
+                light.setPosition(0.33);
+                break;
+            case "red":
+                light.setPosition(0.28);
+                break;
+        }
+    }
 
-        red = color.red();
-        green = color.green();
-        blue = color.blue();
+    public void resetArmEncoder() {
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
 
-        Color.RGBToHSV((int) (red * SCALE_FACTOR), (int) (green * SCALE_FACTOR), (int) (blue * SCALE_FACTOR), hsv);
+    public void resetRodeEncoder() {
+        rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void setDrivePower(double fL, double bL, double fR, double bR) {
+        fl.setPower(fL);
+        bl.setPower(bL);
+        fr.setPower(fR);
+        br.setPower(bR);
+    }
+
+    public static double lerp(double start, double end, double t) {
+        return start * (1 - t) + end * t;
+    }
+
+    public double[] chassisPower (double botHeading, double potenciaChassis, Gamepad gamepad1){
+        double y = gamepad1.left_stick_y;
+        double x = -gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
+
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+
+        return new double[]{
+                ((rotY + rotX + rx) / denominator) * potenciaChassis, //fl
+                ((rotY - rotX + rx) / denominator) * potenciaChassis, // bl
+                ((rotY - rotX - rx) / denominator) * potenciaChassis, //fr
+                ((rotY + rotX - rx) / denominator) * potenciaChassis //br
+        };
 
     }
 
-    public void colorTelemetry(Telemetry telemetry){
-        telemetry.addData("red", red);
-        telemetry.addData("green", green);
-        telemetry.addData("blue", blue);
-        telemetry.addData("Hue", hsv[0]);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public Command contractArmDownCmd(){
+        return new SequentialCommandGroup(
+            wristSb.servoPosCMD(contractWristPos),
+            booleanAction.booleanCmd(wristIsMedium, true),
+            new WaitCommand(300),
+                rodeSb.rodeToPos(0)
+
+        );
+    }
+
+    public Command extendArmHighBasketCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(basketWristPos),
+                armSb.armToPos(basketArmPos),
+                new WaitCommand(350),
+                rodeSb.rodeToPos(highRodePos),
+                new WaitCommand(200)
+
+        );
+    }
+
+    public Command contractArmBasketCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(downWristPos),
+                new WaitCommand(200),
+
+                intakeSb.crservoCMD(0),
+                rodeSb.rodeToPosSmooth(0, 0.5)
+
+        );
+    }
+
+    public Command subContractArmBasketCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(preSubWristPos),
+                new WaitCommand(200),
+
+                intakeSb.crservoCMD(0),
+                rodeSb.rodeToPos(-500),
+
+                new WaitCommand(200)
+
+        );
     }
 
 
+    /*public Command putSpecimenSeqCmd(){
+        return new SequentialCommandGroup(
+                rodeSb.rodeToPos(specimenRodePos),
+                new WaitCommand(200),
 
+                armSb.armToPos(postSpecimenArmPos),
+                new WaitCommand(200),
+
+                clawSb.servoPosCMD(openClawPos),
+                new WaitCommand(200),
+
+                rodeSb.rodeToPosSmooth(0, 3),
+                new WaitCommand(50),
+
+                wristSb.servoPosCMD(downWristPos),
+                booleanAction.booleanCmd(wristIsMedium, false),
+                new WaitCommand(300),
+
+                armSb.armToPosSmooth(0, 0.5),
+                booleanAction.numberCmd(armPosition, 0)
+                );
+    }*/
+
+    public Command putSpecimenOneSeqCmd(){
+        return new SequentialCommandGroup(
+                rodeSb.rodeToPos(specimenRodePos),
+                new WaitCommand(150),
+
+                armSb.armToPos(postSpecimenArmPos),
+                wristSb.servoPosCMD(downWristPos),
+                new WaitCommand(150),
+
+                clawSb.servoPosCMD(openClawPos),
+                new WaitCommand(300),
+
+                rodeSb.rodeToPos(0),
+                new WaitCommand(100)
+        );
+    }
+
+    public Command pickSpecimenOneSeqCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(pickSpecimenWristPos),
+
+                rodeSb.rodeToPos(-350),
+                new WaitCommand(300),
+
+                clawSb.servoPosCMD(closeClawPos),
+                new WaitCommand(400),
+
+                armSb.armToPos(specimenArmPos),
+                new WaitCommand(300)
+
+                );
+    }
+
+    public Command pickSpecimenOne2SeqCmd(){
+        return new SequentialCommandGroup(
+                rodeSb.rodeToPos(-150),
+                new WaitCommand(300),
+
+                clawSb.servoPosCMD(closeClawPos),
+                new WaitCommand(300),
+
+                armSb.armToPos(specimenArmPos),
+                new WaitCommand(300)
+
+        );
+    }
+
+    public Command pickSpecimenTwoSeqCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(specimenWristPos),
+                rodeSb.rodeToPos(preSpecimenRodePos)
+
+        );
+    }
+
+    public Command launchArms(){
+        return new SequentialCommandGroup(
+                launchersSb.mirrorServoPosCMD(launchArmsPos),
+                new WaitCommand(500),
+                servosSb.mirrorServoPosCMD(servosHangingPos)
+        );
+    }
+
+    public Command initCmd(){
+        return new SequentialCommandGroup(
+                clawSb.servoPosCMD(closeClawPos),
+                wristSb.servoPosCMD(basketWristPos),
+                servosSb.mirrorServoPosCMD(servosInitPos),
+                launchersSb.mirrorServoPosCMD(supportArmsPos),
+
+                new WaitCommand(300),
+
+                armSb.armToPos(initArmPos),
+
+                new WaitCommand(800),
+
+                wristSb.servoPosCMD(initWristPos)
+                );
+    }
+
+    public Command downArm3rdSample(){
+        return new SequentialCommandGroup(
+                abrahamSb.servoPosCMD(contractAbramPos),
+                wristSb.servoPosCMD(downWristPos),
+                new WaitCommand(200),
+
+                armSb.armToPosSmooth(0, 0.4),
+
+                intakeSb.crservoCMD(1),
+                rodeSb.rodeToPos(-400)
+        );
+    }
 
 }

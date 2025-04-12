@@ -47,6 +47,10 @@ public class AutonomousSample extends OpMode {
 
     CrosshairVision vision;
 
+    double xPose;
+    double yPose;
+    double heading;
+
     private int rodePick2 = -1000;
     private int rodePick3 = -850;
 
@@ -74,7 +78,7 @@ public class AutonomousSample extends OpMode {
     private final Pose put4SamplePose = new Pose(17, 131, Math.toRadians(318));
     private final Pose put4SampleControlPose = new Pose(23, 125, Math.toRadians(318));
 
-    private final Pose pickUp5SamplePose = new Pose(65, 105, Math.toRadians(270));
+    private final Pose pickUp5SamplePose = new Pose(65, 106, Math.toRadians(270));
     private final Pose pickUp5SampleControlPose = new Pose(65, 120, Math.toRadians(275));
 
     private final Pose put5SamplePose = new Pose(17, 131, Math.toRadians(315));
@@ -129,8 +133,8 @@ public class AutonomousSample extends OpMode {
                 .build();
 
         PutSample5 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(pickUp5SamplePose), new Point(put5SampleControlPose), new Point(put5SamplePose)))
-                .setLinearHeadingInterpolation(follower.getPose().getHeading(), put5SamplePose.getHeading())
+                .addPath(new BezierCurve(new Point(xPose, yPose), new Point(put5SampleControlPose), new Point(put5SamplePose)))
+                .setLinearHeadingInterpolation(heading, put5SamplePose.getHeading())
                 .build();
 
         Park = new Path(new BezierLine(new Point(put5SamplePose),  new Point(parkPose)));
@@ -312,14 +316,12 @@ public class AutonomousSample extends OpMode {
                                 )),
 
                         etesito.intakeSb.crservoCMD(-1),
-
                         new WaitCommand(200),
 
                         etesito.wristSb.servoPosCMD(preSubWristPos),
                         new WaitCommand(150),
 
                         etesito.rodeSb.rodeToPos(preSubmRodePos),
-
                         new WaitCommand(200)
 
                         );
@@ -377,9 +379,13 @@ public class AutonomousSample extends OpMode {
 
         CommandScheduler.getInstance().run();
 
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
+        xPose = follower.getPose().getX();
+        yPose = follower.getPose().getY();
+        heading = follower.getPose().getHeading();
+
+        telemetry.addData("x", xPose);
+        telemetry.addData("y", yPose);
+        telemetry.addData("heading", heading);
         telemetry.update();
     }
 

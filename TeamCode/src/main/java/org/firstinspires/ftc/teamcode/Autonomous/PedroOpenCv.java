@@ -24,6 +24,7 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -35,7 +36,7 @@ import org.opencv.core.RotatedRect;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 @Config
-@TeleOp
+@Autonomous
 public class PedroOpenCv extends OpMode {
     PedroSb pedroSb;
 
@@ -69,6 +70,9 @@ public class PedroOpenCv extends OpMode {
                 new WaitCommand(150),
 
                 pedroSb.turnChassis(1, etesito.imu),
+                new WaitCommand(150),
+
+                pedroSb.reTurnChassis(1, etesito.imu),
 
                 new WaitCommand(150),
 
