@@ -43,15 +43,17 @@ public class RodeSb extends SubsystemBase {
 
                 new WaitCommand(250),
 
-                rodeToPosPlus(300),
+                rodeToPosPlus(350),
 
-                new WaitCommand(200),
+                new WaitCommand(100),
 
                 wristSb.servoPosCMD(downWristPos),
 
-                new WaitCommand(250),
+                new WaitCommand(300),
 
-                rodeToPosPlus(-150)
+                rodeToPosPlus(-250),
+
+                new WaitCommand(200)
 
                 );
 
@@ -243,16 +245,10 @@ public class RodeSb extends SubsystemBase {
 
         @Override
         public void execute() {
-            RotatedRect[] rects = vision.getLastRects();
-
-            for (int i = 0; i < rects.length; i++) {
-                telemetry.addData("detection #" + i, rects[i].center);
-            }
+            RotatedRect rect = vision.getRect();
 
             int targetY;
-            RotatedRect rect = new RotatedRect();
-            if (rects.length > 0) {
-                rect = rects[0];
+            if (rect != null) {
                 targetY = (int)rect.center.y + offset;
             }else {
                 targetY = 240;

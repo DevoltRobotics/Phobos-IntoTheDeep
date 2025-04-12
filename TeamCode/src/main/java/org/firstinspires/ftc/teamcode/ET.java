@@ -375,7 +375,7 @@ public class ET extends OpMode {
 
             switch (armPosition) {
                 case 2:
-                    rdTarget = specimenRodePos - 100;
+                    rdTarget = specimenRodePos;
                     rodeMin = specimenRodePos - 900;
                     break;
 

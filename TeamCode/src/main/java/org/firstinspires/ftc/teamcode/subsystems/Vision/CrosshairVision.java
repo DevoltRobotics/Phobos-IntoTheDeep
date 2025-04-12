@@ -43,8 +43,8 @@ public class CrosshairVision {
     public void updateExposure() {
     }
 
-    public RotatedRect[] getLastRects() {
-        return pipeline.getLastRects();
+    public RotatedRect getRect() {
+        return pipeline.getRotRectTarget("sample");
     }
 
 }

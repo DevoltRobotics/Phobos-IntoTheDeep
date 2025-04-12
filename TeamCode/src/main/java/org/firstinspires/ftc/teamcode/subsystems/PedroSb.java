@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import static org.firstinspires.ftc.teamcode.Comands.Constants.getTargetAngleY;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.xDegreesPerPixel;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.xFov;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.yPixels;
 
 import com.arcrobotics.ftclib.command.Command;
@@ -9,6 +10,8 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
+import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
@@ -65,11 +68,10 @@ public class PedroSb extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (following) {
-            follower.update();
-        }else {
-           follower.breakFollowing();
+        follower.update();
 
+        if (!following) {
+           follower.breakFollowing();
         }
     }
 
@@ -165,32 +167,36 @@ public class PedroSb extends SubsystemBase {
         @Override
         public void initialize() {
             timer = new ElapsedTime();
-        }
 
-        @Override
-        public void execute() {
             following = false;
-            follower.breakFollowing();
 
-            RotatedRect[] rects = vision.getLastRects();
-
-            for (int i = 0; i < rects.length; i++) {
-                telemetry.addData("detection #" + i, rects[i].center);
-            }
+            RotatedRect rect = vision.getRect();
 
             int targetX;
             int targetY;
 
-            RotatedRect rect = new RotatedRect();
-            if (rects.length > 0) {
-                rect = rects[0];
-
-                targetX = (int)(rect.center.x);
+            if (rect != null) {
                 targetY = (int)rect.center.y;
-                size = rect.size.area();
+                targetX = (int)rect.center.x;
             }else {
-                targetX = 160;
-                targetY = yPixels;
+                Pose orgPose = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading());
+                Pose pose = new Pose(follower.getPose().getX() + 5, follower.getPose().getY(), follower.getPose().getHeading());
+                PathChain nevPat;
+
+                nevPat = follower.pathBuilder()
+                        .addPath(new BezierLine(new Point(orgPose), new Point(pose)))
+                        .setConstantHeadingInterpolation(pose.getHeading())
+                        .build();
+
+                followPathCmd(nevPat).schedule();
+
+                if (rect != null) {
+                    targetY = (int)rect.center.y;
+                    targetX = (int)rect.center.x;
+                }else {
+                    targetY = 240;
+                    targetX = 160;
+                }
             }
 
             pixelErrorFromCenterY = yPixels - targetY;
@@ -199,15 +205,9 @@ public class PedroSb extends SubsystemBase {
             double pixelErrorFromCenterX = targetX - 160;
             double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
-            double tAngl;
-            if (pixelErrorFromCenterX >= 0){
-                tAngl = Math.toDegrees(Math.atan2(targetYAngl, targetXAngl));
+            double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);
 
-            }else {
-                tAngl = -(Math.toDegrees(Math.atan2(targetYAngl, targetXAngl)));
-            }
-
-            double angleError = Range.clip((tAngl), -10, 10);
+            double angleError = Range.clip((tAngl), -15, 15);
 
             double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
@@ -217,6 +217,14 @@ public class PedroSb extends SubsystemBase {
 
                 targeteado = true;
             }
+
+            follower.breakFollowing();
+
+        }
+
+        @Override
+        public void execute() {
+            double headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             error = Math.abs(target - headingDegrees);
 
@@ -243,6 +251,7 @@ public class PedroSb extends SubsystemBase {
         @Override
         public boolean isFinished() {
             return (timer.seconds() >= 0.4) || Math.abs(error) <= 0.4;
+
         }
 
         @Override
@@ -261,6 +270,8 @@ public class PedroSb extends SubsystemBase {
             bl.setPower(0);
             fr.setPower(0);
             br.setPower(0);
+
+            follower.breakFollowing();
         }
     }
 
@@ -299,27 +310,19 @@ public class PedroSb extends SubsystemBase {
             following = false;
             follower.breakFollowing();
 
-            RotatedRect[] rects = vision.getLastRects();
-
-            for (int i = 0; i < rects.length; i++) {
-                telemetry.addData("detection #" + i, rects[i].center);
-            }
+            RotatedRect rect = vision.getRect();
 
             int targetX;
             int targetY;
 
-            RotatedRect rect = new RotatedRect();
-            if (rects.length > 0) {
-                rect = rects[0];
-
+            if (rect != null) {
                 targetX = (int)(rect.center.x);
                 targetY = (int)rect.center.y;
                 size = rect.size.area();
-            }else {
+            } else {
                 targetX = 160;
                 targetY = yPixels;
             }
-
 
             pixelErrorFromCenterY = yPixels - targetY;
             double targetYAngl = pixelErrorFromCenterY / xDegreesPerPixel;
@@ -452,6 +455,7 @@ public class PedroSb extends SubsystemBase {
             @Override
             public void initialize() {
                 following = true;
+                follower.resumePathFollowing();
                 follower.update();
             }
 

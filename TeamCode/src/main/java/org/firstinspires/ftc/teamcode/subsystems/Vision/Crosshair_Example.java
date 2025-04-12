@@ -1,41 +1,39 @@
 package org.firstinspires.ftc.teamcode.subsystems.Vision;
-
-import com.acmerobotics.dashboard.config.Config;
-
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import java.util.*;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@Config
 public class Crosshair_Example extends OpenCvPipeline {
 
     public Scalar lowerYCrCb = new Scalar(0.0, 0.0, 0.0, 0.0);
-    public Scalar upperYCrCb = new Scalar(255.0, 255.0, 110.0, 0.0);
+    public Scalar upperYCrCb = new Scalar(255.0, 255.0, 120.0, 0.0);
     private Mat ycrcbMat = new Mat();
     private Mat ycrcbBinaryMat = new Mat();
 
-    public Scalar lowerHSV = new Scalar(0.0, 0.0, 107.0, 0.0);
-    public Scalar upperHSV = new Scalar(25.0, 255.0, 255.0, 0.0);
+    public Scalar lowerHSV = new Scalar(98.0, 0.0, 0.0, 0.0);
+    public Scalar upperHSV = new Scalar(255.0, 255.0, 217.0, 0.0);
     private Mat hsvMat = new Mat();
     private Mat hsvBinaryMat = new Mat();
 
+    public Mat bitwiseNOTMat = new Mat();
+
     public Mat bitwiseANDMat = new Mat();
 
-    public static int erodeValue = ((int) (20));
-    public static int dilateValue = ((int) (15));
+    public int erodeValue = ((int) (40));
+    public int dilateValue = ((int) (40));
     private Mat element = null;
     private Mat bitwiseANDMatErodedDilated = new Mat();
 
     private ArrayList<MatOfPoint> contours = new ArrayList<>();
     private Mat hierarchy = new Mat();
 
-    public static int minArea = 3000;
-    public static int maxArea = 15000;
+    public int minArea = 2000;
+    public int maxArea = 30000;
     private ArrayList<MatOfPoint> contoursByArea = new ArrayList<>();
 
-    public static int minRatio = 25;
-    public static int maxRatio = 90;
+    public int minRatio = 0;
+    public int maxRatio = 100;
     private ArrayList<MatOfPoint> contoursByAreaByRatio = new ArrayList<>();
     private MatOfPoint2f contoursByArea2f = new MatOfPoint2f();
 
@@ -55,23 +53,28 @@ public class Crosshair_Example extends OpenCvPipeline {
     private MatOfPoint2f crosshair2f = new MatOfPoint2f();
     private ArrayList<RotatedRect> crosshairRotRects = new ArrayList<>();
 
+    private RotatedRect biggestRotRect = null;
+
+    private HashMap<String, Rect> rectTargets = new HashMap<>();
+    private HashMap<String, RotatedRect> rotRectTarget = new HashMap<>();
+
     private Mat crosshairImageRotRects = new Mat();
 
     private MatOfPoint biggestContour = null;
 
-    private final Object rectsLock = new Object();
-    private ArrayList<RotatedRect> exportedRects = new ArrayList<>();
-
     @Override
     public Mat processFrame(Mat input) {
-        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
-        Core.inRange(hsvMat, lowerHSV, upperHSV, hsvBinaryMat);
-
         Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
         Core.inRange(ycrcbMat, lowerYCrCb, upperYCrCb, ycrcbBinaryMat);
 
+        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
+        Core.inRange(hsvMat, lowerHSV, upperHSV, hsvBinaryMat);
+
+        bitwiseNOTMat.release();
+        Core.bitwise_not(hsvBinaryMat, bitwiseNOTMat);
+
         bitwiseANDMat.release();
-        Core.bitwise_and(ycrcbBinaryMat, hsvBinaryMat, bitwiseANDMat);
+        Core.bitwise_and(ycrcbBinaryMat, bitwiseNOTMat, bitwiseANDMat);
 
         bitwiseANDMat.copyTo(bitwiseANDMatErodedDilated);
         if(erodeValue > 0) {
@@ -157,20 +160,27 @@ public class Crosshair_Example extends OpenCvPipeline {
             crosshairRotRects.add(Imgproc.minAreaRect(crosshair2f));
         }
 
-        crosshairImage.copyTo(crosshairImageRotRects);
-
-        synchronized (rectsLock) {
-            exportedRects.clear();
-            for (RotatedRect rect : crosshairRotRects) {
-                if (rect != null) {
-                    Point[] rectPoints = new Point[4];
-                    rect.points(rectPoints);
-                    MatOfPoint matOfPoint = new MatOfPoint(rectPoints);
-
-                    exportedRects.add(rect);
-
-                    Imgproc.polylines(crosshairImageRotRects, Collections.singletonList(matOfPoint), true, lineColor1, lineThickness1);
+        this.biggestRotRect = null;
+        for(RotatedRect rect : crosshairRotRects) {
+            if(rect != null) {
+                if((biggestRotRect == null) || (rect.size.area() > biggestRotRect.size.area())) {
+                    this.biggestRotRect = rect;
                 }
+            }
+        }
+
+        clearTargets();
+
+        addRotRectTarget("sample", biggestRotRect);
+
+        crosshairImage.copyTo(crosshairImageRotRects);
+        for(RotatedRect rect : crosshairRotRects) {
+            if(rect != null) {
+                Point[] rectPoints = new Point[4];
+                rect.points(rectPoints);
+                MatOfPoint matOfPoint = new MatOfPoint(rectPoints);
+
+                Imgproc.polylines(crosshairImageRotRects, Collections.singletonList(matOfPoint), true, lineColor1, lineThickness1);
             }
         }
 
@@ -199,9 +209,23 @@ public class Crosshair_Example extends OpenCvPipeline {
         return crosshairImageRotRects;
     }
 
-    public RotatedRect[] getLastRects() {
-        synchronized (rectsLock) {
-            return exportedRects.toArray(new RotatedRect[0]);
-        }
+    private synchronized void clearTargets() {
+        rectTargets.clear();
+        rotRectTarget.clear();
     }
+
+    private synchronized void addRectTarget(String label, Rect rect) {
+        rectTargets.put(label, rect);
+    }
+    private synchronized void addRotRectTarget(String label, RotatedRect rotRect) {
+        rotRectTarget.put(label, rotRect);
+    }
+
+    public synchronized Rect getRectTarget(String label) {
+        return ((Rect) (rectTargets.get(label)));
+    }
+    public synchronized RotatedRect getRotRectTarget(String label) {
+        return ((RotatedRect) (rotRectTarget.get(label)));
+    }
+
 }

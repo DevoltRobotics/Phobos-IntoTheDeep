@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.basketWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.contractWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubmRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.servosInitPos;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -56,7 +56,7 @@ public class AutonomousSample extends OpMode {
 
     private final Pose startPose = new Pose(8.5, 112, Math.toRadians(270));
 
-    private final Pose putSample1Pose = new Pose(15, 128, Math.toRadians(319));
+    private final Pose putSample1Pose = new Pose(14, 128, Math.toRadians(319));
     //private final Pose putSample1ControlPose = new Pose(20, 112, Math.toRadians(340));
 
     private final Pose pickUp2SamplePose = new Pose(30, 117, Math.toRadians(50));
@@ -67,7 +67,7 @@ public class AutonomousSample extends OpMode {
     private final Pose pickUp3SamplePose = new Pose(30, 128, Math.toRadians(48));
 
     private final Pose put3SamplePose = new Pose(16, 132, Math.toRadians(319));
-    private final Pose putSample3ControlPose = new Pose(26, 136, Math.toRadians(340));
+    private final Pose putSample3ControlPose = new Pose(26, 132, Math.toRadians(340));
 
     private final Pose pickUp4SamplePose = new Pose(37, 135, Math.toRadians(300));
 
@@ -77,8 +77,8 @@ public class AutonomousSample extends OpMode {
     private final Pose pickUp5SamplePose = new Pose(65, 105, Math.toRadians(270));
     private final Pose pickUp5SampleControlPose = new Pose(65, 120, Math.toRadians(275));
 
-    private final Pose put5SamplePos = new Pose(12, 130, Math.toRadians(315));
-    private final Pose put5SampleControlPose = new Pose(25, 120, Math.toRadians(275));
+    private final Pose put5SamplePose = new Pose(17, 131, Math.toRadians(315));
+    private final Pose put5SampleControlPose = new Pose(65, 130, Math.toRadians(275));
 
     private final Pose parkPose = new Pose(30, 120, Math.toRadians(180));
 
@@ -129,12 +129,12 @@ public class AutonomousSample extends OpMode {
                 .build();
 
         PutSample5 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(pickUp5SamplePose), new Point(put5SampleControlPose), new Point(put5SamplePos)))
-                .setLinearHeadingInterpolation(pickUp5SamplePose.getHeading(), put5SamplePos.getHeading())
+                .addPath(new BezierCurve(new Point(pickUp5SamplePose), new Point(put5SampleControlPose), new Point(put5SamplePose)))
+                .setLinearHeadingInterpolation(follower.getPose().getHeading(), put5SamplePose.getHeading())
                 .build();
 
-        Park = new Path(new BezierLine(new Point(put5SamplePos),  new Point(parkPose)));
-        Park.setLinearHeadingInterpolation(put5SamplePos.getHeading(), parkPose.getHeading());
+        Park = new Path(new BezierLine(new Point(put5SamplePose),  new Point(parkPose)));
+        Park.setLinearHeadingInterpolation(put5SamplePose.getHeading(), parkPose.getHeading());
 
         pathCommand =
                 new SequentialCommandGroup(
@@ -277,15 +277,52 @@ public class AutonomousSample extends OpMode {
                         ),
 
                         pedroSb.breakPath(),
+                        new WaitCommand(350),
 
-                        pedroSb.turnChassis(0.5, etesito.imu),
+                        pedroSb.turnChassis(1, etesito.imu),
 
-                        new WaitCommand(50),
+                        new WaitCommand(150),
 
-                        etesito.intakeSb.crservoCMD(1),
-                        etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb)
+                        new ParallelCommandGroup(
+                                etesito.intakeSb.crservoCMD(1),
+                                etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb),
+                                pedroSb.breakPath()
+                        ),
 
-                );
+                        new WaitCommand(100),
+                        etesito.intakeSb.crservoCMD(0),
+                        etesito.wristSb.servoPosCMD(contractWristPos),
+                        new WaitCommand(100),
+
+                        etesito.rodeSb.rodeToPos(0),
+
+                        pedroSb.returnPath(),
+
+                        new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PutSample5),
+                                new SequentialCommandGroup(
+                                        new WaitCommand(100),
+                                        etesito.wristSb.servoPosCMD(basketWristPos),
+
+                                        etesito.armSb.armToPos(basketArmPos),
+
+                                        new WaitCommand(150),
+                                        etesito.rodeSb.rodeToPos(highRodePos)
+
+                                )),
+
+                        etesito.intakeSb.crservoCMD(-1),
+
+                        new WaitCommand(200),
+
+                        etesito.wristSb.servoPosCMD(preSubWristPos),
+                        new WaitCommand(150),
+
+                        etesito.rodeSb.rodeToPos(preSubmRodePos),
+
+                        new WaitCommand(200)
+
+                        );
     }
 
     @Override
@@ -326,11 +363,12 @@ public class AutonomousSample extends OpMode {
     public void loop() {
         // These loop te movements of the robot
 
-        RotatedRect[] rects = vision.getLastRects();
+        RotatedRect rect = vision.getRect();
 
-        for (int i = 0; i < rects.length; i++) {
-            telemetry.addData("detection #" + i, rects[i].center);
+        if(rect != null) {
+            telemetry.addData("detection", rect);
         }
+
 
         vision.updateExposure();
 

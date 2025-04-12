@@ -36,15 +36,15 @@ public class specimeneTraj extends OpMode {
 
     //This visualizer is very easy to use to find and create paths/pathchains/poses: <https://pedro-path-generator.vercel.app/>
 
-    private final Pose startPose = new Pose(8.5, 62, Math.toRadians(0));
+    private final Pose startPose = new Pose(8.5, 64, Math.toRadians(0));
 
-    private final Pose putSpecimen1Pose = new Pose(23, 62, Math.toRadians(0));
+    private final Pose putSpecimen1Pose = new Pose(23, 64, Math.toRadians(0));
 
     private final Pose pickUpSample1Pose = new Pose(32, 42, Math.toRadians(320));
 
     private final Pose putSample1Pose = new Pose(27, 34, Math.toRadians(230));
 
-    private final Pose pickUpSample2Pose = new Pose(30, 32, Math.toRadians(320));
+    private final Pose pickUpSample2Pose = new Pose(30, 32, Math.toRadians(315));
 
     private final Pose putSample2Pose = new Pose(27, 32, Math.toRadians(230));
 

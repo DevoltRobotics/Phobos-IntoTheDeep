@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import static org.firstinspires.ftc.teamcode.Comands.Constants.getTargetAngleY;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.xDegreesPerPixel;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.xFov;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -29,23 +32,27 @@ public class VisionTest extends OpMode {
     @Override
     public void loop() {
         hdw.wrist.setPosition(preSubWristPos);
-        RotatedRect[] rects = vision.getLastRects();
+        RotatedRect rect = vision.getRect();
 
-        for(int i = 0 ; i < rects.length ; i++) {
-            telemetry.addData("detection #" + i, rects[i].center);
+        if(rect != null) {
+            telemetry.addData("detection", rect);
         }
 
-
-        RotatedRect rect = new RotatedRect();
-        if (rects.length > 0) {
-            rect = rects[0];
-
+        if (rect != null) {
             targetX = (int)(rect.center.x);
             targetY = (int)rect.size.area();
         }
 
-        telemetry.addData("x", targetX);
-        telemetry.addData("size", targetY);
+        double targetYAngl = getTargetAngleY(targetY);
+
+        double pixelErrorFromCenterX = targetX - 160;
+        double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
+
+        double tAngl = targetXAngl - ((targetXAngl/xFov) * targetYAngl);
+
+        telemetry.addData("xAngl", targetXAngl);
+        telemetry.addData("yAngl", targetYAngl);
+        telemetry.addData("tAngl", targetXAngl);
 
 
 
