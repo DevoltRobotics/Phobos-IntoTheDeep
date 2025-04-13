@@ -195,7 +195,7 @@ public class PedroSb extends SubsystemBase {
                 headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             }else {
-                target = 5;
+                target = 10;
                 chassisController.targetPosition = target;
                 targeteado = true;
 
@@ -308,7 +308,7 @@ public class PedroSb extends SubsystemBase {
                 targetY = (int)rect.center.y;
                 targetX = (int)rect.center.x;
 
-                centered = Math.abs(targetX) <= 10;
+                centered = Math.abs(targetX) <= 25;
 
                     pixelErrorFromCenterY = yPixels - targetY;
                     double targetYAngl = getTargetAngleY(targetY);
@@ -325,7 +325,6 @@ public class PedroSb extends SubsystemBase {
 
             }else {
                 centered = true;
-
 
             }
 

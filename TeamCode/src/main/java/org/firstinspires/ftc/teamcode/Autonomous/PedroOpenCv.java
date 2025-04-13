@@ -72,7 +72,7 @@ public class PedroOpenCv extends OpMode {
                 pedroSb.turnChassis(1, etesito.imu),
                 new WaitCommand(150),
 
-                pedroSb.reTurnChassis(1, etesito.imu),
+                pedroSb.reTurnChassis(0.7, etesito.imu),
 
                 new WaitCommand(150),
 
@@ -222,8 +222,7 @@ public class PedroOpenCv extends OpMode {
 
     @Override
     public void stop() {
-        follower.breakFollowing();
-        CommandScheduler.getInstance().cancelAll();
+        //CommandScheduler.getInstance().cancelAll();
 
     }
 }

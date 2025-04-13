@@ -66,7 +66,7 @@ public class AutonomousSample extends OpMode {
     private final Pose pickUp2SamplePose = new Pose(30, 117, Math.toRadians(50));
 
     private final Pose putSample2Pose = new Pose(17, 135, Math.toRadians(320));
-    private final Pose putSample2ControlPose = new Pose(23, 136, Math.toRadians(340));
+    private final Pose putSample2ControlPose = new Pose(23, 132, Math.toRadians(340));
 
     private final Pose pickUp3SamplePose = new Pose(30, 128, Math.toRadians(48));
 
@@ -81,11 +81,10 @@ public class AutonomousSample extends OpMode {
     private final Pose pickUp5SamplePose = new Pose(65, 106, Math.toRadians(270));
     private final Pose pickUp5SampleControlPose = new Pose(65, 120, Math.toRadians(275));
 
-    private final Pose put5SamplePose = new Pose(17, 131, Math.toRadians(315));
-    private final Pose put5SampleControlPose = new Pose(65, 130, Math.toRadians(275));
+    private final Pose put5SamplePose = new Pose(17, 129, Math.toRadians(315));
+    private final Pose put5SampleControlPose = new Pose(70, 130, Math.toRadians(275));
 
     private final Pose parkPose = new Pose(30, 120, Math.toRadians(180));
-
 
     private Path PutSample1, Park;
 
@@ -95,6 +94,7 @@ public class AutonomousSample extends OpMode {
 
     public void buildPaths() {
         PutSample1 = new Path(new BezierLine(new Point(startPose), new Point(putSample1Pose)));
+        PutSample1.setPathEndTimeoutConstraint(100);
         PutSample1.setLinearHeadingInterpolation(startPose.getHeading(), putSample1Pose.getHeading());
 
         PickSample2 = follower.pathBuilder()
@@ -103,6 +103,7 @@ public class AutonomousSample extends OpMode {
                 .build();
 
         PutSample2 = follower.pathBuilder()
+                .setPathEndTimeoutConstraint(100)
                 .addPath(new BezierCurve(new Point(pickUp2SamplePose), new Point(putSample2ControlPose), new Point(putSample2Pose)))
                 .setLinearHeadingInterpolation(pickUp2SamplePose.getHeading(), putSample2Pose.getHeading())
                 .build();
@@ -118,6 +119,7 @@ public class AutonomousSample extends OpMode {
                 .build();
 
         PickSample4 = follower.pathBuilder()
+                .setPathEndTimeoutConstraint(100)
                 .addPath(new BezierLine(new Point(put3SamplePose), new Point(pickUp4SamplePose)))
                 .setLinearHeadingInterpolation(put3SamplePose.getHeading(), pickUp4SamplePose.getHeading())
                 .build();
@@ -132,9 +134,10 @@ public class AutonomousSample extends OpMode {
                 .setLinearHeadingInterpolation(put4SamplePose.getHeading(), pickUp5SamplePose.getHeading())
                 .build();
 
+        Pose post5 = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading());
         PutSample5 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(xPose, yPose), new Point(put5SampleControlPose), new Point(put5SamplePose)))
-                .setLinearHeadingInterpolation(heading, put5SamplePose.getHeading())
+                .addPath(new BezierCurve(new Point(post5), new Point(put5SampleControlPose), new Point(put5SamplePose)))
+                .setLinearHeadingInterpolation(post5.getHeading(), put5SamplePose.getHeading())
                 .build();
 
         Park = new Path(new BezierLine(new Point(put5SamplePose),  new Point(parkPose)));
@@ -166,7 +169,7 @@ public class AutonomousSample extends OpMode {
 
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PickSample2),
-                                etesito.armSb.armToPosSmooth(0, 0.55),
+                                etesito.armSb.armToPosSmooth(0, 0.7),
                                 etesito.intakeSb.crservoCMD(1)
 
                         ),
@@ -204,7 +207,7 @@ public class AutonomousSample extends OpMode {
 
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PickSample3),
-                                etesito.armSb.armToPosSmooth(0, 0.6),
+                                etesito.armSb.armToPosSmooth(0, 0.7),
                                 etesito.intakeSb.crservoCMD(1)
 
                         ),
@@ -243,7 +246,7 @@ public class AutonomousSample extends OpMode {
 
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PickSample4),
-                                etesito.armSb.armToPosSmooth(0, 0.6),
+                                etesito.armSb.armToPosSmooth(0, 0.7),
                                 etesito.intakeSb.crservoCMD(1)
                         ),
 
@@ -281,11 +284,14 @@ public class AutonomousSample extends OpMode {
                         ),
 
                         pedroSb.breakPath(),
-                        new WaitCommand(350),
+                        new WaitCommand(100),
 
                         pedroSb.turnChassis(1, etesito.imu),
+                        new WaitCommand(100),
 
-                        new WaitCommand(150),
+                        pedroSb.reTurnChassis(0.7, etesito.imu),
+
+                        new WaitCommand(50),
 
                         new ParallelCommandGroup(
                                 etesito.intakeSb.crservoCMD(1),
@@ -293,24 +299,27 @@ public class AutonomousSample extends OpMode {
                                 pedroSb.breakPath()
                         ),
 
-                        new WaitCommand(100),
+                        new WaitCommand(150),
                         etesito.intakeSb.crservoCMD(0),
+
                         etesito.wristSb.servoPosCMD(contractWristPos),
                         new WaitCommand(100),
 
                         etesito.rodeSb.rodeToPos(0),
+                        new WaitCommand(50),
 
                         pedroSb.returnPath(),
+                        new WaitCommand(100),
 
                         new ParallelCommandGroup(
                         pedroSb.followPathCmd(PutSample5),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(100),
+                                        new WaitCommand(550),
                                         etesito.wristSb.servoPosCMD(basketWristPos),
 
                                         etesito.armSb.armToPos(basketArmPos),
 
-                                        new WaitCommand(150),
+                                        new WaitCommand(200),
                                         etesito.rodeSb.rodeToPos(highRodePos)
 
                                 )),

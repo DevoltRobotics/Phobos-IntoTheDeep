@@ -10,6 +10,7 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeInToTicks;
 
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -28,34 +29,34 @@ public class RodeSb extends SubsystemBase {
     DcMotorEx rodeMotor;
     PIDFController rodeController;
 
-    public RodeSb(DcMotorEx rodeMotor, PIDFController rodeController){
+    public RodeSb(DcMotorEx rodeMotor, PIDFController rodeController) {
         this.rodeMotor = rodeMotor;
         this.rodeController = rodeController;
 
     }
 
-    public Command rodeToPosVision(CrosshairVision vision, Telemetry telemetry, int offset, ServoSb wristSb){
+    public Command rodeToPosVision(CrosshairVision vision, Telemetry telemetry, int offset, ServoSb wristSb) {
         return new SequentialCommandGroup(
                 new RodeToPosVision(vision, telemetry, offset),
-                new WaitCommand(100),
-
                 wristSb.servoSmoothCMD(pickSubWristPos, 0.2),
 
                 new WaitCommand(250),
 
-                rodeToPosPlus(350),
+                new ParallelCommandGroup(
+                        rodeToPosPlusSmooth(400, 0.5),
+                        new SequentialCommandGroup(
+                                new WaitCommand(250),
+                                wristSb.servoSmoothCMD(downWristPos, 0.1)
+
+                                )),
 
                 new WaitCommand(100),
 
-                wristSb.servoPosCMD(downWristPos),
-
-                new WaitCommand(300),
-
-                rodeToPosPlus(-250),
+                rodeToPosPlusSmooth(-300, 0.5),
 
                 new WaitCommand(200)
 
-                );
+        );
 
     }
 
@@ -68,7 +69,11 @@ public class RodeSb extends SubsystemBase {
     }
 
     public Command rodeToPosPlus(int target) {
-        return new RodeToPosPlus(target);
+        return new RodeToPosPlus(target, false);
+    }
+
+    public Command rodeToPosPlusSmooth(int target, double timeSeconds) {
+        return new RodeToPosPlus(target, true, timeSeconds);
     }
 
     public Command rodeToPos(int target) {
@@ -77,38 +82,68 @@ public class RodeSb extends SubsystemBase {
 
     class RodeToPosPlus extends CommandBase {
 
+        int targetPos;
         int extra;
-        int currentTicks;
 
-        public RodeToPosPlus(int extra) {
+        int rodeTarget;
+
+        boolean smooth;
+
+        double timeSeconds;
+        int currentTicks;
+        ElapsedTime timer = null;
+
+        public RodeToPosPlus(int extra, boolean smooth) {
             this.extra = extra;
+            this.smooth = smooth;
             addRequirements(RodeSb.this);
         }
 
+        public RodeToPosPlus(int extra, boolean smooth, double timeSeconds) {
+            this.extra = extra;
+            this.smooth = smooth;
+            this.timeSeconds = timeSeconds;
+            addRequirements(RodeSb.this);
+        }
 
         @Override
         public void initialize() {
             currentTicks = rodeMotor.getCurrentPosition();
+            timer = new ElapsedTime();
+        }
+
+        double lerp(double start, double end, double t) {
+            return start * (1 - t) + end * t;
         }
 
         @Override
         public void execute() {
-            rodeController.targetPosition = currentTicks + extra;
+            targetPos = currentTicks + extra;
+
+            if (smooth) {
+                double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
+                rodeTarget = (int) lerp(currentTicks, targetPos, t);
+
+            } else {
+                rodeTarget = targetPos;
+            }
+
+            rodeController.targetPosition = rodeTarget;
         }
 
         @Override
         public boolean isFinished() {
-
-            return true;
-
-
+            if (smooth) {
+                return timer.seconds() >= timeSeconds;
+            } else {
+                return true;
+            }
         }
 
         @Override
         public void end(boolean interrupted) {
         }
     }
-
 
     class RodeToPos extends CommandBase {
         int targetPos;
@@ -146,11 +181,11 @@ public class RodeSb extends SubsystemBase {
 
         @Override
         public void execute() {
-            if (smooth){
+            if (smooth) {
                 double t = Range.clip(timer.seconds() / timeSeconds, 0, 1);
                 rodeTarget = (int) lerp(currentTicks, targetPos, t);
 
-            }else {
+            } else {
                 rodeTarget = targetPos;
 
             }
@@ -162,7 +197,7 @@ public class RodeSb extends SubsystemBase {
         public boolean isFinished() {
             if (smooth) {
                 return timer.seconds() >= timeSeconds;
-            }else {
+            } else {
                 return true;
             }
 
@@ -249,13 +284,14 @@ public class RodeSb extends SubsystemBase {
 
             int targetY;
             if (rect != null) {
-                targetY = (int)rect.center.y + offset;
-            }else {
+                targetY = (int) rect.center.y + offset;
+            } else {
                 targetY = 240;
             }
 
             if (!targeteado) {
-                targetFinalRode = getTargetExtensionFromY(targetY, rodeMotor.getCurrentPosition());;
+                targetFinalRode = getTargetExtensionFromY(targetY, rodeMotor.getCurrentPosition());
+                ;
                 rodeController.targetPosition = targetFinalRode;
 
                 targeteado = true;

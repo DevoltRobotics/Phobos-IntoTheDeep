@@ -81,15 +81,15 @@ public class AutonomousSpecimene extends OpMode {
 
     private final Pose pickSpecimen3Pose = new Pose(18, 38, Math.toRadians(180));
 
-    private final Pose putSpecimen3Pose = new Pose(40, 72, Math.toRadians(180));
+    private final Pose putSpecimen3Pose = new Pose(40, 77, Math.toRadians(180));
 
-    private final Pose pickSpecimen4Pose = new Pose(12, 28, Math.toRadians(180));
+    private final Pose pickSpecimen4Pose = new Pose(12, 38, Math.toRadians(180));
 
-    private final Pose putSpecimen4Pose = new Pose(40, 69, Math.toRadians(180));
+    private final Pose putSpecimen4Pose = new Pose(40, 76, Math.toRadians(180));
 
-    private final Pose pickSpecimen5Pose = new Pose(12, 28, Math.toRadians(180));
+    private final Pose pickSpecimen5Pose = new Pose(12, 38, Math.toRadians(180));
 
-    private final Pose putSpecimen5Pose = new Pose(40, 66, Math.toRadians(180));
+    private final Pose putSpecimen5Pose = new Pose(40, 75, Math.toRadians(180));
 
     private Path PutSpecimen1;
 
@@ -277,12 +277,59 @@ public class AutonomousSpecimene extends OpMode {
                         etesito.pickSpecimenTwoSeqCmd()
                 ),
 
+                //PUT_SECOND_SPECIMEN
+
                 etesito.putSpecimenOneSeqCmd(),
 
                 new ParallelCommandGroup(
                         pedroSb.followPathCmd(PickSpecimen3),
                         etesito.armSb.armToPosSmooth(0, 0.7)
-                )
+                ),
+
+                etesito.pickSpecimenOneSeqCmd(),
+
+                new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PutSpecimen3),
+                        etesito.pickSpecimenTwoSeqCmd()
+                ),
+
+                etesito.putSpecimenOneSeqCmd(),
+
+                //PUT_THIRD_SPECIMEN
+
+                new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PickSpecimen4),
+                        etesito.armSb.armToPosSmooth(0, 0.7)
+                ),
+
+                etesito.pickSpecimenOneSeqCmd(),
+
+                new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PutSpecimen4),
+                        etesito.pickSpecimenTwoSeqCmd()
+                ),
+
+                etesito.putSpecimenOneSeqCmd(),
+
+                //PUT_FOUR_SPECIMEN
+
+                new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PickSpecimen5),
+                        etesito.armSb.armToPosSmooth(0, 0.7)
+                ),
+
+                etesito.pickSpecimenOneSeqCmd(),
+
+                new ParallelCommandGroup(
+                        pedroSb.followPathCmd(PutSpecimen5),
+                        etesito.pickSpecimenTwoSeqCmd()
+                ),
+
+                etesito.putSpecimenOneSeqCmd(),
+
+                etesito.armSb.armToPosSmooth(0, 0.7)
+
+                //PUT_FIVE_SPECIMEN
 
 
                 );
