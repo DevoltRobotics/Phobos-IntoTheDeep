@@ -93,7 +93,7 @@ public class Etesito {
 
     public int armPosition = 0;
 
-    public double headingAuto = 0;
+    public static double headingAuto;
     
     public void init(HardwareMap hardwareMap, boolean resetRode, boolean resetImu) {
         rodeController.reset();
@@ -106,8 +106,6 @@ public class Etesito {
 
         armMotor = hardwareMap.get(DcMotorEx.class, "arm");
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         rodeMotor = hardwareMap.get(DcMotorEx.class, "rd");
         rodeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -115,6 +113,8 @@ public class Etesito {
         if (resetRode) {
             rodeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rodeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
         launcherLeft = hardwareMap.get(Servo.class, "plL");
@@ -469,12 +469,28 @@ public class Etesito {
         );
     }
 
-    public Command pickSpecimenOneSeqCmd(){
+    public Command pickSpecimen1OneSeqCmd(){
         return new SequentialCommandGroup(
                 wristSb.servoPosCMD(pickSpecimenWristPos),
 
                 rodeSb.rodeToPos(-350),
-                new WaitCommand(300),
+                new WaitCommand(200),
+
+                clawSb.servoPosCMD(closeClawPos),
+                new WaitCommand(400),
+
+                armSb.armToPos(specimenArmPos),
+                new WaitCommand(300)
+
+        );
+    }
+
+    public Command pickSpecimenOneSeqCmd(){
+        return new SequentialCommandGroup(
+                wristSb.servoPosCMD(pickSpecimenWristPos),
+
+                rodeSb.rodeToPos(-300),
+                new WaitCommand(200),
 
                 clawSb.servoPosCMD(closeClawPos),
                 new WaitCommand(400),
@@ -483,20 +499,6 @@ public class Etesito {
                 new WaitCommand(300)
 
                 );
-    }
-
-    public Command pickSpecimenOne2SeqCmd(){
-        return new SequentialCommandGroup(
-                rodeSb.rodeToPos(-150),
-                new WaitCommand(300),
-
-                clawSb.servoPosCMD(closeClawPos),
-                new WaitCommand(300),
-
-                armSb.armToPos(specimenArmPos),
-                new WaitCommand(300)
-
-        );
     }
 
     public Command pickSpecimenTwoSeqCmd(){

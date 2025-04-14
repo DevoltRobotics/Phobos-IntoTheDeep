@@ -44,11 +44,11 @@ public class servo_test extends OpMode {
 
         if (alternar_garraTimer.seconds() > 0.2 && gamepad2.a){
             if (alternar_Garra){
-                etesito.claw.setPosition(0.4);
+                etesito.dropSpecimen();
                 alternar_Garra = false;
 
             }else {
-                etesito.claw.setPosition(0.5);
+                etesito.pickSpecimen();
                 alternar_Garra = true;
 
         }

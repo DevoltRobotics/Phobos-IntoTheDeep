@@ -10,8 +10,6 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierCurve;
-import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.BezierPoint;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
@@ -74,6 +72,11 @@ public class PedroSb extends SubsystemBase {
            follower.breakFollowing();
         }
     }
+
+    public Command setMaxPower(double power) {
+        return new SetMaxPower(power);
+    }
+
 
     public Command followPathCmd(Path path) {
         return new FollowPathCmd(path);
@@ -308,13 +311,14 @@ public class PedroSb extends SubsystemBase {
                 targetY = (int)rect.center.y;
                 targetX = (int)rect.center.x;
 
-                centered = Math.abs(targetX) <= 25;
-
                     pixelErrorFromCenterY = yPixels - targetY;
                     double targetYAngl = getTargetAngleY(targetY);
 
                     double pixelErrorFromCenterX = targetX - 160;
                     double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
+
+                    centered = Math.abs(pixelErrorFromCenterX) <= 20;
+
 
                     double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);
 
@@ -446,7 +450,6 @@ public class PedroSb extends SubsystemBase {
             public void initialize() {
                 following = true;
                 follower.resumePathFollowing();
-                follower.update();
             }
 
             @Override
@@ -458,5 +461,27 @@ public class PedroSb extends SubsystemBase {
                 return true;
             }
         }
+
+    class SetMaxPower extends CommandBase {
+        double power;
+        public SetMaxPower(double power) {
+            this.power = power;
+            addRequirements(PedroSb.this);
+        }
+
+        @Override
+        public void initialize() {
+            follower.setMaxPower(power);
+        }
+
+        @Override
+        public void execute() {
+            follower.setMaxPower(power);
+        }
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
 
 }

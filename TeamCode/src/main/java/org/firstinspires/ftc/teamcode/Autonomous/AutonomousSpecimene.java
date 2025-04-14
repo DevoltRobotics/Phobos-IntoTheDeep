@@ -39,7 +39,7 @@ public class AutonomousSpecimene extends OpMode {
     private Timer actionTimer;
     private Timer opmodeTimer;
 
-    int pickSample1RodePos = -1000;
+    int pickSample1RodePos = -1050;
     int putSample1RodePos = -600;
 
     int pickSample2RodePos = -1000;
@@ -79,15 +79,15 @@ public class AutonomousSpecimene extends OpMode {
 
     private final Pose putSpecimen2Pose = new Pose(40, 78, Math.toRadians(180));
 
-    private final Pose pickSpecimen3Pose = new Pose(18, 38, Math.toRadians(180));
+    private final Pose pickSpecimen3Pose = new Pose(18, 39, Math.toRadians(180));
 
     private final Pose putSpecimen3Pose = new Pose(40, 77, Math.toRadians(180));
 
-    private final Pose pickSpecimen4Pose = new Pose(12, 38, Math.toRadians(180));
+    private final Pose pickSpecimen4Pose = new Pose(18, 39, Math.toRadians(180));
 
     private final Pose putSpecimen4Pose = new Pose(40, 76, Math.toRadians(180));
 
-    private final Pose pickSpecimen5Pose = new Pose(12, 38, Math.toRadians(180));
+    private final Pose pickSpecimen5Pose = new Pose(18, 39, Math.toRadians(180));
 
     private final Pose putSpecimen5Pose = new Pose(40, 75, Math.toRadians(180));
 
@@ -99,8 +99,7 @@ public class AutonomousSpecimene extends OpMode {
     public void buildPaths() {
         PutSpecimen1 = new Path(new BezierLine(new Point(startPose), new Point(putSpecimen1Pose)));
         PutSpecimen1.setConstantHeadingInterpolation(putSpecimen1Pose.getHeading());
-
-
+        
         PickSample1 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(putSpecimen1Pose), new Point(pickUpSample1Pose)))
                 .setLinearHeadingInterpolation(putSpecimen1Pose.getHeading(), pickUpSample1Pose.getHeading())
@@ -270,7 +269,7 @@ public class AutonomousSpecimene extends OpMode {
                         pedroSb.followPathCmd(PickSpecimen2)
                 ),
 
-                etesito.pickSpecimenOneSeqCmd(),
+                etesito.pickSpecimen1OneSeqCmd(),
 
                 new ParallelCommandGroup(
                         pedroSb.followPathCmd(PutSpecimen2),
@@ -379,6 +378,8 @@ public class AutonomousSpecimene extends OpMode {
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.update();
+
+        Etesito.headingAuto = follower.getPose().getHeading();
     }
 
     @Override

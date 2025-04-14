@@ -80,9 +80,9 @@ public class Constants {
     public static int submArmPos = -300;
     public static int initArmPos = -950;
     public static int firstSpecimenArmPos = -850;
-    public static int specimenArmPos = -2050;
+    public static int specimenArmPos = -2000;
     public static int postSpecimenArmPos = -1200;
-    public static int basketArmPos = -1900;
+    public static int basketArmPos = -1850;
 
     public static int highRodePos = -1200; //
     public static int preSubmRodePos = -500; //
