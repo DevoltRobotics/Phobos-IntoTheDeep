@@ -66,11 +66,11 @@ public class AutonomousSpecimene extends OpMode {
 
     private final Pose putSample1Pose = new Pose(27, 38, Math.toRadians(230));
 
-    private final Pose pickUpSample2Pose = new Pose(30, 36, Math.toRadians(305));
+    private final Pose pickUpSample2Pose = new Pose(30, 36, Math.toRadians(302));
 
-    private final Pose putSample2Pose = new Pose(27, 32, Math.toRadians(230));
+    private final Pose putSample2Pose = new Pose(27, 32, Math.toRadians(228));
 
-    private final Pose pickUpSample3Pose = new Pose(32, 26, Math.toRadians(303));
+    private final Pose pickUpSample3Pose = new Pose(32, 26, Math.toRadians(301));
 
     private final Pose putSample3Pose = new Pose(27, 32, Math.toRadians(230));
 
@@ -326,7 +326,8 @@ public class AutonomousSpecimene extends OpMode {
 
                 etesito.putSpecimenOneSeqCmd(),
 
-                etesito.armSb.armToPosSmooth(0, 0.7)
+                etesito.wristSb.servoPosCMD(contractWristPos),
+                etesito.armSb.armToPosSmooth(0, 0.4)
 
                 //PUT_FIVE_SPECIMEN
 

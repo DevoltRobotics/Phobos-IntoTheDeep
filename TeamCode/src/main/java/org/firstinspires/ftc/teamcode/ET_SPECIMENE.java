@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbCoefficients;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos1;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.basketArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.extensionLimit;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSpecimenRodePos;
-import static org.firstinspires.ftc.teamcode.Comands.Constants.previousSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.ratioArm;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
@@ -29,9 +29,9 @@ import org.firstinspires.ftc.teamcode.Comands.PIDFController;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name = "ETESITO")
+@TeleOp(name = "ETESITO_SPECIMENE")
 
-public class ET extends OpMode {
+public class ET_SPECIMENE extends OpMode {
 
     private final Etesito etesito = new Etesito();
 
@@ -104,9 +104,7 @@ public class ET extends OpMode {
 
     @Override
     public void init() {
-        etesito.init(hardwareMap, true, true);
-
-        Constants.setConstants(FConstants.class, LConstants.class);
+        etesito.init(hardwareMap, false, true);
 
         launchArms = false;
 
@@ -120,13 +118,14 @@ public class ET extends OpMode {
                 FtcDashboard.getInstance().getTelemetry()
         );*/
 
-        etesito.supportHangArms();
-
         telemetry.addLine("Robot Initialized.");
         telemetry.update();
 
         rdTarget = downRodePos;
         armTarget = 0;
+
+        etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
+        etesito.armController.targetPosition = etesito.armMotor.getCurrentPosition();
 
         etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
 
@@ -140,9 +139,8 @@ public class ET extends OpMode {
         etesito.rodeController.targetPosition = Range.clip(etesito.rodeController.targetPosition, rodeMin, rodeMax);
         etesito.rodeMotor.setPower(etesito.rodeController.update(etesito.rodeMotor.getCurrentPosition()) * 0.09);
 
-        if (gamepad1.left_trigger > 0.3 && toggleHangTimer.seconds() > 0.5) {
-            toggleHang = !toggleHang;
-            toggleHangTimer.reset();
+        if (gamepad1.left_trigger > 0.3) {
+            toggleHang = true;
         }
 
         if (toggleHang) {
@@ -388,10 +386,10 @@ public class ET extends OpMode {
                     rdTarget = downRodePos;
 
                     if (etesito.wristIsMedium) {
-                        rodeMin = downRodePos - 150;
+                        rodeMin = extensionLimit;
 
                     } else {
-                        rodeMin = downRodePos - 350;
+                        rodeMin = extensionLimit - 100;
 
                     }
                     break;
@@ -609,10 +607,9 @@ public class ET extends OpMode {
 
         if (gamepad1.dpad_up) {
             etesito.imu.resetYaw();
-            etesito.headingAuto = 0;
         }
 
-        double botHeading = etesito.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + etesito.headingAuto;
+        double botHeading = etesito.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         etesito.setDrivePower(
                 etesito.chassisPower(botHeading, chassisPower, gamepad1)[0],

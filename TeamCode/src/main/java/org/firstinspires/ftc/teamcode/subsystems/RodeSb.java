@@ -35,9 +35,9 @@ public class RodeSb extends SubsystemBase {
 
     }
 
-    public Command rodeToPosVision(CrosshairVision vision, Telemetry telemetry, int offset, ServoSb wristSb) {
+    public Command rodeToPosVision(CrosshairVision vision, Telemetry telemetry, ServoSb wristSb) {
         return new SequentialCommandGroup(
-                new RodeToPosVision(vision, telemetry, offset),
+                new RodeToPosVision(vision, telemetry, wristSb),
                 wristSb.servoSmoothCMD(pickSubWristPos, 0.2),
 
                 new WaitCommand(250),
@@ -48,15 +48,15 @@ public class RodeSb extends SubsystemBase {
                                 new WaitCommand(250),
                                 wristSb.servoSmoothCMD(downWristPos, 0.15)
 
-                                )),
+                        )),
 
                 new WaitCommand(100),
 
-                rodeToPosPlusSmooth(-400, 0.5),
+                rodeToPosPlusSmooth(-450, 0.6)
 
-                new WaitCommand(200)
 
         );
+
 
     }
 
@@ -223,12 +223,14 @@ public class RodeSb extends SubsystemBase {
 
         double targetFinalRode;
 
-        int offset;
+        boolean noDetected = false;
 
-        public RodeToPosVision(CrosshairVision vision, Telemetry telemetry, int offset) {
+        ServoSb wristSb;
+
+        public RodeToPosVision(CrosshairVision vision, Telemetry telemetry, ServoSb wristSb) {
             this.vision = vision;
             this.telemetry = telemetry;
-            this.offset = offset;
+            this.wristSb = wristSb;
 
             addRequirements(RodeSb.this);
         }
@@ -237,66 +239,29 @@ public class RodeSb extends SubsystemBase {
         public void initialize() {
             timer = new ElapsedTime();
             beforeTicks = rodeMotor.getCurrentPosition();
-        }
 
-        /*@Override
-        public void execute() {
-            RotatedRect[] rects = vision.getLastRects();
+            int targetY = 0;
 
-            for (int i = 0; i < rects.length; i++) {
-                telemetry.addData("detection #" + i, rects[i].center);
-            }
+            RotatedRect rect = vision.getRect();
 
-            int targetY;
-            RotatedRect rect = new RotatedRect();
-            if (rects.length > 0) {
-                rect = rects[0];
-                targetY = (int)rect.center.y;
-            }else {
-                targetY = 220;
-            }
+            if (rect != null) {
+                targetY = (int) rect.center.y;
 
-            double yError  = 220 - targetY;
-            double tagetYIn = yError / ScaleFactor;
-            double tYRode = -(tagetYIn * rodeInToTicks);
-
-            if (!targeteado) {
-                rodeTarget =  Range.clip((int)(beforeTicks + tYRode), preSubmRodePos - 450, preSubmRodePos);
-                rodeController.targetPosition = rodeTarget;
-
+            } else {
                 targeteado = true;
+                noDetected = true;
             }
 
-            error = Math.abs(rodeTarget - rodeMotor.getCurrentPosition());
-
-            telemetry.addData("tyR", tYRode);
-            telemetry.addData("rdTarget", rodeTarget);
-            telemetry.addData("current", rodeMotor.getCurrentPosition());
-            telemetry.addData("error", error);
+                if (!targeteado) {
+                    targetFinalRode = getTargetExtensionFromY(targetY, rodeMotor.getCurrentPosition());
+                    rodeController.targetPosition = targetFinalRode;
+                    targeteado = true;
+                }
 
         }
-
-*/
 
         @Override
         public void execute() {
-            RotatedRect rect = vision.getRect();
-
-            int targetY;
-            if (rect != null) {
-                targetY = (int) rect.center.y + offset;
-            } else {
-                targetY = 240;
-            }
-
-            if (!targeteado) {
-                targetFinalRode = getTargetExtensionFromY(targetY, rodeMotor.getCurrentPosition());
-                ;
-                rodeController.targetPosition = targetFinalRode;
-
-                targeteado = true;
-            }
-
             error = Math.abs(targetFinalRode - rodeMotor.getCurrentPosition());
 
             telemetry.addData("tyR", targetFinalRode);
@@ -309,7 +274,7 @@ public class RodeSb extends SubsystemBase {
 
         @Override
         public boolean isFinished() {
-            return timer.seconds() >= 0.3 || error <= 30;
+            return timer.seconds() >= 0.3 || error <= 30 || noDetected;
 
         }
 

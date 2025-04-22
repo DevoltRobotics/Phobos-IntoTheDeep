@@ -68,7 +68,7 @@ public class AutonomousSample extends OpMode {
     private final Pose putSample2Pose = new Pose(17, 133, Math.toRadians(320));
     private final Pose putSample2ControlPose = new Pose(23, 132, Math.toRadians(340));
 
-    private final Pose pickUp3SamplePose = new Pose(31, 128, Math.toRadians(46));
+    private final Pose pickUp3SamplePose = new Pose(31, 128, Math.toRadians(45));
 
     private final Pose put3SamplePose = new Pose(16, 132, Math.toRadians(319));
     private final Pose putSample3ControlPose = new Pose(26, 132, Math.toRadians(340));
@@ -79,16 +79,16 @@ public class AutonomousSample extends OpMode {
     private final Pose put4SampleControlPose = new Pose(23, 125, Math.toRadians(318));
 
     private final Pose pickUp5SamplePose = new Pose(65, 104, Math.toRadians(270));
-    private final Pose pickUp5SampleControlPose = new Pose(65, 120, Math.toRadians(275));
+    private final Pose pickUp5SampleControlPose = new Pose(68, 125, Math.toRadians(275));
 
-    private final Pose put5OneSamplePose = new Pose(55, 124, Math.toRadians(290));
-    private final Pose put5TwoSamplePose = new Pose(16, 130, Math.toRadians(315));
+    private final Pose put5OneSamplePose = new Pose(55, 121, Math.toRadians(315));
+    private final Pose put5TwoSamplePose = new Pose(16, 126, Math.toRadians(315));
 
-    private final Pose pickUp6SamplePose = new Pose(65, 104, Math.toRadians(270));
-    private final Pose pickUp6SampleControlPose = new Pose(65, 125, Math.toRadians(275));
+    private final Pose pickUp6SamplePose = new Pose(68, 103, Math.toRadians(270));
+    private final Pose pickUp6SampleControlPose = new Pose(68, 125, Math.toRadians(275));
 
-    private final Pose put6OneSamplePose = new Pose(55, 124, Math.toRadians(290));
-    private final Pose put6TwoSamplePose = new Pose(16, 130, Math.toRadians(315));
+    private final Pose put6OneSamplePose = new Pose(51, 117, Math.toRadians(315));
+    private final Pose put6TwoSamplePose = new Pose(16, 126, Math.toRadians(315));
 
     private Path PutSample1;
 
@@ -146,8 +146,8 @@ public class AutonomousSample extends OpMode {
         Pose pre5 = new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading());
         PutSample5One = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pre5), new Point(put5OneSamplePose)))
-                .setLinearHeadingInterpolation(pre5.getHeading(), put5OneSamplePose.getHeading())
-                .setPathEndTimeoutConstraint(1)
+                .setConstantHeadingInterpolation(pre5.getHeading())
+                .setPathEndTimeoutConstraint(10)
                 .build();
 
         PutSample5Two = follower.pathBuilder()
@@ -314,18 +314,15 @@ public class AutonomousSample extends OpMode {
                         ),
 
                         pedroSb.breakPath(),
-                        new WaitCommand(80),
+                        new WaitCommand(100),
 
                         pedroSb.turnChassis(1, etesito.imu),
-                        new WaitCommand(80),
 
-                        pedroSb.reTurnChassis(0.7, etesito.imu),
-
-                        new WaitCommand(115),
+                        new WaitCommand(150),
 
                         new ParallelCommandGroup(
                                 etesito.intakeSb.crservoCMD(1),
-                                etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb),
+                                etesito.rodeSb.rodeToPosVision(vision, telemetry, etesito.wristSb),
                                 pedroSb.breakPath()
                         ),
 
@@ -341,7 +338,7 @@ public class AutonomousSample extends OpMode {
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PutSample5One),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(500),
+                                        new WaitCommand(550),
                                         etesito.wristSb.servoPosCMD(basketWristPos),
 
                                         etesito.armSb.armToPos(basketArmPos)
@@ -375,15 +372,12 @@ public class AutonomousSample extends OpMode {
                         new WaitCommand(80),
 
                         pedroSb.turnChassis(1, etesito.imu),
-                        new WaitCommand(80),
 
-                        pedroSb.reTurnChassis(0.7, etesito.imu),
-
-                        new WaitCommand(115),
+                        new WaitCommand(150),
 
                         new ParallelCommandGroup(
                                 etesito.intakeSb.crservoCMD(1),
-                                etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb),
+                                etesito.rodeSb.rodeToPosVision(vision, telemetry, etesito.wristSb),
                                 pedroSb.breakPath()
                         ),
 
@@ -399,7 +393,7 @@ public class AutonomousSample extends OpMode {
                         new ParallelCommandGroup(
                                 pedroSb.followPathCmd(PutSample6One),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(500),
+                                        new WaitCommand(550),
                                         etesito.wristSb.servoPosCMD(basketWristPos),
 
                                         etesito.armSb.armToPos(basketArmPos)
@@ -422,7 +416,7 @@ public class AutonomousSample extends OpMode {
                         etesito.rodeSb.rodeToPos(0),
                         new WaitCommand(200),
 
-                        etesito.armSb.armToPosSmooth(0, 0.4)
+                        etesito.armSb.armToPos(0)
 
                 );
     }

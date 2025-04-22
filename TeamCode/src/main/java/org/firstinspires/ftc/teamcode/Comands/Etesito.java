@@ -473,7 +473,7 @@ public class Etesito {
         return new SequentialCommandGroup(
                 wristSb.servoPosCMD(pickSpecimenWristPos),
 
-                rodeSb.rodeToPos(-350),
+                rodeSb.rodeToPosSmooth(-350, 0.2),
                 new WaitCommand(200),
 
                 clawSb.servoPosCMD(closeClawPos),
@@ -489,7 +489,7 @@ public class Etesito {
         return new SequentialCommandGroup(
                 wristSb.servoPosCMD(pickSpecimenWristPos),
 
-                rodeSb.rodeToPos(-300),
+                rodeSb.rodeToPosSmooth(-300, 0.2),
                 new WaitCommand(200),
 
                 clawSb.servoPosCMD(closeClawPos),

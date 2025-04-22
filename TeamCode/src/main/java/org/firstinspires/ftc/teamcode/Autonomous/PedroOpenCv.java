@@ -67,24 +67,24 @@ public class PedroOpenCv extends OpMode {
 
         pathcommand = new SequentialCommandGroup(
                 pedroSb.breakPath(),
-                new WaitCommand(150),
+                new WaitCommand(80),
 
                 pedroSb.turnChassis(1, etesito.imu),
-                new WaitCommand(150),
-
-                pedroSb.reTurnChassis(0.7, etesito.imu),
 
                 new WaitCommand(150),
 
                 new ParallelCommandGroup(
-                etesito.intakeSb.crservoCMD(1),
-                etesito.rodeSb.rodeToPosVision(vision, telemetry, 0, etesito.wristSb),
+                        etesito.intakeSb.crservoCMD(1),
+                        etesito.rodeSb.rodeToPosVision(vision, telemetry, etesito.wristSb),
                         pedroSb.breakPath()
                 ),
 
-                        new WaitCommand(150),
-                etesito.intakeSb.crservoCMD(0)
+                etesito.intakeSb.crservoCMD(0),
+                etesito.wristSb.servoPosCMD(contractWristPos),
+                new WaitCommand(50),
 
+                etesito.rodeSb.rodeToPos(0),
+                new WaitCommand(150)
 
 
                 /*

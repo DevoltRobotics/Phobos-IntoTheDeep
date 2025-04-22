@@ -162,6 +162,7 @@ public class PedroSb extends SubsystemBase {
         double angleError;
         double headingDegrees;
 
+        boolean noDetected = false;
         IMU imu;
         public TurnChassis(double power, IMU imu) {
             this.powerMult = power;
@@ -198,8 +199,7 @@ public class PedroSb extends SubsystemBase {
                 headingDegrees = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
             }else {
-                target = 10;
-                chassisController.targetPosition = target;
+                noDetected = true;
                 targeteado = true;
 
             }
@@ -243,7 +243,7 @@ public class PedroSb extends SubsystemBase {
 
         @Override
         public boolean isFinished() {
-            return (timer.seconds() >= 0.4) || Math.abs(error) <= 0.4;
+            return (timer.seconds() >= 0.4) || Math.abs(error) <= 0.4 || noDetected;
 
         }
 
@@ -317,7 +317,7 @@ public class PedroSb extends SubsystemBase {
                     double pixelErrorFromCenterX = targetX - 160;
                     double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
-                    centered = Math.abs(pixelErrorFromCenterX) <= 20;
+                    centered = Math.abs(pixelErrorFromCenterX) <= 35;
 
 
                     double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);

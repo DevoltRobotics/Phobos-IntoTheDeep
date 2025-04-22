@@ -7,12 +7,12 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class Crosshair_Example extends OpenCvPipeline {
 
     public Scalar lowerYCrCb = new Scalar(0.0, 0.0, 0.0, 0.0);
-    public Scalar upperYCrCb = new Scalar(255.0, 255.0, 120.0, 0.0);
+    public Scalar upperYCrCb = new Scalar(255.0, 255.0, 94.0, 0.0);
     private Mat ycrcbMat = new Mat();
     private Mat ycrcbBinaryMat = new Mat();
 
-    public Scalar lowerHSV = new Scalar(98.0, 0.0, 0.0, 0.0);
-    public Scalar upperHSV = new Scalar(255.0, 255.0, 217.0, 0.0);
+    public Scalar lowerHSV = new Scalar(91.0, 0.0, 0.0, 0.0);
+    public Scalar upperHSV = new Scalar(255.0, 255.0, 255.0, 0.0);
     private Mat hsvMat = new Mat();
     private Mat hsvBinaryMat = new Mat();
 

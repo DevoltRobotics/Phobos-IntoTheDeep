@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.util.Range;
 
 @Config
 public class Constants {
-
     public static PIDFController.PIDCoefficients armCoefficients = new PIDFController.PIDCoefficients(0.00185, 0, 0.017);
     public static PIDFController.PIDCoefficients rodeCoefficients = new PIDFController.PIDCoefficients(0.07, 0, 0.007);
 
@@ -42,7 +41,7 @@ public class Constants {
 
         double rodeTarget = (currentRodeTicks - (extensionInches * rodeInToTicks) - correction);
 
-        int ticks = Range.clip((int)(rodeTarget), preSubmRodePos - 600, preSubmRodePos);
+        int ticks = Range.clip((int)(rodeTarget), extensionLimit, preSubmRodePos);
 
         return ticks;
     }
@@ -90,7 +89,8 @@ public class Constants {
     public static int firstSpecimenRodePos = -1100;
     public static int specimenRodePos = -700;
     public static int preSpecimenRodePos = -250;
-    public static int downRodePos = -750; //
+    public static int downRodePos = -750; //z
+    public static int extensionLimit = -1000; //
     public static int climbingRodePos2 = -390;
     public static int climbingRodePos1 = -200;
 
