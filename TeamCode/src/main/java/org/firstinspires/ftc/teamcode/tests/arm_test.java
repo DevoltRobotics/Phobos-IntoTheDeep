@@ -22,7 +22,7 @@ public class arm_test extends OpMode {
     double armMin = Double.MIN_VALUE;
     double armMax = Double.MAX_VALUE;
 
-    public static PIDFController.PIDCoefficients ArmtestPID = new PIDFController.PIDCoefficients(0.00185, 0, 0.017);
+    public static PIDFController.PIDCoefficients ArmtestPID = new PIDFController.PIDCoefficients(0.00043, 0, 0.01);
 
     PIDFController armcontroller = new PIDFController(ArmtestPID);
 
@@ -44,7 +44,7 @@ public class arm_test extends OpMode {
     @Override
     public void init() {
 
-        etesito.init(hardwareMap, false, true);
+        etesito.init(hardwareMap, true, true);
 
         armcontroller.reset();
         rodecontroller.reset();
@@ -66,12 +66,10 @@ public class arm_test extends OpMode {
     @Override
     public void loop() {
 
-
-
         etesito.armMotor.setPower(-armcontroller.update(etesito.armMotor.getCurrentPosition()) * powerArm);
 
         if (gamepad2.y && !extended) {
-            powerArm = 0.4;
+            powerArm = 1;
             armcontroller.targetPosition = -1900;
             etesito.wristUp();
 
@@ -81,7 +79,7 @@ public class arm_test extends OpMode {
             etesito.wristDown();
 
         } else if (gamepad2.b && !extended) {
-            powerArm = 0.4;
+            powerArm = 1;
             armcontroller.targetPosition = -950;
             etesito.wristUp();
 

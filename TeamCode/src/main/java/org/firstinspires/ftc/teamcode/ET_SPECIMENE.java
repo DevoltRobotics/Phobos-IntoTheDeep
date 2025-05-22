@@ -6,14 +6,21 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.climbingRodePos1;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.downRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.extensionLimit;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.highRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.lowBasketArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSpecimenRodePos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.preSpecimenTeleOpRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.ratioArm;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeCircIn;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeExtended;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosHangingPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenArmPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.specimenRodePos;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -29,10 +36,12 @@ import org.firstinspires.ftc.teamcode.Comands.PIDFController;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
+@Config
 @TeleOp(name = "ETESITO_SPECIMENE")
 
 public class ET_SPECIMENE extends OpMode {
 
+    private double rodePreSpecimenLocalPos;
     private final Etesito etesito = new Etesito();
 
     private final Pose startPose = new Pose(0, 0, 0);
@@ -106,6 +115,7 @@ public class ET_SPECIMENE extends OpMode {
     public void init() {
         etesito.init(hardwareMap, false, true);
 
+        rodePreSpecimenLocalPos = preSpecimenTeleOpRodePos;
         launchArms = false;
 
         rodeMax = 250;
@@ -113,10 +123,10 @@ public class ET_SPECIMENE extends OpMode {
         climbControllerRight.reset();
         climbControllerLeft.reset();
 
-        /*telemetry = new MultipleTelemetry(
+        telemetry = new MultipleTelemetry(
                 telemetry,
                 FtcDashboard.getInstance().getTelemetry()
-        );*/
+        );
 
         telemetry.addLine("Robot Initialized.");
         telemetry.update();
@@ -126,8 +136,6 @@ public class ET_SPECIMENE extends OpMode {
 
         etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
         etesito.armController.targetPosition = etesito.armMotor.getCurrentPosition();
-
-        etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
 
     }
 
@@ -155,13 +163,13 @@ public class ET_SPECIMENE extends OpMode {
                 launchArmsAutomaticTimer.reset();
             }
 
-            if (launchArmsAutomatic && launchArmsAutomaticTimer.seconds() > 0.15) {
+            if (launchArmsAutomatic && launchArmsAutomaticTimer.seconds() > 0.2) {
                 etesito.launchHangArms();
                 launchArmsAutomatic = false;
 
             }
 
-            if (upServos && launchArmsAutomaticTimer.seconds() > 0.3) {
+            if (upServos && launchArmsAutomaticTimer.seconds() > 0.35) {
                 etesito.servosHanging();
                 upServos = false;
 
@@ -169,19 +177,21 @@ public class ET_SPECIMENE extends OpMode {
 
             if (gamepad1.dpad_right) {
                 etesito.armMotor.setPower(1);
+                etesito.armController.targetPosition = etesito.armMotor.getCurrentPosition();
 
                 downArmClimb = true;
                 downArmClimbTimer.reset();
 
             } else if (gamepad1.dpad_left) {
                 etesito.armMotor.setPower(-1);
-                etesito.armController.targetPosition = 0;
+                etesito.armController.targetPosition = etesito.armMotor.getCurrentPosition();
 
                 downArmClimb = true;
                 downArmClimbTimer.reset();
 
             } else {
-                etesito.armMotor.setPower(0);
+                etesito.armMotor.setPower(-etesito.armController.update(etesito.armMotor.getCurrentPosition()) * 0.4);
+
             }
 
 
@@ -195,8 +205,8 @@ public class ET_SPECIMENE extends OpMode {
                 automaticHang = true;
                 automaticHangingTimer.reset();
 
-                climbControllerRight.targetPosition = -537;
-                climbControllerLeft.targetPosition = -537;
+                climbControllerRight.targetPosition = 0;
+                climbControllerLeft.targetPosition = 0;
 
                 voltageIndicatorBoolean = false;
             }
@@ -246,10 +256,10 @@ public class ET_SPECIMENE extends OpMode {
             }
 
             if (gamepad2.y) {
-                etesito.servosSb.mirrorServoPosCMD(servosHangingPos);
+                etesito.servosClimbing();
 
             } else if (gamepad2.b) {
-                etesito.servosSb.mirrorServoPosCMD(servosClimbingPos);
+                etesito.servosHanging();
 
             } else if (gamepad2.a) {
                 etesito.servosDown();
@@ -273,6 +283,12 @@ public class ET_SPECIMENE extends OpMode {
             }
 
             telemetry.addData("HangTimer", hangTimer.seconds());
+
+            telemetry.addData("LeftTarget", climbControllerLeft.targetPosition);
+            telemetry.addData("RightTarget", climbControllerRight.targetPosition);
+
+            telemetry.addData("LeftPos", etesito.mCL.getCurrentPosition());
+            telemetry.addData("RightPos", etesito.mCR.getCurrentPosition());
 
         } else {
             if (gamepad2.start) {
@@ -305,7 +321,7 @@ public class ET_SPECIMENE extends OpMode {
                 etesito.supportHangArms();
             }
 
-            boolean extended = !(etesito.rodeMotor.getCurrentPosition() >= -400);
+            boolean extended = (etesito.rodeMotor.getCurrentPosition() <= rodeExtended);
 
             if (gamepad2.dpad_down) {
                 extendArmHighBasket = false;
@@ -315,6 +331,7 @@ public class ET_SPECIMENE extends OpMode {
             } else if (gamepad2.dpad_up) {
 
                 if (armPosition == 2) {
+                    rodePreSpecimenLocalPos = etesito.rodeMotor.getCurrentPosition();
                     specimenArmSemiDown = true;
                     specimenOpenClaw = true;
                     specimenWristDown = true;
@@ -322,13 +339,14 @@ public class ET_SPECIMENE extends OpMode {
                     specimenArmDown = true;
 
                     specimenDownTimer.reset();
+
                 }
 
                 etesito.rodeController.targetPosition = rdTarget;
             }
 
             if (gamepad2.y && !extended) {
-                powerArm = 0.4;
+                powerArm = 0.6;
                 armTarget = basketArmPos;
                 etesito.wristUp();
 
@@ -338,14 +356,14 @@ public class ET_SPECIMENE extends OpMode {
                 extendArmHighBasketTimer.reset();
 
             } else if (gamepad2.b && !extended) {
-                powerArm = 0.4;
-                armTarget = basketArmPos;
+                powerArm = 0.6;
+                armTarget = lowBasketArmPos;
                 etesito.wristUp();
 
                 armPosition = 1;
 
             } else if (gamepad2.x && !extended) {
-                powerArm = 0.4;
+                powerArm = 0.6;
                 armTarget = specimenArmPos;
                 etesito.wristSpecimen();
 
@@ -362,7 +380,7 @@ public class ET_SPECIMENE extends OpMode {
                     etesito.wristContract();
 
                 }
-                powerArm = 0.1;
+                powerArm = 0.05;
                 armTarget = 0;
 
                 armPosition = 0;
@@ -526,7 +544,7 @@ public class ET_SPECIMENE extends OpMode {
 
             if (specimenUpArm && specimenUpArmTimer.seconds() > 0.3) {
                 armTarget = specimenArmPos;
-                powerArm = 0.4;
+                powerArm = 0.6;
                 armPosition = 2;
 
                 specimenUpArm = false;
@@ -534,30 +552,30 @@ public class ET_SPECIMENE extends OpMode {
 
             if (specimenUpWrist && specimenUpArmTimer.seconds() > 0.6) {
                 etesito.wristSpecimen();
-                etesito.rodeController.targetPosition = preSpecimenRodePos;
+                etesito.rodeController.targetPosition = rodePreSpecimenLocalPos;
                 specimenUpWrist = false;
             }
 
             if (specimenArmSemiDown && specimenDownTimer.seconds() > 0.15) {
                 armTarget = postSpecimenArmPos;
                 etesito.wristDown();
-                powerArm = 0.4;
+                powerArm = 0.6;
 
                 specimenArmSemiDown = false;
             }
 
-            if (specimenOpenClaw && specimenDownTimer.seconds() > 0.3) {
+            if (specimenOpenClaw && specimenDownTimer.seconds() > 0.25) {
                 etesito.dropSpecimen();
                 specimenOpenClaw = false;
             }
 
-            if (specimenRodeDown && specimenDownTimer.seconds() > 0.6) {
+            if (specimenRodeDown && specimenDownTimer.seconds() > 0.55) {
                 etesito.rodeController.targetPosition = 0;
                 specimenRodeDown = false;
             }
 
             if (specimenArmDown && specimenDownTimer.seconds() > 0.9) {
-                powerArm = 0.1;
+                powerArm = 0.05;
                 armTarget = 0;
 
                 armPosition = 0;
@@ -590,7 +608,7 @@ public class ET_SPECIMENE extends OpMode {
 
         double deltaArmPos = etesito.armMotor.getCurrentPosition() - beforeArmPos;
 
-        etesito.rodeController.targetPosition += (deltaArmPos / ratioArm);
+        //etesito.rodeController.targetPosition += (deltaArmPos / ratioArm);
         beforeArmPos = etesito.armMotor.getCurrentPosition();
 
         telemetry.addData("rodeTarget", etesito.rodeController.targetPosition);
@@ -598,8 +616,6 @@ public class ET_SPECIMENE extends OpMode {
         telemetry.addData("armPos", etesito.armMotor.getCurrentPosition());
         telemetry.addData("rode Power", etesito.rodeMotor.getPower());
         telemetry.addData("arm Power", etesito.armMotor.getPower());
-
-        double turbo = 1 - (gamepad1.right_trigger * 0.65);
 
         /* Telemetry Outputs of our Follower */
 

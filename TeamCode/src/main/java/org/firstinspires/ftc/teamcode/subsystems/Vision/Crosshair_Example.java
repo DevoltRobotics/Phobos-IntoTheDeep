@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems.Vision;
+import com.acmerobotics.dashboard.config.Config;
+
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import java.util.*;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+@Config
 public class Crosshair_Example extends OpenCvPipeline {
 
     public Scalar lowerYCrCb = new Scalar(0.0, 0.0, 0.0, 0.0);
@@ -20,25 +23,25 @@ public class Crosshair_Example extends OpenCvPipeline {
 
     public Mat bitwiseANDMat = new Mat();
 
-    public int erodeValue = ((int) (40));
-    public int dilateValue = ((int) (40));
+    public static int erodeValue = ((int) (25));
+    public static int dilateValue = ((int) (40));
     private Mat element = null;
     private Mat bitwiseANDMatErodedDilated = new Mat();
 
     private ArrayList<MatOfPoint> contours = new ArrayList<>();
     private Mat hierarchy = new Mat();
 
-    public int minArea = 2000;
-    public int maxArea = 30000;
+    public static int minArea = 2000;
+    public static int maxArea = 30000;
     private ArrayList<MatOfPoint> contoursByArea = new ArrayList<>();
 
-    public int minRatio = 0;
-    public int maxRatio = 100;
+    public static int minRatio = 0;
+    public static int maxRatio = 100;
     private ArrayList<MatOfPoint> contoursByAreaByRatio = new ArrayList<>();
     private MatOfPoint2f contoursByArea2f = new MatOfPoint2f();
 
     public Scalar lineColor = new Scalar(181.0, 0.0, 255.0, 0.0);
-    public int lineThickness = 3;
+    public static int lineThickness = 3;
 
     private ArrayList<MatOfPoint> crosshair = new ArrayList<>();
     private Mat crosshairImage = new Mat();

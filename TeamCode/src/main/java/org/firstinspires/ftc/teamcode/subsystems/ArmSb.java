@@ -90,7 +90,6 @@ public class ArmSb extends SubsystemBase {
 
         @Override
         public void end(boolean interrupted) {
-            //armMotor.setPower(-armController.update(armMotor.getCurrentPosition()) * 0.4);
 
         }
     }

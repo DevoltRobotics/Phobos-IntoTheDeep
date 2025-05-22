@@ -34,13 +34,13 @@ public class VisionTest extends OpMode {
         hdw.wrist.setPosition(preSubWristPos);
         RotatedRect rect = vision.getRect();
 
-        if(rect != null) {
+        if (rect != null) {
             telemetry.addData("detection", rect);
         }
 
         if (rect != null) {
-            targetX = (int)(rect.center.x);
-            targetY = (int)rect.size.area();
+            targetX = (int) (rect.center.x);
+            targetY = (int) rect.size.area();
         }
 
         double targetYAngl = getTargetAngleY(targetY);
@@ -48,13 +48,11 @@ public class VisionTest extends OpMode {
         double pixelErrorFromCenterX = targetX - 160;
         double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
-        double tAngl = targetXAngl - ((targetXAngl/xFov) * targetYAngl);
+        double tAngl = targetXAngl - ((targetXAngl / xFov) * targetYAngl);
 
         telemetry.addData("xAngl", targetXAngl);
         telemetry.addData("yAngl", targetYAngl);
         telemetry.addData("tAngl", targetXAngl);
-
-
 
 
         vision.updateExposure();

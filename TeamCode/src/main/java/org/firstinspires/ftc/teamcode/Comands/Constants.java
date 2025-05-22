@@ -10,12 +10,12 @@ public class Constants {
 
     public static PIDFController.PIDCoefficients climbCoefficients = new PIDFController.PIDCoefficients(0.015, 0, 0.0017);
 
-    public static PIDFController.PIDCoefficients chassisCoefficients = new PIDFController.PIDCoefficients(0.12, 0, 0.02);
+    public static PIDFController.PIDCoefficients chassisCoefficients = new PIDFController.PIDCoefficients(0.14, 0, 0.02);
 
     public static double ScaleFactor = 80;
 
     public static int xPixels = 320;
-    public static int xFov = 20;
+    public static int xFov = 25;
     public static double xDegreesPerPixel = (double) (xPixels) / (xFov);
 
 
@@ -69,33 +69,58 @@ public class Constants {
     public static double pickSubWristPos = 0.83;
     public static double downWristPos = 0.6;
     public static double pickSpecimenWristPos = 0.64;
-    public static double specimenWristPos = 0.47;
+    public static double specimenWristPos = 0.43;
     public static double contractWristPos = 0.27;
     public static double mediumWristPos = 0.3;
     public static double firstSpecimenWristPos = 0.47;
-    public static double previousSpecimenWristPos = 0.1;
+    public static double postSpecimenWristPos = 0.15;
     public static double basketWristPos = 0;
 
     public static int submArmPos = -300;
     public static int initArmPos = -950;
-    public static int firstSpecimenArmPos = -850;
-    public static int specimenArmPos = -2000;
+    public static int firstSpecimenArmPos = -800;
+    public static int parkArmPos = -1100;
+    public static int specimenArmPos = -2100;
     public static int postSpecimenArmPos = -1200;
     public static int basketArmPos = -1850;
 
-    public static int highRodePos = -1200; //
+    public static int lowBasketArmPos = -1950;
+
+
+//435 RPM 384 res
+    /*public static int highRodePos = -1300; //
+    public static int highRodePosAuto = -1250; //
     public static int preSubmRodePos = -500; //
     public static int postSubmRodePos = -1050; //
     public static int firstSpecimenRodePos = -1100;
     public static int specimenRodePos = -700;
-    public static int preSpecimenRodePos = -250;
+    public static int preSpecimenRodePos = -370;
+    public static int preSpecimenTeleOpRodePos = -300;
     public static int downRodePos = -750; //z
     public static int extensionLimit = -1000; //
     public static int climbingRodePos2 = -390;
     public static int climbingRodePos1 = -200;
+    public static int parkRodePos = -600;*/
+
+    //312 RPM 537 res
+
+    public static int rodeExtended = -550; //
+    public static int pickSpecimenAutoRodePos = -350; //
+    public static int highRodePos = -1820; //
+    public static int highRodePosAuto = -1758; //
+    public static int preSubmRodePos = -700; //
+    public static int postSubmRodePos = -1470; //
+    public static int firstSpecimenRodePos = -1540;
+    public static int specimenRodePos = -980;
+    public static int preSpecimenRodePos = -450;
+    public static int preSpecimenTeleOpRodePos = -430;
+    public static int downRodePos = -1050; //z
+    public static int extensionLimit = -1400; //
+    public static int climbingRodePos1 = -280;
+    public static int parkRodePos = -840;
 
     public static double servosHangingPos = 0.2;
-    public static double servosClimbingPos = 0.1;
+    public static double servosClimbingPos = 0.15;
     public static double servosInitPos = -0.05;
     public static double servosTestPost = 0;
 

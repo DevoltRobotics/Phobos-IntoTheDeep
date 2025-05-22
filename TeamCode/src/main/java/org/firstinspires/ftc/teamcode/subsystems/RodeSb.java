@@ -43,7 +43,7 @@ public class RodeSb extends SubsystemBase {
                 new WaitCommand(250),
 
                 new ParallelCommandGroup(
-                        rodeToPosPlusSmooth(400, 0.5),
+                        rodeToPosPlusSmooth(560, 0.5),
                         new SequentialCommandGroup(
                                 new WaitCommand(250),
                                 wristSb.servoSmoothCMD(downWristPos, 0.15)
@@ -52,7 +52,7 @@ public class RodeSb extends SubsystemBase {
 
                 new WaitCommand(100),
 
-                rodeToPosPlusSmooth(-450, 0.6)
+                rodeToPosPlusSmooth(-800, 0.6)
 
 
         );

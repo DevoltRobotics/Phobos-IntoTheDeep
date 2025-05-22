@@ -190,6 +190,11 @@ public class PedroSb extends SubsystemBase {
                 double targetYAngl = getTargetAngleY(targetY);
 
                 double pixelErrorFromCenterX = targetX - 160;
+
+                if (Math.abs(pixelErrorFromCenterX) < 35) {
+                    powerMult += 2;
+
+                }
                 double targetXAngl = pixelErrorFromCenterX / xDegreesPerPixel;
 
                 double tAngl = targetXAngl + ((targetXAngl/(xFov)) * targetYAngl);

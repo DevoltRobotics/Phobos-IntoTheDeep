@@ -33,8 +33,10 @@ import static org.firstinspires.ftc.teamcode.Comands.Constants.launchArmsPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.midOpenAbramPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.mediumWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.openClawPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSpecimenAutoRodePos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.pickSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenArmPos;
+import static org.firstinspires.ftc.teamcode.Comands.Constants.postSpecimenWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.preSubWristPos;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.rodeCoefficients;
 import static org.firstinspires.ftc.teamcode.Comands.Constants.servosClimbingPos;
@@ -256,6 +258,11 @@ public class Etesito {
         wristIsMedium = true;
     }
 
+    public void wristPostSpecimen() {
+        wrist.setPosition(postSpecimenWristPos);
+        wristIsMedium = true;
+    }
+
     public void wristManualUp() {
         wrist.setPosition(wrist.getPosition() + 0.03);
     }
@@ -459,25 +466,37 @@ public class Etesito {
 
                 armSb.armToPos(postSpecimenArmPos),
                 wristSb.servoPosCMD(downWristPos),
-                new WaitCommand(150),
+                new WaitCommand(100),
 
                 clawSb.servoPosCMD(openClawPos),
-                new WaitCommand(300),
+                new WaitCommand(250),
 
                 rodeSb.rodeToPos(0),
                 new WaitCommand(100)
         );
     }
 
+    public Command putSpecimenLastSeqCmd(){
+        return new SequentialCommandGroup(
+                rodeSb.rodeToPos(specimenRodePos),
+                new WaitCommand(150),
+
+                armSb.armToPos(postSpecimenArmPos),
+                wristSb.servoPosCMD(downWristPos),
+                new WaitCommand(100),
+
+                clawSb.servoPosCMD(openClawPos),
+                new WaitCommand(250)
+        );
+    }
+
     public Command pickSpecimen1OneSeqCmd(){
         return new SequentialCommandGroup(
-                wristSb.servoPosCMD(pickSpecimenWristPos),
-
-                rodeSb.rodeToPosSmooth(-350, 0.2),
-                new WaitCommand(200),
+                rodeSb.rodeToPosSmooth(pickSpecimenAutoRodePos - 80 , 0.15),
+                new WaitCommand(100),
 
                 clawSb.servoPosCMD(closeClawPos),
-                new WaitCommand(400),
+                new WaitCommand(300),
 
                 armSb.armToPos(specimenArmPos),
                 new WaitCommand(300)
@@ -487,13 +506,12 @@ public class Etesito {
 
     public Command pickSpecimenOneSeqCmd(){
         return new SequentialCommandGroup(
-                wristSb.servoPosCMD(pickSpecimenWristPos),
 
-                rodeSb.rodeToPosSmooth(-300, 0.2),
-                new WaitCommand(200),
+                rodeSb.rodeToPosSmooth(pickSpecimenAutoRodePos, 0.15),
+                new WaitCommand(100),
 
                 clawSb.servoPosCMD(closeClawPos),
-                new WaitCommand(400),
+                new WaitCommand(300),
 
                 armSb.armToPos(specimenArmPos),
                 new WaitCommand(300)
@@ -532,6 +550,23 @@ public class Etesito {
 
                 wristSb.servoPosCMD(initWristPos)
                 );
+    }
+
+    public Command initCmdSample(){
+        return new SequentialCommandGroup(
+                clawSb.servoPosCMD(openClawPos),
+                wristSb.servoPosCMD(basketWristPos),
+                servosSb.mirrorServoPosCMD(servosInitPos),
+                launchersSb.mirrorServoPosCMD(supportArmsPos),
+
+                new WaitCommand(300),
+
+                armSb.armToPos(initArmPos),
+
+                new WaitCommand(800),
+
+                wristSb.servoPosCMD(initWristPos)
+        );
     }
 
     public Command downArm3rdSample(){

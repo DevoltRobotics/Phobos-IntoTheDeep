@@ -86,22 +86,15 @@ public class PedroOpenCv extends OpMode {
                 etesito.rodeSb.rodeToPos(0),
                 new WaitCommand(150)
 
-
                 /*
                     new WaitCommand(150),
                     pedroSb.returnPath()
-
-
-
 
                 pedroSb.followPathCmd(back)
 
                  */
         );
     }
-
-    double beforeHeading;
-    double beforeRodeIn;
 
     @Override
     public void loop() {

@@ -14,10 +14,10 @@ public class servo_test extends OpMode {
 
     Etesito etesito = new Etesito();
 
-    private boolean alternar_Garra;
-    private boolean alternar_wrist;
-    private boolean alternar_sc1;
-    private boolean alternar_sc2;
+    private boolean alternar_Garra = true;
+    private boolean alternar_wrist = true;
+    private boolean alternar_sc1 = true;
+    private boolean alternar_sc2 = true;
 
     ElapsedTime alternar_garraTimer = new ElapsedTime();
     ElapsedTime alternar_wristTimer = new ElapsedTime();
@@ -44,11 +44,15 @@ public class servo_test extends OpMode {
 
         if (alternar_garraTimer.seconds() > 0.2 && gamepad2.a){
             if (alternar_Garra){
+
+                telemetry.addLine("claw open");
                 etesito.dropSpecimen();
                 alternar_Garra = false;
 
             }else {
                 etesito.pickSpecimen();
+                telemetry.addLine("claw close");
+
                 alternar_Garra = true;
 
         }
