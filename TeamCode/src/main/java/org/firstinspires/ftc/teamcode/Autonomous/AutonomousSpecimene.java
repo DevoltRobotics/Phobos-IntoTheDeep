@@ -81,15 +81,15 @@ public class AutonomousSpecimene extends OpMode {
 
     private final Pose putSpecimen1Pose = new Pose(32, 72, Math.toRadians(30));
 
-    private final Pose pickUpSample1Pose = new Pose(33, 48, Math.toRadians(303));
+    private final Pose pickUpSample1Pose = new Pose(32, 48, Math.toRadians(301));
 
     private final Pose putSample1Pose = new Pose(29, 40, Math.toRadians(230));
 
-    private final Pose pickUpSample2Pose = new Pose(38, 38, Math.toRadians(279));
+    private final Pose pickUpSample2Pose = new Pose(39, 38, Math.toRadians(277));
 
     private final Pose putSample2Pose = new Pose(27, 32, Math.toRadians(228));
 
-    private final Pose pickUpSample3Pose = new Pose(43, 31, Math.toRadians(271));
+    private final Pose pickUpSample3Pose = new Pose(42.5, 31, Math.toRadians(271));
 
     private final Pose putSample3Pose = new Pose(27, 32, Math.toRadians(230));
 

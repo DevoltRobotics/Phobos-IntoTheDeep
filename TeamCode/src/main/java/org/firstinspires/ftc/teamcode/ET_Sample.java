@@ -138,6 +138,10 @@ public class ET_Sample extends OpMode {
         etesito.rodeController.targetPosition = etesito.rodeMotor.getCurrentPosition();
         etesito.armController.targetPosition = etesito.armMotor.getCurrentPosition();
 
+            etesito.servosHanging();
+            etesito.supportHangArms();
+
+
     }
 
 
@@ -316,10 +320,12 @@ public class ET_Sample extends OpMode {
 
             //etesito.setLight("orange");
 
-            if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper) {
+            /*if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper) {
                 etesito.servosHanging();
                 etesito.supportHangArms();
             }
+
+             */
 
             boolean extended = (etesito.rodeMotor.getCurrentPosition() <= rodeExtended);
 

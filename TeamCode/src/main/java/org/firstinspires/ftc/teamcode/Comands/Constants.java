@@ -78,19 +78,18 @@ public class Constants {
 
     public static int submArmPos = -300;
     public static int initArmPos = -950;
-    public static int firstSpecimenArmPos = -800;
+    public static int firstSpecimenArmPos = -860;
     public static int parkArmPos = -1100;
     public static int specimenArmPos = -2100;
     public static int postSpecimenArmPos = -1200;
-    public static int basketArmPos = -1850;
-
+    public static int basketArmPos = -1950;
     public static int lowBasketArmPos = -1950;
 
 
 //435 RPM 384 res
     /*public static int highRodePos = -1300; //
     public static int highRodePosAuto = -1250; //
-    public static int preSubmRodePos = -500; //
+    public static int preSubmRodePos = -500; //mn holqa mundo
     public static int postSubmRodePos = -1050; //
     public static int firstSpecimenRodePos = -1100;
     public static int specimenRodePos = -700;
@@ -110,12 +109,13 @@ public class Constants {
     public static int highRodePosAuto = -1758; //
     public static int preSubmRodePos = -700; //
     public static int postSubmRodePos = -1470; //
-    public static int firstSpecimenRodePos = -1540;
+    public static int firstSpecimenRodePos = -1570;
     public static int specimenRodePos = -980;
     public static int preSpecimenRodePos = -450;
     public static int preSpecimenTeleOpRodePos = -430;
     public static int downRodePos = -1050; //z
-    public static int extensionLimit = -1400; //
+    public static int extensionLimit = -1350;
+    //
     public static int climbingRodePos1 = -280;
     public static int parkRodePos = -840;
 

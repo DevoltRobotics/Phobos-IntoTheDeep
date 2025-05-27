@@ -41,7 +41,6 @@ import pedroPathing.constants.LConstants;
 
 public class ET_SPECIMENE extends OpMode {
 
-    private double rodePreSpecimenLocalPos;
     private final Etesito etesito = new Etesito();
 
     private final Pose startPose = new Pose(0, 0, 0);
@@ -115,7 +114,6 @@ public class ET_SPECIMENE extends OpMode {
     public void init() {
         etesito.init(hardwareMap, false, true);
 
-        rodePreSpecimenLocalPos = preSpecimenTeleOpRodePos;
         launchArms = false;
 
         rodeMax = 250;
@@ -140,6 +138,12 @@ public class ET_SPECIMENE extends OpMode {
     }
 
     int beforeArmPos = 0;
+
+    @Override
+    public void start() {
+        etesito.servosHanging();
+        etesito.supportHangArms();
+    }
 
     @Override
     public void loop() {
@@ -316,10 +320,10 @@ public class ET_SPECIMENE extends OpMode {
 
             //etesito.setLight("orange");
 
-            if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper) {
+            /*if (gamepad2.left_bumper || gamepad2.right_bumper || gamepad1.left_bumper || gamepad1.right_bumper) {
                 etesito.servosHanging();
                 etesito.supportHangArms();
-            }
+            }*/
 
             boolean extended = (etesito.rodeMotor.getCurrentPosition() <= rodeExtended);
 
@@ -331,7 +335,6 @@ public class ET_SPECIMENE extends OpMode {
             } else if (gamepad2.dpad_up) {
 
                 if (armPosition == 2) {
-                    rodePreSpecimenLocalPos = etesito.rodeMotor.getCurrentPosition();
                     specimenArmSemiDown = true;
                     specimenOpenClaw = true;
                     specimenWristDown = true;
@@ -552,7 +555,7 @@ public class ET_SPECIMENE extends OpMode {
 
             if (specimenUpWrist && specimenUpArmTimer.seconds() > 0.6) {
                 etesito.wristSpecimen();
-                etesito.rodeController.targetPosition = rodePreSpecimenLocalPos;
+                etesito.rodeController.targetPosition = preSpecimenTeleOpRodePos;
                 specimenUpWrist = false;
             }
 
